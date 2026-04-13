@@ -52,10 +52,10 @@ function TabBtn({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-[10px] transition-all ${
+      className={`px-3 py-1.5 text-[13px] font-medium transition-all border-b-2 ${
         active
-          ? 'bg-[#E8A020] text-black shadow-[0_2px_8px_rgba(232,160,32,0.3)]'
-          : 'text-[#a1a1aa] hover:text-white hover:bg-[#1f1f23]'
+          ? 'border-[#E8A020] text-white'
+          : 'border-transparent text-[#6b7280] hover:text-[#c0cee4]'
       }`}
     >
       {children}
@@ -65,7 +65,7 @@ function TabBtn({ active, onClick, children }) {
 
 // ─── Loading skeleton ────────────────────────────────────────────────────────
 function Skeleton({ h = 'h-8', w = 'w-full' }) {
-  return <div className={`${h} ${w} bg-[#1f1f23] rounded-[10px] animate-pulse`} />
+  return <div className={`skeleton ${h} ${w}`} />
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -119,9 +119,9 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
   return (
     <div className="space-y-6">
       {/* Selector de productos */}
-      <div className="card p-5">
-        <p className="text-[#52525b] text-xs font-semibold tracking-widest uppercase mb-3">
-          SELECCIONAR PRODUCTOS (máx. 4)
+      <div className="card-vercel p-5">
+        <p className="text-[#6b7280] text-[11px] font-medium uppercase tracking-[0.12em] mb-3">
+          Seleccionar productos (máx. 4)
         </p>
         <div className="flex flex-wrap gap-2">
           {products.map((p, i) => {
@@ -158,23 +158,23 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
           </div>
 
           {/* Tabla KPIs comparativa */}
-          <div className="card overflow-hidden">
+          <div className="card-vercel overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#2a2a2e]">
-                    <th className="text-left text-[#52525b] text-xs font-semibold px-5 py-3">Producto</th>
-                    <th className="text-right text-[#52525b] text-xs font-semibold px-4 py-3">Ingresos</th>
-                    <th className="text-right text-[#52525b] text-xs font-semibold px-4 py-3">Inversión</th>
-                    <th className="text-right text-[#52525b] text-xs font-semibold px-4 py-3">Ganancia</th>
-                    <th className="text-right text-[#52525b] text-xs font-semibold px-4 py-3">ROAS</th>
-                    <th className="text-right text-[#52525b] text-xs font-semibold px-4 py-3">Registros</th>
+                  <tr className="border-b border-white/8">
+                    <th className="text-left text-[#6b7280] text-[11px] font-medium px-5 py-3 uppercase tracking-[0.1em]">Producto</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ingresos</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Inversión</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ganancia</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">ROAS</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Registros</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading
                     ? [1,2,3].map(i => (
-                        <tr key={i} className="border-b border-[#2a2a2e]">
+                        <tr key={i} className="border-b border-white/8">
                           {[1,2,3,4,5,6].map(j => (
                             <td key={j} className="px-4 py-3"><Skeleton h="h-4" /></td>
                           ))}
@@ -183,7 +183,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                     : data.map((p, i) => {
                         const isWinner = winner?.id === p.id
                         return (
-                          <tr key={p.id} className="border-b border-[#2a2a2e] hover:bg-[#1f1f23] transition-colors">
+                          <tr key={p.id} className="border-b border-white/8 hover:bg-white/[0.03] transition-colors">
                             <td className="px-5 py-3">
                               <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -222,8 +222,8 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
 
           {/* Gráfico comparativo */}
           {!loading && chartData.length > 0 && (
-            <div className="card p-5">
-              <p className="text-white font-semibold mb-4">{METRIC_LABELS[metric]} por día</p>
+            <div className="card-vercel p-5">
+              <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>{METRIC_LABELS[metric]} por día</p>
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" />
@@ -269,10 +269,10 @@ function BudgetTab({ dateFrom, dateTo }) {
   const calc = async () => { await load() }
 
   const InvestCard = ({ label, value, color, sub }) => (
-    <div className={`card p-4 border-l-2 ${color}`}>
-      <p className="text-[#52525b] text-xs mb-1">{label}</p>
-      <p className="text-2xl font-bold text-white">{fmt(value)}</p>
-      {sub && <p className="text-[#52525b] text-xs mt-1">{sub}</p>}
+    <div className={`card-vercel p-4 border-l-2 ${color}`}>
+      <p className="text-[#6b7280] text-[11px] mb-1.5">{label}</p>
+      <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{fmt(value)}</p>
+      {sub && <p className="text-[#6b7280] text-xs mt-1">{sub}</p>}
     </div>
   )
 
@@ -281,25 +281,25 @@ function BudgetTab({ dateFrom, dateTo }) {
       {/* ROAS histórico */}
       {data && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="card p-4 text-center">
-            <p className="text-[#52525b] text-xs mb-1">ROAS promedio</p>
-            <p className="text-2xl font-bold text-[#E8A020]">{data.avg_roas ?? '—'}x</p>
+          <div className="card-vercel p-4 text-center">
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS promedio</p>
+            <p className="text-[22px] font-light tabular-nums text-[#E8A020]" style={{ letterSpacing: '-0.03em' }}>{data.avg_roas ?? '—'}x</p>
           </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#52525b] text-xs mb-1">ROAS mínimo</p>
-            <p className="text-2xl font-bold text-[#ef4444]">{data.min_roas ?? '—'}x</p>
+          <div className="card-vercel p-4 text-center">
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS mínimo</p>
+            <p className="text-[22px] font-light tabular-nums text-[#ef4444]" style={{ letterSpacing: '-0.03em' }}>{data.min_roas ?? '—'}x</p>
           </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#52525b] text-xs mb-1">ROAS máximo</p>
-            <p className="text-2xl font-bold text-[#10b981]">{data.max_roas ?? '—'}x</p>
+          <div className="card-vercel p-4 text-center">
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS máximo</p>
+            <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>{data.max_roas ?? '—'}x</p>
           </div>
         </div>
       )}
 
       {/* Input objetivo */}
-      <div className="card p-5">
-        <p className="text-white font-semibold mb-1">¿Cuánto querés facturar?</p>
-        <p className="text-[#52525b] text-xs mb-4">Calculamos la inversión necesaria basándonos en tu historial de ROAS</p>
+      <div className="card-vercel p-5">
+        <p className="text-[13px] font-semibold text-white mb-1" style={{ letterSpacing: '-0.01em' }}>¿Cuánto querés facturar?</p>
+        <p className="text-[#6b7280] text-xs mb-4">Calculamos la inversión necesaria basándonos en tu historial de ROAS</p>
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b] font-medium">$</span>
@@ -309,13 +309,13 @@ function BudgetTab({ dateFrom, dateTo }) {
               value={target}
               onChange={e => setTarget(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && calc()}
-              className="w-full bg-[#0B0B0E] border border-[#2a2a2e] text-white pl-7 pr-3 py-2.5 rounded-[10px] focus:outline-none focus:border-[#E8A020]/60 transition-colors"
+              className="w-full bg-[#0B0B0E] border border-white/8 text-white pl-7 pr-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#E8A020]/60 transition-colors"
             />
           </div>
           <button
             onClick={calc}
             disabled={!target || loading}
-            className="px-5 py-2.5 bg-[#E8A020] hover:bg-[#d4911c] text-black font-semibold rounded-[10px] transition-colors disabled:opacity-40"
+            className="px-5 py-2.5 bg-[#E8A020] hover:bg-[#d4911c] text-black font-medium rounded-[6px] transition-colors disabled:opacity-40 text-sm"
           >
             Calcular
           </button>
@@ -348,8 +348,8 @@ function BudgetTab({ dateFrom, dateTo }) {
 
           {/* Por producto */}
           {data.by_product?.length > 0 && (
-            <div className="card p-5">
-              <p className="text-white font-semibold mb-4">Inversión sugerida por producto</p>
+            <div className="card-vercel p-5">
+              <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Inversión sugerida por producto</p>
               <div className="space-y-3">
                 {data.by_product.map(p => {
                   const inv = parseFloat(target) / p.roas
@@ -414,9 +414,9 @@ function PatternsTab({ dateFrom, dateTo }) {
   return (
     <div className="space-y-6">
       {/* Por día de semana */}
-      <div className="card p-5">
+      <div className="card-vercel p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-white font-semibold">Rendimiento por día de la semana</p>
+          <p className="text-[13px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>Rendimiento por día de la semana</p>
           {bestDow && (
             <span className="text-xs bg-[#10b981]/20 text-[#10b981] px-2.5 py-1 rounded-full font-medium">
               🏆 Mejor día: {bestDow.name} (ROAS {bestDow.avg_roas}x)
@@ -458,8 +458,8 @@ function PatternsTab({ dateFrom, dateTo }) {
 
       {/* Rangos de inversión */}
       {data.investment_ranges?.length > 0 && (
-        <div className="card p-5">
-          <p className="text-white font-semibold mb-4">ROAS por rango de inversión</p>
+        <div className="card-vercel p-5">
+          <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>ROAS por rango de inversión</p>
           <div className="space-y-3">
             {data.investment_ranges.map((r, i) => {
               const best = data.investment_ranges.reduce((b, x) => x.avg_roas > b.avg_roas ? x : b)
@@ -489,11 +489,11 @@ function PatternsTab({ dateFrom, dateTo }) {
 
       {/* Mejores días */}
       {data.best_days?.length > 0 && (
-        <div className="card p-5">
-          <p className="text-white font-semibold mb-4">Top 5 días con mejor ROAS</p>
+        <div className="card-vercel p-5">
+          <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Top 5 días con mejor ROAS</p>
           <div className="space-y-2">
             {data.best_days.map((d, i) => (
-              <div key={d.date} className="flex items-center gap-4 py-2 border-b border-[#2a2a2e] last:border-0">
+              <div key={d.date} className="flex items-center gap-4 py-2 border-b border-white/8 last:border-0">
                 <span className="w-6 h-6 rounded-full bg-[#1f1f23] flex items-center justify-center text-xs text-[#52525b] font-bold shrink-0">
                   {i + 1}
                 </span>
@@ -547,14 +547,14 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
   return (
     <div className="space-y-6">
       {/* Controles */}
-      <div className="card p-5">
+      <div className="card-vercel p-5">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex-1 min-w-[180px] space-y-1.5">
             <label className="text-[#a1a1aa] text-xs font-medium">Producto</label>
             <select
               value={productId}
               onChange={e => setProductId(e.target.value)}
-              className="w-full bg-[#0B0B0E] border border-[#2a2a2e] text-white text-sm px-3 py-2.5 rounded-[10px] focus:outline-none focus:border-[#E8A020]/60"
+              className="w-full bg-[#0B0B0E] border border-white/8 text-white text-sm px-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#E8A020]/60"
             >
               <option value="">Todos los productos</option>
               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -582,17 +582,17 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
       {/* Stats proyección */}
       {data && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="card p-4 text-center">
-            <p className="text-[#52525b] text-xs mb-1">Días históricos</p>
-            <p className="text-2xl font-bold text-white">{data.series?.length ?? 0}</p>
+          <div className="card-vercel p-4 text-center">
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días históricos</p>
+            <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{data.series?.length ?? 0}</p>
           </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#52525b] text-xs mb-1">Días proyectados</p>
-            <p className="text-2xl font-bold text-[#E8A020]">{data.projected?.length ?? 0}</p>
+          <div className="card-vercel p-4 text-center">
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días proyectados</p>
+            <p className="text-[22px] font-light tabular-nums text-[#E8A020]" style={{ letterSpacing: '-0.03em' }}>{data.projected?.length ?? 0}</p>
           </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#52525b] text-xs mb-1">Ingreso proyectado (prom/día)</p>
-            <p className="text-2xl font-bold text-[#10b981]">
+          <div className="card-vercel p-4 text-center">
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Ingreso proyectado (prom/día)</p>
+            <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>
               {data.projected?.length
                 ? fmt(data.projected.reduce((a, p) => a + p.revenue, 0) / data.projected.length)
                 : '—'}
@@ -603,11 +603,11 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
 
       {/* Gráfico */}
       {loading ? (
-        <div className="card p-5"><Skeleton h="h-64" /></div>
+        <div className="card-vercel p-5"><Skeleton h="h-64" /></div>
       ) : chartData.length > 0 ? (
-        <div className="card p-5">
+        <div className="card-vercel p-5">
           <div className="flex items-center gap-3 mb-4">
-            <p className="text-white font-semibold flex-1">Proyección de ingresos</p>
+            <p className="text-[13px] font-semibold text-white flex-1" style={{ letterSpacing: '-0.01em' }}>Proyección de ingresos</p>
             <div className="flex items-center gap-4 text-xs text-[#a1a1aa]">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-0.5 bg-[#E8A020] inline-block" />
@@ -687,8 +687,8 @@ export default function Insights() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h1 className="font-display text-[26px] font-bold text-[#fafafa] tracking-tight leading-none">Inteligencia de Negocio</h1>
-            <p className="text-[#52525b] text-[13px] mt-1.5">
+            <h1 className="text-[24px] font-semibold text-[#fafafa] leading-none" style={{ letterSpacing: '-0.03em' }}>Inteligencia de Negocio</h1>
+            <p className="text-[#6b7280] text-[12px] mt-1.5 tracking-[0.01em]">
               Análisis avanzado para tomar mejores decisiones
             </p>
           </div>
@@ -696,7 +696,7 @@ export default function Insights() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-0 overflow-x-auto border-b border-white/8">
           {TABS.map(t => (
             <TabBtn key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
               {t.label}

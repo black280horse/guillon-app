@@ -60,10 +60,10 @@ function numberValue(value) {
 
 function KpiSkeleton() {
   return (
-    <div className="card p-4 space-y-3">
+    <div className="card p-5 space-y-3">
       <div className="skeleton h-3 w-24 rounded" />
       <div className="skeleton h-8 w-28 rounded" />
-      <div className="skeleton h-10 w-full rounded-2xl" />
+      <div className="skeleton h-10 w-full rounded" />
     </div>
   )
 }
@@ -94,25 +94,25 @@ function CompactKpi({ label, value, formatter, color, iconPath, change, chartDat
   const delta = change !== null && change !== undefined && !Number.isNaN(parseFloat(change)) ? parseFloat(change) : null
 
   return (
-    <div className="card p-4 h-full">
+    <div className="card p-5 h-full">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[#7d8ca5] text-[11px] uppercase tracking-[0.18em]">{label}</p>
-          <p className="font-display text-[30px] font-bold text-white mt-2 leading-none">
+          <p className="text-[#7d8ca5] text-[11px] uppercase tracking-[0.14em] font-medium">{label}</p>
+          <p className="text-[32px] font-light text-white mt-2 leading-none tabular-nums" style={{ letterSpacing: '-0.03em' }}>
             <span style={{ color }}>{formatter(animated)}</span>
           </p>
         </div>
-        <div className="w-10 h-10 rounded-[16px] bg-white/[0.04] border border-white/10 text-[#cfd9ea] flex items-center justify-center shrink-0">
-          <Icon className="w-4.5 h-4.5" path={iconPath} />
+        <div className="w-9 h-9 rounded-[8px] bg-white/[0.04] border border-white/8 text-[#cfd9ea] flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4" path={iconPath} />
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-4">
         <MiniArea data={chartData} dataKey={chartKey} color={color} />
       </div>
 
-      <div className={`text-[11px] font-semibold mt-2 ${delta === null ? 'text-[#7d8ca5]' : delta >= 0 ? 'text-[#10B981]' : 'text-[#FB7185]'}`}>
-        {delta === null ? 'Sin comparativa' : `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%`}
+      <div className={`text-[11px] font-medium mt-2 ${delta === null ? 'text-[#7d8ca5]' : delta >= 0 ? 'text-[#10B981]' : 'text-[#FB7185]'}`}>
+        {delta === null ? 'Sin comparativa' : `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% vs período anterior`}
       </div>
     </div>
   )
@@ -164,7 +164,7 @@ function RoasTooltip({ active, payload, label }) {
 function SectionHeader({ title, action }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-5">
-      <h2 className="font-display text-[15px] font-bold text-white tracking-tight">{title}</h2>
+      <h2 className="text-[13px] font-semibold text-white tracking-[-0.01em]">{title}</h2>
       {action}
     </div>
   )
@@ -177,7 +177,7 @@ function ProductRankingCards({ products, formatCurrency, navigate }) {
         <button
           key={product.id}
           onClick={() => navigate(`/productos/${product.id}`)}
-          className="rounded-[20px] border border-white/8 bg-white/[0.03] p-4 text-left hover:border-[#4dd7ff]/20 transition-all"
+          className="rounded-[10px] border border-white/8 bg-white/[0.03] p-4 text-left hover:border-[#E8A020]/20 transition-all"
         >
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -260,7 +260,7 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
       <div className="card p-4">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[#c0cee4] text-sm">Recomendaciones IA</p>
-          <button onClick={generate} className="rounded-xl bg-[#E8A020] px-3 py-2 text-[11px] font-semibold text-black">
+          <button onClick={generate} className="rounded-[6px] bg-[#E8A020] px-3 py-1.5 text-[11px] font-medium text-black">
             Generar
           </button>
         </div>
@@ -289,7 +289,7 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
       <SectionHeader title="IA" />
       <div className="space-y-3">
         {insights.map((item, index) => (
-          <div key={`${item.title}-${index}`} className="rounded-[18px] border border-white/8 bg-white/[0.03] p-3">
+          <div key={`${item.title}-${index}`} className="rounded-[8px] border border-white/8 bg-white/[0.03] p-3.5">
             <p className="text-white text-sm font-semibold">{item.title}</p>
             <p className="text-[#8ea0bc] text-xs leading-relaxed mt-1">{item.body}</p>
           </div>
@@ -391,10 +391,10 @@ export default function Dashboard() {
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-[28px] md:text-[32px] font-bold text-white leading-none tracking-tight">
-              Dashboard <span className="text-[#f5b641]">comercial</span>
+            <h1 className="text-[28px] md:text-[30px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
+              Dashboard <span style={{ color: '#E8A020', fontWeight: 400 }}>comercial</span>
             </h1>
-            <p className="text-[#5a6d87] text-[13px] mt-1">Visión consolidada del negocio</p>
+            <p className="text-[#5a6d87] text-[12px] mt-1.5 tracking-[0.01em]">Visión consolidada del negocio</p>
           </div>
           <DateRangePicker />
         </div>
@@ -403,7 +403,7 @@ export default function Dashboard() {
           <div className="card p-10 text-center">
             <p className="text-white font-semibold text-lg">Sin datos</p>
             <p className="text-[#8ea0bc] text-sm mt-2">Carga ventas e inversion para activar el dashboard.</p>
-            <Link to="/cargar" className="inline-flex items-center gap-2 mt-5 rounded-2xl bg-[#E8A020] px-5 py-3 text-sm font-semibold text-black">
+            <Link to="/cargar" className="inline-flex items-center gap-2 mt-5 rounded-[6px] bg-[#E8A020] px-5 py-2.5 text-sm font-medium text-black">
               <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
               Cargar datos
             </Link>
@@ -431,7 +431,7 @@ export default function Dashboard() {
                       <button
                         key={item.key}
                         onClick={() => setVisibleSeries(current => ({ ...current, [item.key]: !current[item.key] }))}
-                        className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all ${visibleSeries[item.key] ? 'border-transparent text-black' : 'border-white/10 bg-white/[0.03] text-[#8ea0bc]'}`}
+                        className={`rounded-[6px] border px-3 py-1.5 text-[11px] font-medium transition-all ${visibleSeries[item.key] ? 'border-transparent text-black' : 'border-white/10 bg-white/[0.03] text-[#8ea0bc] hover:text-[#c0cee4]'}`}
                         style={visibleSeries[item.key] ? { background: item.color } : {}}
                       >
                         {item.label}
@@ -442,7 +442,7 @@ export default function Dashboard() {
               />
 
               {loading ? (
-                <div className="skeleton h-[360px] rounded-[24px]" />
+                <div className="skeleton h-[360px] rounded-[10px]" />
               ) : (
                 <div className="h-[360px] md:h-[380px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -470,7 +470,7 @@ export default function Dashboard() {
                   </div>
 
                   {loading ? (
-                    <div className="p-4 space-y-3">{[1, 2, 3].map(item => <div key={item} className="skeleton h-16 rounded-[18px]" />)}</div>
+                    <div className="p-4 space-y-3">{[1, 2, 3].map(item => <div key={item} className="skeleton h-16 rounded-[8px]" />)}</div>
                   ) : (
                     <>
                       <ProductRankingCards products={sorted} formatCurrency={formatCurrency} navigate={navigate} />
@@ -560,8 +560,8 @@ export default function Dashboard() {
                 <div className="card p-5">
                   <SectionHeader title="Alertas" />
                   <div className="space-y-3">
-                    {loading ? [1, 2].map(item => <div key={item} className="skeleton h-20 rounded-[18px]" />) : alerts.map((alert, index) => (
-                      <div key={`${alert.title}-${index}`} className={`rounded-[18px] border p-3 ${alert.tone === 'green' ? 'border-[#10B981]/18 bg-[#10B981]/8' : alert.tone === 'red' ? 'border-[#FB7185]/18 bg-[#FB7185]/8' : 'border-[#4F8CFF]/18 bg-[#4F8CFF]/8'}`}>
+                    {loading ? [1, 2].map(item => <div key={item} className="skeleton h-20 rounded-[8px]" />) : alerts.map((alert, index) => (
+                      <div key={`${alert.title}-${index}`} className={`rounded-[8px] border p-3.5 ${alert.tone === 'green' ? 'border-[#10B981]/18 bg-[#10B981]/8' : alert.tone === 'red' ? 'border-[#FB7185]/18 bg-[#FB7185]/8' : 'border-[#4F8CFF]/18 bg-[#4F8CFF]/8'}`}>
                         <p className="text-white text-sm font-semibold">{alert.title}</p>
                         <p className="text-[#d7e0ef] text-xs mt-1">{alert.body}</p>
                         {alert.action && <button onClick={alert.onAction} className="text-[#E8A020] text-xs font-semibold mt-3 hover:underline">{alert.action}</button>}

@@ -104,8 +104,12 @@ function KanbanCard({ task, colorMap, onEdit, onUpdate, onDelete, isOverlay = fa
         opacity: isDragging ? 0.25 : 1,
         zIndex: isOverlay ? 9999 : undefined,
       }}
-      className={`group relative bg-[#1c1c1f] border rounded-[8px] overflow-hidden select-none transition-all duration-150 ${
-        isCompleted ? 'border-[#2a2a2e] opacity-60' : isOverdue ? 'border-[#ef4444]/30' : 'border-[#2a2a2e] hover:border-[#3a3a40]'
+      className={`group relative rounded-[8px] overflow-hidden select-none transition-all duration-150 ${
+        isCompleted
+          ? 'bg-white/[0.018] border border-white/[0.05] opacity-55'
+          : isOverdue
+          ? 'bg-white/[0.03] border border-[#ef4444]/25 hover:border-[#ef4444]/40'
+          : 'bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.04]'
       } ${isOverlay ? 'shadow-[0_20px_40px_rgba(0,0,0,0.6)] scale-[1.02]' : ''}`}
     >
       {/* Priority left border */}
@@ -210,21 +214,22 @@ function KanbanColumn({ col, tasks, colorMap, onAdd, onEdit, onUpdate, onDelete,
 
   return (
     <div className="flex flex-col min-h-0">
-      {/* Column header — solid color */}
-      <div
-        className="px-3 py-2.5 rounded-t-[10px] flex items-center justify-between gap-2 shrink-0"
-        style={{ background: col.color }}
-      >
+      {/* Column header — Linear style: transparent bg, color dot */}
+      <div className="px-3 py-2.5 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-white font-bold text-[13px] tracking-[-0.01em]">{col.label}</span>
-          <span className="bg-black/25 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
+          <span className="text-[#c0cee4] font-medium text-[12.5px] tracking-[-0.01em]">{col.label}</span>
+          <span
+            className="text-[11px] font-medium px-1.5 py-0.5 rounded-[4px] min-w-[20px] text-center leading-none"
+            style={{ background: `${col.color}18`, color: col.color }}
+          >
             {tasks.length}
           </span>
         </div>
         <button
           onClick={() => onAdd(col.id)}
           title="Agregar tarea"
-          className="w-6 h-6 rounded-[6px] flex items-center justify-center text-white/60 hover:text-white hover:bg-black/20 transition-all"
+          className="w-6 h-6 rounded-[5px] flex items-center justify-center text-[#4a4a56] hover:text-[#8ea0bc] hover:bg-white/[0.06] transition-all"
         >
           <Icon className="w-3.5 h-3.5" stroke={2.5} path="M12 5v14M5 12h14" />
         </button>
@@ -233,13 +238,13 @@ function KanbanColumn({ col, tasks, colorMap, onAdd, onEdit, onUpdate, onDelete,
       {/* Column body */}
       <div
         ref={setNodeRef}
-        className={`flex-1 bg-[#18181b] border border-t-0 rounded-b-[10px] p-2 flex flex-col gap-2 overflow-y-auto transition-colors duration-100 ${
-          isOver ? 'bg-[#1f1f24] border-[#3a3a44]' : 'border-[#2a2a2e]'
+        className={`flex-1 rounded-[10px] p-2 flex flex-col gap-2 overflow-y-auto transition-colors duration-100 ${
+          isOver ? 'bg-white/[0.04] ring-1 ring-white/10' : 'bg-white/[0.025] ring-1 ring-white/[0.06]'
         }`}
         style={{ maxHeight: 'calc(100vh - 224px)' }}
       >
         {tasks.length === 0 && !activeId && (
-          <div className="flex items-center justify-center h-16 text-[#2e2e36] text-[12px] border border-dashed border-[#242428] rounded-[6px] mx-0.5">
+          <div className="flex items-center justify-center h-16 text-[#3a3a46] text-[12px] border border-dashed border-white/[0.07] rounded-[6px] mx-0.5">
             Sin tareas
           </div>
         )}
@@ -311,9 +316,7 @@ function TableRow({ task, colorMap, index, onEdit, onUpdate, onDelete }) {
 
   return (
     <tr
-      className={`border-b border-[#232326] transition-colors cursor-pointer group ${
-        index % 2 === 0 ? 'bg-[#18181b]' : 'bg-[#1c1c1f]'
-      } hover:bg-[#27272a]`}
+      className="border-b border-white/[0.06] transition-colors cursor-pointer group hover:bg-white/[0.03]"
       onClick={() => onEdit(task)}
     >
       {/* Checkbox */}
@@ -461,21 +464,21 @@ function TableView({ tasks, colorMap, onEdit, onUpdate, onDelete }) {
   }, [tasks, sortCol, sortDir])
 
   return (
-    <div className="bg-[#18181b] border border-[#2a2a2e] rounded-[10px] overflow-hidden">
+    <div className="bg-white/[0.025] border border-white/[0.07] rounded-[10px] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px]">
           <thead>
-            <tr className="border-b border-[#2a2a2e]">
+            <tr className="border-b border-white/[0.07]">
               <th className="w-9 pl-3 py-2.5" />
               {cols.map(col => (
                 <th
                   key={col.key ?? col.label}
-                  className={`text-left px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] text-[#3f3f46] font-semibold ${col.w} ${col.key ? 'cursor-pointer hover:text-[#71717a] select-none' : ''}`}
+                  className={`text-left px-3 py-2.5 text-[11px] uppercase tracking-[0.12em] text-[#4a4a56] font-medium ${col.w} ${col.key ? 'cursor-pointer hover:text-[#8ea0bc] select-none' : ''}`}
                   onClick={() => col.key && toggleSort(col.key)}
                 >
                   {col.label}
                   {col.key === sortCol && (
-                    <span className="ml-1 text-[#f5b641]">{sortDir === 'asc' ? '↑' : '↓'}</span>
+                    <span className="ml-1 text-[#E8A020]">{sortDir === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </th>
               ))}
@@ -557,7 +560,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               const d = new Date(c.year, c.month - 1, 1)
               return { year: d.getFullYear(), month: d.getMonth() }
             })}
-            className="w-8 h-8 rounded-[8px] border border-[#2a2a2e] flex items-center justify-center text-[#71717a] hover:text-white hover:border-[#3a3a3e] transition-all"
+            className="w-8 h-8 rounded-[7px] border border-white/[0.08] flex items-center justify-center text-[#6b7280] hover:text-white hover:border-white/[0.16] transition-all"
           >
             <Icon className="w-4 h-4" path="M15 19l-7-7 7-7" />
           </button>
@@ -567,7 +570,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               const d = new Date(c.year, c.month + 1, 1)
               return { year: d.getFullYear(), month: d.getMonth() }
             })}
-            className="w-8 h-8 rounded-[8px] border border-[#2a2a2e] flex items-center justify-center text-[#71717a] hover:text-white hover:border-[#3a3a3e] transition-all"
+            className="w-8 h-8 rounded-[7px] border border-white/[0.08] flex items-center justify-center text-[#6b7280] hover:text-white hover:border-white/[0.16] transition-all"
           >
             <Icon className="w-4 h-4" path="M9 5l7 7-7 7" />
           </button>
@@ -589,7 +592,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               key={i}
               className={`min-h-[76px] rounded-[8px] p-1.5 transition-colors ${
                 cell
-                  ? `cursor-pointer ${cell.date === today ? 'ring-1 ring-[#f5b641] bg-[#f5b641]/[0.04]' : 'bg-[#1c1c1f] hover:bg-[#222228]'} ${cell.date === selected ? 'ring-1 ring-[#8b5cf6]' : ''}`
+                  ? `cursor-pointer ${cell.date === today ? 'ring-1 ring-[#E8A020]/60 bg-[#E8A020]/[0.06]' : 'bg-white/[0.025] hover:bg-white/[0.05]'} ${cell.date === selected ? 'ring-1 ring-[#8b5cf6]/60' : ''}`
                   : 'bg-transparent'
               }`}
               onClick={() => cell && setSelected(s => s === cell.date ? null : cell.date)}
@@ -597,7 +600,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               {cell && (
                 <>
                   <p className={`text-[12px] font-semibold leading-none ${
-                    cell.date === today ? 'text-[#f5b641]' : 'text-[#52525b]'
+                    cell.date === today ? 'text-[#E8A020]' : 'text-[#6b7280]'
                   }`}>
                     {cell.day}
                   </p>
@@ -628,7 +631,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
 
       {/* Side panel */}
       {selected && (
-        <div className="w-[280px] shrink-0 bg-[#1c1c1f] border border-[#2a2a2e] rounded-[10px] p-4">
+        <div className="w-[280px] shrink-0 bg-white/[0.025] border border-white/[0.07] rounded-[10px] p-4">
           <div className="flex items-center justify-between mb-3">
             <p className="text-white font-semibold text-[13px] capitalize">{fmtDateLong(selected)}</p>
             <button
@@ -648,7 +651,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
                   <button
                     key={task.id}
                     onClick={() => onEdit(task)}
-                    className="w-full text-left rounded-[7px] bg-[#222228] hover:bg-[#28282e] p-2.5 transition-colors border-l-2"
+                    className="w-full text-left rounded-[7px] bg-white/[0.04] hover:bg-white/[0.07] p-2.5 transition-colors border-l-2"
                     style={{ borderLeftColor: pri.color }}
                   >
                     <p className="text-[#e4e4e7] text-[13px] font-medium leading-snug">{task.title}</p>
@@ -733,13 +736,13 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-[560px] bg-[#1c1c1f] border border-[#2a2a2e] rounded-[16px] shadow-[0_32px_64px_rgba(0,0,0,0.6)] animate-fade-up overflow-hidden"
+        className="relative w-full max-w-[560px] bg-[#131720] border border-white/[0.09] rounded-[12px] shadow-[0_32px_64px_rgba(0,0,0,0.65)] animate-fade-up overflow-hidden"
         onClick={e => e.stopPropagation()}
         style={{ animation: 'modalIn 0.18s cubic-bezier(0.2,0,0,1) both' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#232326]">
-          <p className="text-[#a1a1aa] text-[11px] uppercase tracking-[0.22em] font-semibold">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/[0.07]">
+          <p className="text-[#8ea0bc] text-[11px] uppercase tracking-[0.16em] font-medium">
             {isEdit ? 'Editar tarea' : 'Nueva tarea'}
           </p>
           <button
@@ -770,14 +773,14 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                 onChange={upd('description')}
                 rows={2}
                 placeholder="Descripción (opcional)"
-                className="w-full bg-[#222228] border border-[#2e2e32] rounded-[8px] px-3 py-2.5 text-[13px] text-white placeholder:text-[#3f3f46] resize-none focus:outline-none focus:border-[#3a3a3e] transition-colors"
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[13px] text-white placeholder:text-[#4a4a56] resize-none focus:outline-none focus:border-white/[0.16] transition-colors"
               />
             </div>
 
             {/* Status + Priority */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#52525b] font-semibold mb-2">Estado</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280] font-medium mb-2">Estado</p>
                 <div className="flex flex-wrap gap-1.5">
                   {COLUMNS.map(col => (
                     <button
@@ -789,7 +792,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                         background: `${col.color}22`,
                         color: col.color,
                         borderColor: `${col.color}40`,
-                      } : { background: 'transparent', color: '#52525b', borderColor: '#2a2a2e' }}
+                      } : { background: 'transparent', color: '#6b7280', borderColor: 'rgba(255,255,255,0.08)' }}
                     >
                       {col.label}
                     </button>
@@ -797,7 +800,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                 </div>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#52525b] font-semibold mb-2">Prioridad</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280] font-medium mb-2">Prioridad</p>
                 <div className="flex gap-1.5">
                   {Object.entries(PRIORITY_META).map(([key, meta]) => (
                     <button
@@ -809,7 +812,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                         background: `${meta.color}20`,
                         color: meta.color,
                         borderColor: `${meta.color}38`,
-                      } : { background: 'transparent', color: '#52525b', borderColor: '#2a2a2e' }}
+                      } : { background: 'transparent', color: '#6b7280', borderColor: 'rgba(255,255,255,0.08)' }}
                     >
                       {meta.label}
                     </button>
@@ -821,11 +824,11 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
             {/* Product + Date */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#52525b] font-semibold mb-2">Producto</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280] font-medium mb-2">Producto</p>
                 <select
                   value={form.product_id}
                   onChange={upd('product_id')}
-                  className="w-full bg-[#222228] border border-[#2e2e32] rounded-[8px] px-3 py-2.5 text-[13px] text-[#a1a1aa] focus:outline-none focus:border-[#3a3a3e] transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[13px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
                 >
                   <option value="">General</option>
                   {products.map(p => (
@@ -834,19 +837,19 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                 </select>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#52525b] font-semibold mb-2">Vencimiento</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280] font-medium mb-2">Vencimiento</p>
                 <input
                   type="date"
                   value={form.due_date}
                   onChange={upd('due_date')}
-                  className="w-full bg-[#222228] border border-[#2e2e32] rounded-[8px] px-3 py-2.5 text-[13px] text-[#a1a1aa] focus:outline-none focus:border-[#3a3a3e] transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[13px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
                 />
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-5 py-4 border-t border-[#232326] gap-3">
+          <div className="flex items-center justify-between px-5 py-4 border-t border-white/[0.07] gap-3">
             <div className="flex items-center gap-2">
               {isEdit && (
                 <button
@@ -864,14 +867,14 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-[8px] border border-[#2a2a2e] text-[#71717a] hover:text-[#a1a1aa] text-[13px] font-medium transition-all"
+                className="px-4 py-2 rounded-[7px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] text-[12.5px] font-medium transition-all"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 rounded-[8px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] text-[#08111f] text-[13px] font-bold disabled:opacity-50 hover:brightness-105 transition-all"
+                className="px-5 py-2 rounded-[7px] bg-[#E8A020] text-black text-[12.5px] font-medium disabled:opacity-50 hover:bg-[#d4911c] transition-all"
               >
                 {loading ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear tarea'}
               </button>
@@ -1019,18 +1022,18 @@ export default function Tasks() {
         {/* ── Page header ─────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="font-display text-[22px] font-bold text-white tracking-tight">Tareas</h1>
+            <h1 className="text-[20px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>Tareas</h1>
 
             {/* Tab bar */}
-            <div className="flex items-center bg-[#1c1c1f] border border-[#2a2a2e] rounded-[10px] p-1 gap-0.5">
+            <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-[8px] p-1 gap-0.5">
               {TABS.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setView(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12.5px] font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all ${
                     view === tab.id
-                      ? 'bg-[#2a2a2e] text-white'
-                      : 'text-[#52525b] hover:text-[#a1a1aa]'
+                      ? 'bg-white/[0.08] text-white'
+                      : 'text-[#6b7280] hover:text-[#c0cee4]'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" path={tab.icon} />
@@ -1042,7 +1045,7 @@ export default function Tasks() {
             {/* Link to stats */}
             <Link
               to="/tareas/dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] border border-[#2a2a2e] text-[#52525b] hover:text-[#a1a1aa] hover:border-[#3a3a3e] text-[12px] font-medium transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] hover:border-white/[0.14] text-[12px] font-medium transition-all"
             >
               <Icon className="w-3.5 h-3.5" path="M5 19V9m7 10V5m7 14v-7M3 19h18" />
               Estadísticas
@@ -1051,7 +1054,7 @@ export default function Tasks() {
 
           <button
             onClick={() => setModal({ status: 'pending' })}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] text-[#08111f] text-[13px] font-bold hover:brightness-105 transition-all shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-[7px] bg-[#E8A020] text-black text-[12.5px] font-medium hover:bg-[#d4911c] transition-all shrink-0"
           >
             <Icon className="w-3.5 h-3.5" stroke={2.5} path="M12 5v14M5 12h14" />
             Nueva tarea
@@ -1070,7 +1073,7 @@ export default function Tasks() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar tareas..."
-              className="w-full bg-[#1c1c1f] border border-[#2a2a2e] rounded-[8px] pl-8 pr-3 py-2 text-[12.5px] text-white placeholder:text-[#3f3f46] focus:outline-none focus:border-[#3a3a3e] transition-colors"
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] pl-8 pr-3 py-2 text-[12px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
             />
           </div>
 
@@ -1078,7 +1081,7 @@ export default function Tasks() {
           <select
             value={filterProd}
             onChange={e => setFilterProd(e.target.value)}
-            className="bg-[#1c1c1f] border border-[#2a2a2e] rounded-[8px] px-3 py-2 text-[12.5px] text-[#a1a1aa] focus:outline-none focus:border-[#3a3a3e] transition-colors"
+            className="bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
           >
             <option value="">Todos los productos</option>
             {productNames.map(n => <option key={n} value={n}>{n}</option>)}
@@ -1088,7 +1091,7 @@ export default function Tasks() {
           <select
             value={filterPri}
             onChange={e => setFilterPri(e.target.value)}
-            className="bg-[#1c1c1f] border border-[#2a2a2e] rounded-[8px] px-3 py-2 text-[12.5px] text-[#a1a1aa] focus:outline-none focus:border-[#3a3a3e] transition-colors"
+            className="bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
           >
             <option value="">Todas las prioridades</option>
             {Object.entries(PRIORITY_META).map(([k, v]) => (
@@ -1104,15 +1107,15 @@ export default function Tasks() {
 
         {/* ── Empty state ─────────────────────────────────────────────────── */}
         {tasks.length === 0 && (
-          <div className="bg-[#1c1c1f] border border-[#2a2a2e] rounded-[12px] py-16 text-center">
-            <div className="w-12 h-12 rounded-[14px] mx-auto bg-[#f5b641]/10 border border-[#f5b641]/20 flex items-center justify-center text-[#f5b641] mb-4">
+          <div className="bg-white/[0.025] border border-white/[0.07] rounded-[10px] py-16 text-center">
+            <div className="w-12 h-12 rounded-[10px] mx-auto bg-[#E8A020]/10 border border-[#E8A020]/20 flex items-center justify-center text-[#E8A020] mb-4">
               <Icon className="w-6 h-6" path="M4 5h16v14H4zM9 5v14M15 5v8" />
             </div>
-            <p className="text-white font-semibold text-[15px]">Sin tareas todavía</p>
-            <p className="text-[#52525b] text-[13px] mt-1.5">Crea tu primera tarea para empezar a organizar el trabajo</p>
+            <p className="text-white font-medium text-[14px]">Sin tareas todavía</p>
+            <p className="text-[#6b7280] text-[12px] mt-1.5">Crea tu primera tarea para empezar a organizar el trabajo</p>
             <button
               onClick={() => setModal({ status: 'pending' })}
-              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-[9px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] text-[#08111f] font-bold text-[13px]"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2 rounded-[7px] bg-[#E8A020] text-black font-medium text-[13px] hover:bg-[#d4911c] transition-all"
             >
               <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Crear primera tarea
