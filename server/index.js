@@ -32,7 +32,7 @@ app.get('/api/health', (_req, res) =>
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '..', 'client', 'dist');
   app.use(express.static(clientDist));
-  app.get('/{*splat}', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  app.use((_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
 }
 
 app.listen(PORT, () => {
