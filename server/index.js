@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('./db/schema'); // inicializa la DB al arrancar
+require('./db/seed');   // crea/actualiza admin al arrancar
 
 const app = express();
 const PORT = process.env.PORT || 3001;
