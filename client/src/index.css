@@ -11,38 +11,45 @@
   --bg-base-2: #0c1728;
   --bg-surface: rgba(12, 22, 38, 0.82);
   --bg-surface-strong: #111d31;
-  --bg-card: rgba(18, 29, 48, 0.88);
-  --bg-elevated: rgba(22, 35, 58, 0.94);
-  --border: rgba(148, 163, 184, 0.12);
-  --border-strong: rgba(148, 163, 184, 0.22);
-  --text-1: #f8fafc;
-  --text-2: #c0cee4;
-  --text-3: #7d8ca5;
+  --bg-card: rgba(14, 24, 42, 0.92);
+  --bg-elevated: rgba(18, 30, 52, 0.97);
+  --border: rgba(148, 163, 184, 0.10);
+  --border-strong: rgba(148, 163, 184, 0.20);
+  --text-1: #f1f5f9;
+  --text-2: #94a3b8;
+  --text-3: #64748b;
   --accent: #E8A020;
-  --accent-strong: #ffca62;
-  --accent-soft: rgba(232, 160, 32, 0.12);
+  --accent-strong: #f5c842;
+  --accent-soft: rgba(232, 160, 32, 0.10);
   --cyan: #4dd7ff;
   --violet: #8c7cff;
   --green: #22c55e;
   --red: #fb7185;
 
-  /* Stripe-inspired shadows (blue-tinted, adapted for dark) */
-  --shadow-stripe: rgba(3, 10, 28, 0.45) 0px 24px 48px -12px, rgba(0, 20, 60, 0.22) 0px 12px 24px -8px;
-  --shadow-stripe-soft: rgba(3, 10, 28, 0.32) 0px 8px 24px 0px;
+  /* Stripe-inspired shadows — blue-tinted, multi-layer */
+  --shadow-sm:    rgba(50, 50, 93, 0.12) 0px 8px 20px -8px, rgba(0, 0, 0, 0.15) 0px 4px 12px -4px;
+  --shadow-md:    rgba(50, 50, 93, 0.20) 0px 20px 40px -16px, rgba(0, 0, 0, 0.18) 0px 10px 20px -8px;
+  --shadow-lg:    rgba(50, 50, 93, 0.28) 0px 30px 60px -20px, rgba(0, 0, 0, 0.22) 0px 14px 28px -10px;
+  --shadow-xl:    rgba(3, 3, 39, 0.35) 0px 40px 80px -24px, rgba(0, 0, 0, 0.28) 0px 20px 40px -12px;
+  --shadow-inset: rgba(255, 255, 255, 0.025) 0px 1px 0px inset;
 
-  /* Vercel shadow-as-border (adapted for dark) */
-  --shadow-vercel-border: rgba(255, 255, 255, 0.07) 0px 0px 0px 1px;
-  --shadow-vercel-card: rgba(255, 255, 255, 0.07) 0px 0px 0px 1px, rgba(0, 0, 0, 0.18) 0px 2px 4px, rgba(0, 0, 0, 0.12) 0px 8px 16px -8px;
+  /* Vercel shadow-as-border */
+  --shadow-vercel-card: rgba(255, 255, 255, 0.06) 0px 0px 0px 1px, rgba(0, 0, 0, 0.18) 0px 2px 4px, rgba(0, 0, 0, 0.12) 0px 8px 16px -8px;
 
-  /* Linear elevation (luminance-step based) */
-  --shadow-linear: rgba(0, 0, 0, 0.28) 0px 0px 0px 1px;
-  --shadow-linear-elevated: rgba(0, 0, 0, 0.4) 0px 4px 12px;
+  /* Linear elevation */
+  --shadow-linear: rgba(0, 0, 0, 0.24) 0px 0px 0px 1px;
 
-  --shadow: var(--shadow-stripe);
-  --shadow-soft: var(--shadow-stripe-soft);
-  --radius-card: 10px;
-  --radius-btn: 6px;
-  --transition: 160ms ease;
+  --shadow: var(--shadow-md);
+  --shadow-soft: var(--shadow-sm);
+
+  /* Radius — Stripe conservative: 4-8px */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-card: 8px;
+  --radius-btn:  6px;
+
+  --transition: 150ms ease;
 }
 
 :root[data-theme="light"] {
@@ -53,7 +60,7 @@
   --bg-card: rgba(255, 255, 255, 0.92);
   --bg-elevated: rgba(255, 255, 255, 0.98);
   --border: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-strong: rgba(15, 23, 42, 0.15);
   --text-1: #0f172a;
   --text-2: #334155;
   --text-3: #64748b;
@@ -66,7 +73,6 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
-  /* Linear cv01 + ss03 + Stripe tnum for numbers */
   font-feature-settings: "cv01", "cv02", "cv03", "ss03";
   overflow-x: hidden;
 }
@@ -75,18 +81,18 @@ body {
   min-height: 100dvh;
   color: var(--text-1);
   background:
-    radial-gradient(circle at top left, rgba(77, 215, 255, 0.07), transparent 30%),
-    radial-gradient(circle at top right, rgba(140, 124, 255, 0.07), transparent 28%),
-    radial-gradient(circle at bottom center, rgba(232, 160, 32, 0.05), transparent 32%),
-    linear-gradient(180deg, var(--bg-base) 0%, #091321 45%, #07111f 100%);
+    radial-gradient(ellipse at 20% 0%, rgba(50, 50, 93, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 0%, rgba(140, 124, 255, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(232, 160, 32, 0.05) 0%, transparent 40%),
+    linear-gradient(180deg, var(--bg-base) 0%, #091321 60%, #07111f 100%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
 
 :root[data-theme="light"] body {
   background:
-    radial-gradient(circle at top left, rgba(77, 215, 255, 0.06), transparent 26%),
-    radial-gradient(circle at top right, rgba(232, 160, 32, 0.08), transparent 24%),
+    radial-gradient(ellipse at 20% 0%, rgba(77, 215, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 0%, rgba(232, 160, 32, 0.06) 0%, transparent 30%),
     linear-gradient(180deg, #f7f8fc 0%, #eef3fb 100%);
 }
 
@@ -100,7 +106,7 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* ── Number display — Stripe tnum for financial data ── */
+/* Stripe tabular numerics */
 .tabular-nums,
 .font-mono {
   font-variant-numeric: tabular-nums;
@@ -108,8 +114,8 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -117,12 +123,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(125, 140, 165, 0.25);
+  background: rgba(100, 116, 139, 0.20);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(232, 160, 32, 0.55);
+  background: rgba(232, 160, 32, 0.45);
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator,
@@ -132,46 +138,42 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.28; }
-  50% { opacity: 0.52; }
+  0%, 100% { opacity: 0.22; }
+  50% { opacity: 0.44; }
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.45; transform: scale(0.82); }
+  50%      { opacity: 0.45; transform: scale(0.82); }
 }
 
 .skeleton {
-  background: linear-gradient(90deg, rgba(22, 34, 54, 0.8), rgba(34, 50, 76, 0.92), rgba(22, 34, 54, 0.8));
+  background: linear-gradient(90deg,
+    rgba(18, 30, 54, 0.7) 0%,
+    rgba(30, 46, 76, 0.85) 50%,
+    rgba(18, 30, 54, 0.7) 100%
+  );
   background-size: 200% 100%;
-  border-radius: 8px;
-  animation: skeleton-pulse 1.6s ease-in-out infinite;
+  border-radius: var(--radius-lg);
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
 }
 
-.animate-fade-up {
-  animation: fade-up 200ms ease-out both;
-}
-
-.animate-fade-in {
-  animation: fade-in 160ms ease-out both;
-}
-
-.animate-pulse-dot {
-  animation: pulse-dot 2s ease-in-out infinite;
-}
+.animate-fade-up  { animation: fade-up 200ms ease-out both; }
+.animate-fade-in  { animation: fade-in 160ms ease-out both; }
+.animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 
 :focus-visible {
-  outline: 2px solid rgba(232, 160, 32, 0.8);
+  outline: 2px solid rgba(232, 160, 32, 0.75);
   outline-offset: 2px;
 }
 
@@ -187,19 +189,18 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .sidebar-fixed {
   position: fixed;
   inset: 0 auto 0 0;
-  width: 248px;
+  width: 240px;
   z-index: 40;
   display: flex;
   flex-direction: column;
-  background: rgba(7, 13, 24, 0.97);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.03);
+  background: rgba(6, 11, 22, 0.98);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 .main-content {
-  margin-left: 248px;
+  margin-left: 240px;
   flex: 1;
   min-height: 100dvh;
   display: flex;
@@ -210,15 +211,15 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .main-frame {
   flex: 1;
-  padding: 24px;
+  padding: 20px;
   min-width: 0;
 }
 
 .main-surface {
-  min-height: calc(100dvh - 52px);
+  min-height: calc(100dvh - 40px);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  background: rgba(9, 16, 30, 0.88);
+  border-radius: 10px;
+  background: rgba(8, 14, 28, 0.90);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -230,68 +231,63 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .bottom-nav {
   position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  height: 68px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 64px;
   display: none;
   align-items: center;
   justify-content: space-around;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(9, 14, 26, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
+  background: rgba(8, 13, 24, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 12px;
   z-index: 55;
   box-shadow: var(--shadow-soft);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CARDS — Stripe-inspired (Dashboard)
-   Conservative radius, blue-tinted multi-layer shadows
+   CARDS — Stripe-inspired (conservative radius, blue shadows)
 ═══════════════════════════════════════════════════════════ */
 
 .card {
-  background: rgba(13, 22, 40, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(12, 20, 38, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.09);
   border-radius: var(--radius-card);
   box-shadow:
-    rgba(3, 10, 28, 0.35) 0px 20px 40px -12px,
-    rgba(0, 15, 50, 0.18) 0px 8px 20px -6px,
+    rgba(50, 50, 93, 0.18) 0px 20px 40px -16px,
+    rgba(0, 0, 0, 0.20) 0px 10px 20px -8px,
     rgba(255, 255, 255, 0.02) 0px 1px 0px inset;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   min-width: 0;
 }
 
-/* Vercel shadow-as-border card — for Analytics */
+/* Vercel shadow-as-border — Analytics */
 .card-vercel {
-  background: rgba(13, 20, 36, 0.88);
-  border-radius: 8px;
-  box-shadow:
-    rgba(255, 255, 255, 0.07) 0px 0px 0px 1px,
-    rgba(0, 0, 0, 0.2) 0px 2px 4px,
-    rgba(0, 0, 0, 0.12) 0px 8px 16px -8px,
-    rgba(245, 248, 250, 0.02) 0px 0px 0px 1px inset;
+  background: rgba(11, 18, 34, 0.90);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-vercel-card);
   min-width: 0;
 }
 
-/* Linear luminance-step surface — for Tasks */
+/* Linear surface — Tasks */
 .card-linear {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.022);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 8px;
-  box-shadow: rgba(0, 0, 0, 0.22) 0px 0px 0px 1px;
+  border-radius: var(--radius-card);
+  box-shadow: rgba(0, 0, 0, 0.20) 0px 0px 0px 1px;
   min-width: 0;
 }
 
 .card-elevated {
-  background: rgba(18, 30, 52, 0.97);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(14, 24, 44, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: var(--radius-card);
   box-shadow:
-    rgba(3, 10, 28, 0.45) 0px 14px 30px -8px,
-    rgba(0, 0, 0, 0.22) 0px 4px 12px;
+    rgba(50, 50, 93, 0.24) 0px 14px 30px -8px,
+    rgba(0, 0, 0, 0.22) 0px 6px 14px -4px;
   min-width: 0;
 }
 
@@ -302,7 +298,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .glass-pill {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 26, 43, 0.65);
+  background: rgba(14, 24, 42, 0.65);
   box-shadow: rgba(255, 255, 255, 0.02) 0px 1px 0px inset;
 }
 
@@ -314,13 +310,42 @@ input, textarea, select, button {
   outline: none;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   FORMS — Stripe-inspired inputs
+═══════════════════════════════════════════════════════════ */
+
+.input-base {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: var(--radius-md);
+  color: var(--text-1);
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  width: 100%;
+}
+
+.input-base::placeholder {
+  color: var(--text-3);
+}
+
+.input-base:focus {
+  outline: none;
+  border-color: rgba(232, 160, 32, 0.5);
+  box-shadow: 0 0 0 3px rgba(232, 160, 32, 0.10);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
 @media (max-width: 1024px) {
   .sidebar-fixed {
-    width: 224px;
+    width: 220px;
   }
 
   .main-content {
-    margin-left: 224px;
+    margin-left: 220px;
   }
 
   .page-shell {
@@ -350,7 +375,7 @@ input, textarea, select, button {
   }
 
   .page-shell {
-    padding: 18px 16px 104px;
+    padding: 18px 16px 100px;
   }
 
   .bottom-nav {

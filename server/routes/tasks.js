@@ -73,15 +73,20 @@ router.get('/stats', (req, res) => {
   `).all(...weekParams);
 
   // Historial de completadas
+  let completedWhere = 'WHERE t.user_id = ? AND t.status = \'completed\'';
+  const completedParams = [userId];
+  if (date_from) { completedWhere += ' AND t.completed_at >= ?'; completedParams.push(date_from); }
+  if (date_to)   { completedWhere += ' AND t.completed_at <= ?'; completedParams.push(date_to); }
+  if (product_id === 'null') { completedWhere += ' AND t.product_id IS NULL'; }
+  else if (product_id) { completedWhere += ' AND t.product_id = ?'; completedParams.push(product_id); }
+
   const completedList = db.prepare(`
     SELECT t.*, p.name AS product_name FROM tasks t
     LEFT JOIN products p ON p.id = t.product_id
-    WHERE t.user_id = ? AND t.status = 'completed'
-    ${date_from ? "AND t.completed_at >= '" + date_from + "'" : ''}
-    ${date_to   ? "AND t.completed_at <= '" + date_to   + "'" : ''}
+    ${completedWhere}
     ORDER BY t.completed_at DESC
     LIMIT 50
-  `).all(userId);
+  `).all(...completedParams);
 
   res.json({
     total, completed, overdue, pending,

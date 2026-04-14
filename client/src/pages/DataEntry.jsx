@@ -328,27 +328,27 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
             <p className="text-[#E8A020] text-sm font-semibold">Revisar antes de importar</p>
             <p className="text-[#8ea0bc] text-xs mt-1">{pending.records.length} registro{pending.records.length === 1 ? '' : 's'} detectado{pending.records.length === 1 ? '' : 's'}</p>
           </div>
-          <div className="rounded-full bg-[#E8A020]/10 border border-[#E8A020]/20 px-3 py-1 text-[11px] font-semibold text-[#ffd27d]">
+          <div className="rounded-[8px] bg-[#E8A020]/10 border border-[#E8A020]/20 px-3 py-1 text-[11px] font-semibold text-[#ffd27d]">
             {dateLabel}
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-          <div className="bg-[#0B0B0E] rounded-[10px] px-3 py-3">
+          <div className="bg-[#0B0B0E] rounded-[6px] px-3 py-3">
             <p className="text-[#52525b] text-xs mb-0.5">Ingresos totales</p>
             <p className="text-[#10b981] font-bold">{fmt(totals.revenue)}</p>
           </div>
-          <div className="bg-[#0B0B0E] rounded-[10px] px-3 py-3">
+          <div className="bg-[#0B0B0E] rounded-[6px] px-3 py-3">
             <p className="text-[#52525b] text-xs mb-0.5">Inversion total</p>
             <p className="text-[#ef4444] font-bold">{fmt(totals.investment)}</p>
           </div>
-          <div className="bg-[#0B0B0E] rounded-[10px] px-3 py-3">
+          <div className="bg-[#0B0B0E] rounded-[6px] px-3 py-3">
             <p className="text-[#52525b] text-xs mb-0.5">Resultado</p>
             <p className={`font-bold ${profit >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{fmt(profit)}</p>
           </div>
         </div>
 
-        <div className="rounded-[16px] border border-white/8 bg-[#0B0B0E] overflow-hidden">
+        <div className="rounded-[8px] border border-white/8 bg-[#0B0B0E] overflow-hidden">
           <div className="grid grid-cols-[minmax(0,1.2fr)_110px_110px] gap-3 px-4 py-3 border-b border-white/8 text-[11px] uppercase tracking-[0.14em] text-[#7d8ca5]">
             <span>Producto</span>
             <span>Ingresos</span>
@@ -372,14 +372,14 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
           <button
             onClick={onEdit}
             disabled={loading}
-            className="flex-1 py-2 rounded-[10px] border border-[#2a2a2e] text-[#a1a1aa] text-sm hover:text-white hover:border-[#3a3a3e] transition-colors disabled:opacity-50"
+            className="flex-1 py-2 rounded-[6px] border border-[#2a2a2e] text-[#a1a1aa] text-sm hover:text-white hover:border-[#3a3a3e] transition-colors disabled:opacity-50"
           >
             Editar
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="flex-1 py-2 rounded-[10px] bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold transition-colors disabled:opacity-50"
+            className="flex-1 py-2 rounded-[6px] bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {loading ? 'Importando...' : `Confirmar e importar ${pending.records.length}`}
           </button>
@@ -393,7 +393,7 @@ function ChatMessage({ msg }) {
   if (msg.type === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-xs bg-[#1f1f23] border border-[#2a2a2e] text-white text-sm px-4 py-2.5 rounded-2xl rounded-tr-sm whitespace-pre-line">
+        <div className="max-w-xs bg-[#1f1f23] border border-[#2a2a2e] text-white text-sm px-4 py-2.5 rounded-[8px] rounded-tr-sm whitespace-pre-line">
           {msg.text}
         </div>
       </div>
@@ -462,7 +462,7 @@ function RecentHistory({ history }) {
       <div className="space-y-2">
         {history.map((item, index) => (
           <div key={`${item.id ?? item.product_name}-${index}`} className="flex items-center gap-3 text-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-[8px] bg-[#10b981] shrink-0" />
             <span className="text-white flex-1 truncate">{item.product_name}</span>
             <span className="text-[#52525b]">{item.date}</span>
             <span className="text-[#10b981] font-medium">{fmt(item.revenue)}</span>
@@ -624,8 +624,10 @@ export default function DataEntry() {
     <Layout>
       <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-3xl mx-auto flex flex-col gap-4 w-full min-w-0" style={{ minHeight: 'calc(100dvh - 80px)' }}>
         <div>
-          <h1 className="font-display text-[26px] font-bold text-[#fafafa] tracking-tight leading-none">Cargar datos</h1>
-          <p className="text-[#52525b] text-[13px] mt-1.5">Texto libre o CSV con multiples productos, gastos y fecha global.</p>
+          <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
+            Cargar <span style={{ color: '#E8A020', fontWeight: 400 }}>datos</span>
+          </h1>
+          <p className="text-[#3d5068] text-[13px] mt-1.5">Texto libre o CSV — múltiples productos, gastos y fecha global.</p>
         </div>
 
         <RecentHistory history={history} />
@@ -634,7 +636,7 @@ export default function DataEntry() {
           <div className="flex-1 space-y-3 overflow-y-auto pr-1 pb-2 min-h-[220px]" style={{ maxHeight: '50vh' }}>
             {messages.length === 0 && !pending && (
               <div className="flex flex-col items-center justify-center py-10 text-center space-y-3">
-                <div className="w-14 h-14 rounded-full bg-[#E8A020]/10 border border-[#E8A020]/20 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-[8px] bg-[#E8A020]/10 border border-[#E8A020]/20 flex items-center justify-center">
                   <svg className="w-7 h-7 text-[#E8A020]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-5 5v-5z" />
                   </svg>
@@ -671,9 +673,9 @@ export default function DataEntry() {
             {loading && (
               <div className="flex gap-2 items-center text-[#52525b] text-sm">
                 <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-[#52525b] rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1.5 h-1.5 bg-[#52525b] rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 bg-[#52525b] rounded-full animate-bounce [animation-delay:300ms]" />
+                  <span className="w-1.5 h-1.5 bg-[#52525b] rounded-[8px] animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 bg-[#52525b] rounded-[8px] animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-[#52525b] rounded-[8px] animate-bounce [animation-delay:300ms]" />
                 </div>
                 Procesando...
               </div>
@@ -706,7 +708,7 @@ export default function DataEntry() {
               <button
                 onClick={handleImportCSV}
                 disabled={loading}
-                className="w-full bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold py-2 rounded-[10px] transition-colors disabled:opacity-50"
+                className="w-full bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold py-2 rounded-[6px] transition-colors disabled:opacity-50"
               >
                 Importar {csvRows.length} registros
               </button>
@@ -715,7 +717,7 @@ export default function DataEntry() {
 
           {!pending && (
             <div className="flex gap-2 items-end flex-col sm:flex-row">
-              <div className="flex-1 w-full bg-[#1f1f23] border border-[#2a2a2e] focus-within:border-[#E8A020]/50 rounded-[12px] transition-colors">
+              <div className="flex-1 w-full bg-[#1f1f23] border border-[#2a2a2e] focus-within:border-[#E8A020]/50 rounded-[8px] transition-colors">
                 <textarea
                   value={input}
                   onChange={event => setInput(event.target.value)}
@@ -746,7 +748,7 @@ export default function DataEntry() {
               <button
                 onClick={handleSend}
                 disabled={loading || !input.trim()}
-                className="w-12 h-12 bg-[#E8A020] hover:bg-[#d4911c] text-black rounded-[12px] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+                className="w-12 h-12 bg-[#E8A020] hover:bg-[#d4911c] text-black rounded-[8px] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0-7 7m7-7 7 7" />

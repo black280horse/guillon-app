@@ -50,7 +50,7 @@ function KpiCard({ label, value, color = 'text-white', prefix = '$', suffix = ''
   return (
     <div className="card p-5 space-y-1.5 hover:border-[#3a3a3e] transition-colors">
       <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider">{label}</p>
-      <p className={`text-2xl font-bold tabular-nums ${color}`}>{display}</p>
+      <p className={`text-[28px] font-light tabular-nums leading-none ${color}`} style={{ letterSpacing: '-0.03em' }}>{display}</p>
       {hasChange && (
         <p className={`text-xs font-semibold ${pct >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
           {pct >= 0 ? '↑' : '↓'} {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% vs anterior
@@ -195,7 +195,7 @@ function AIAnalysisCard({ productId, kpis, dateFrom, dateTo }) {
         <button onClick={analyze} disabled={state === 'loading' || kpis?.total_records === 0}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E8A020]/10 hover:bg-[#E8A020]/20 border border-[#E8A020]/30 text-[#E8A020] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
           {state === 'loading'
-            ? <><span className="w-3 h-3 border border-[#E8A020] border-t-transparent rounded-full animate-spin" />Analizando…</>
+            ? <><span className="w-3 h-3 border border-[#E8A020] border-t-transparent rounded-[5px] animate-spin" />Analizando…</>
             : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>Analizar con IA</>}
         </button>
       </div>
@@ -298,8 +298,8 @@ export default function ProductDetail() {
               </button>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold text-white">{product?.name ?? '…'}</h2>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  <h2 className="text-[22px] font-light text-white" style={{ letterSpacing: '-0.03em' }}>{product?.name ?? '…'}</h2>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-[5px] ${
                     sales.length > 0
                       ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20'
                       : 'bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20'

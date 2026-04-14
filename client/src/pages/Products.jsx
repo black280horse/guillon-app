@@ -16,7 +16,7 @@ function RoasBadge({ roas }) {
     ? 'bg-[#f5b641]/10 text-[#ffd27d] border-[#f5b641]/18'
     : 'bg-[#fb7185]/10 text-[#ff9ca8] border-[#fb7185]/18'
   return (
-    <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${tone}`}>
+    <span className={`text-[11px] px-2 py-0.5 rounded-[5px] font-semibold border ${tone}`}>
       {roas}x ROAS
     </span>
   )
@@ -25,7 +25,7 @@ function RoasBadge({ roas }) {
 function SummaryKpi({ label, value, color, icon }) {
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-8 h-8 rounded-[12px] flex items-center justify-center shrink-0 ${color.bg}`}>
+      <div className={`w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0 ${color.bg}`}>
         <Icon className={`w-4 h-4 ${color.icon}`} path={icon} />
       </div>
       <div className="min-w-0">
@@ -63,14 +63,14 @@ export default function Products() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-[28px] md:text-[32px] font-bold text-white leading-none tracking-tight">
-              Productos <span className="text-[#f5b641]">comerciales</span>
+            <h1 className="text-[26px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
+              Productos <span style={{ color: '#E8A020', fontWeight: 400 }}>comerciales</span>
             </h1>
             <p className="text-[#5a6d87] text-[13px] mt-1">Catálogo, ingresos y rentabilidad por producto</p>
           </div>
           <button
             onClick={() => navigate('/cargar')}
-            className="shrink-0 inline-flex items-center gap-2 rounded-[14px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] px-4 py-2.5 text-[13px] font-semibold text-[#08111f] hover:brightness-110 transition-all"
+            className="shrink-0 inline-flex items-center gap-2 rounded-[6px] bg-[#E8A020] hover:bg-[#f5b33a] px-4 py-2 text-[13px] font-medium text-[#07111f] transition-all"
           >
             <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
             Cargar dato
@@ -185,7 +185,7 @@ export default function Products() {
                     <p className="text-[#ffd27d] text-[14px]">{formatCurrency(product.total_investment)}</p>
                     <div>
                       {roas != null ? (
-                        <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-full ${roas >= 3 ? 'bg-[#22c55e]/10 text-[#63d68d]' : roas >= 1.5 ? 'bg-[#f5b641]/10 text-[#ffd27d]' : 'bg-[#fb7185]/10 text-[#ff9ca8]'}`}>
+                        <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-[5px] ${roas >= 3 ? 'bg-[#22c55e]/10 text-[#63d68d]' : roas >= 1.5 ? 'bg-[#f5b641]/10 text-[#ffd27d]' : 'bg-[#fb7185]/10 text-[#ff9ca8]'}`}>
                           {roas}x
                         </span>
                       ) : (
@@ -204,7 +204,7 @@ export default function Products() {
 
                   {/* Mobile card */}
                   <div className="lg:hidden flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-[12px] bg-white/[0.04] border border-white/8 flex items-center justify-center text-[#4f6278] text-[12px] font-bold shrink-0">
+                    <div className="w-9 h-9 rounded-[6px] bg-white/[0.04] border border-white/8 flex items-center justify-center text-[#4f6278] text-[12px] font-bold shrink-0">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">

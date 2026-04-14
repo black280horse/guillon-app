@@ -32,10 +32,10 @@ function DangerButton({ label, note, tone, onClick, disabled }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`w-full rounded-[18px] border px-4 py-4 text-left transition-all disabled:opacity-60 ${
+      className={`w-full rounded-[6px] border px-4 py-3.5 text-left transition-all disabled:opacity-60 ${
         tone === 'danger'
-          ? 'border-[#fb7185]/20 bg-[#fb7185]/10 text-white hover:bg-[#fb7185]/14'
-          : 'border-[#f5b641]/20 bg-[#f5b641]/10 text-white hover:bg-[#f5b641]/14'
+          ? 'border-[#fb7185]/18 bg-[#fb7185]/[0.07] text-white hover:bg-[#fb7185]/[0.11]'
+          : 'border-[#E8A020]/18 bg-[#E8A020]/[0.07] text-white hover:bg-[#E8A020]/[0.11]'
       }`}
     >
       <p className="font-semibold text-sm">{label}</p>
@@ -78,25 +78,27 @@ export default function Settings() {
       <div className="space-y-5 max-w-[1280px] mx-auto w-full">
         <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_320px] gap-5">
           <div className="card-elevated p-6">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[#7d8ca5]">Configuracion</p>
-            <h1 className="font-display text-[34px] md:text-[42px] font-bold text-white mt-3 leading-none">Preferencias operativas.</h1>
-            <p className="text-[#9eb0cb] text-sm md:text-[15px] mt-4 max-w-2xl leading-relaxed">
-              Ajusta moneda, tasa de cambio, formato, zona horaria, tema y limpieza de datos sin cambiar la estructura principal de la app.
+            <p className="text-[10px] uppercase tracking-[0.22em] text-[#3d5068] font-medium">Configuración</p>
+            <h1 className="text-[26px] font-light text-white mt-2 leading-none" style={{ letterSpacing: '-0.04em' }}>
+              Preferencias <span style={{ color: '#E8A020', fontWeight: 400 }}>operativas</span>
+            </h1>
+            <p className="text-[#64748b] text-[13px] mt-3 max-w-2xl leading-relaxed">
+              Ajustá moneda, tasa de cambio, formato, zona horaria, tema y limpieza de datos.
             </p>
           </div>
 
           <div className="card p-5">
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#7d8ca5]">Resumen actual</p>
             <div className="space-y-3 mt-4">
-              <div className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4">
+              <div className="rounded-[6px] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[#7d8ca5] text-xs">Moneda visual</p>
                 <p className="text-white font-semibold mt-1">{preferences.currency}</p>
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4">
+              <div className="rounded-[6px] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[#7d8ca5] text-xs">Tasa ARS/USD</p>
                 <p className="text-white font-semibold mt-1">{Number(preferences.exchangeRate).toLocaleString('es-AR')}</p>
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4">
+              <div className="rounded-[6px] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[#7d8ca5] text-xs">Preview conversion</p>
                 <p className="text-white font-semibold mt-1">{formatCurrency(sampleBase)}</p>
                 <p className="text-[#8ea0bc] text-xs mt-1">
@@ -114,7 +116,7 @@ export default function Settings() {
                 <button
                   key={currency}
                   onClick={() => updatePreference('currency', currency)}
-                  className={`rounded-2xl border px-4 py-4 text-left transition-all ${preferences.currency === currency ? 'border-[#E8A020]/40 bg-[#E8A020]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
+                  className={`rounded-[6px] border px-4 py-4 text-left transition-all ${preferences.currency === currency ? 'border-[#E8A020]/40 bg-[#E8A020]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
                 >
                   <p className="font-semibold">{currency}</p>
                   <p className="text-xs text-[#8ea0bc] mt-1">{currency === 'USD' ? 'Dolar estadounidense' : 'Peso argentino'}</p>
@@ -132,7 +134,7 @@ export default function Settings() {
                 step="0.01"
                 value={preferences.exchangeRate}
                 onChange={event => updatePreference('exchangeRate', Number(event.target.value) || 1)}
-                className="mt-2 w-full rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[#E8A020]/30"
+                className="mt-2 w-full rounded-[6px] bg-white/[0.04] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[#E8A020]/30"
               />
             </label>
             <p className="text-[#8ea0bc] text-xs mt-3">Ejemplo: ARS 250.000 se muestran como {formatCurrency(sampleBase)} con la configuracion actual.</p>
@@ -147,7 +149,7 @@ export default function Settings() {
                 <button
                   key={option.key}
                   onClick={() => updatePreference('numberFormat', option.key)}
-                  className={`rounded-2xl border px-4 py-4 text-left transition-all ${preferences.numberFormat === option.key ? 'border-[#E8A020]/40 bg-[#E8A020]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
+                  className={`rounded-[6px] border px-4 py-4 text-left transition-all ${preferences.numberFormat === option.key ? 'border-[#E8A020]/40 bg-[#E8A020]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
                 >
                   <p className="font-semibold">{option.label}</p>
                   <p className="text-xs text-[#8ea0bc] mt-1">{option.note}</p>
@@ -160,7 +162,7 @@ export default function Settings() {
             <select
               value={preferences.timezone}
               onChange={event => updatePreference('timezone', event.target.value)}
-              className="w-full rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[#E8A020]/30"
+              className="w-full rounded-[6px] bg-white/[0.04] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[#E8A020]/30"
             >
               <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
               <option value="America/New_York">America/New_York</option>
@@ -174,7 +176,7 @@ export default function Settings() {
                 <button
                   key={theme}
                   onClick={() => updatePreference('theme', theme)}
-                  className={`rounded-2xl border px-4 py-4 text-left transition-all capitalize ${preferences.theme === theme ? 'border-[#E8A020]/40 bg-[#E8A020]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
+                  className={`rounded-[6px] border px-4 py-4 text-left transition-all capitalize ${preferences.theme === theme ? 'border-[#E8A020]/40 bg-[#E8A020]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
                 >
                   <p className="font-semibold">{theme}</p>
                   <p className="text-xs text-[#8ea0bc] mt-1">{theme === 'dark' ? 'Modo oscuro profesional' : 'Modo claro para lectura'}</p>
@@ -191,7 +193,7 @@ export default function Settings() {
               { key: 'weeklySummary', title: 'Resumen semanal', note: 'Resumen de productividad y negocio' },
               { key: 'aiSuggestions', title: 'Sugerencias IA', note: 'Recomendaciones contextuales dentro del dashboard' },
             ].map(item => (
-              <div key={item.key} className="flex items-center justify-between gap-4 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-4">
+              <div key={item.key} className="flex items-center justify-between gap-4 rounded-[6px] border border-white/8 bg-white/[0.03] px-4 py-4">
                 <div>
                   <p className="text-white font-medium text-sm">{item.title}</p>
                   <p className="text-[#8ea0bc] text-xs mt-1">{item.note}</p>

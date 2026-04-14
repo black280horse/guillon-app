@@ -39,6 +39,7 @@ function emailNuevoRegistro({ adminEmail, userName, userEmail, businessName }) {
 }
 
 function emailUsuarioAprobado({ userEmail, userName }) {
+  const appUrl = process.env.FRONTEND_URL || 'https://guillon-app-production.up.railway.app';
   return sendEmail({
     to: userEmail,
     subject: '¡Tu cuenta fue aprobada! — Guillon AP',
@@ -46,7 +47,7 @@ function emailUsuarioAprobado({ userEmail, userName }) {
       <div style="font-family:sans-serif;max-width:500px;margin:auto">
         <h2 style="color:#E8A020">¡Bienvenido a Guillon AP, ${userName}!</h2>
         <p>Tu cuenta fue aprobada. Ya podés iniciar sesión y empezar a usar la plataforma.</p>
-        <a href="http://localhost:5173/login" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#E8A020;color:#000;border-radius:6px;text-decoration:none;font-weight:bold">
+        <a href="${appUrl}/login" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#E8A020;color:#000;border-radius:6px;text-decoration:none;font-weight:bold">
           Iniciar sesión
         </a>
       </div>
@@ -69,14 +70,15 @@ function emailUsuarioRechazado({ userEmail, userName }) {
 }
 
 function emailTareaVence24h({ userEmail, userName, taskTitle, dueDate }) {
+  const appUrl = process.env.FRONTEND_URL || 'https://guillon-app-production.up.railway.app';
   return sendEmail({
     to: userEmail,
-    subject: `⏰ Tarea por vencer mañana — ${taskTitle}`,
+    subject: `Tarea por vencer mañana — ${taskTitle}`,
     html: `
       <div style="font-family:sans-serif;max-width:500px;margin:auto">
         <h2 style="color:#E8A020">Recordatorio de tarea</h2>
         <p>Hola ${userName}, tu tarea <strong>"${taskTitle}"</strong> vence mañana (${dueDate}).</p>
-        <a href="http://localhost:5173/tareas" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#E8A020;color:#000;border-radius:6px;text-decoration:none;font-weight:bold">
+        <a href="${appUrl}/tareas" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#E8A020;color:#000;border-radius:6px;text-decoration:none;font-weight:bold">
           Ver tareas
         </a>
       </div>
@@ -85,14 +87,15 @@ function emailTareaVence24h({ userEmail, userName, taskTitle, dueDate }) {
 }
 
 function emailTareaVencida({ userEmail, userName, taskTitle, dueDate }) {
+  const appUrl = process.env.FRONTEND_URL || 'https://guillon-app-production.up.railway.app';
   return sendEmail({
     to: userEmail,
-    subject: `🔴 Tarea vencida — ${taskTitle}`,
+    subject: `Tarea vencida — ${taskTitle}`,
     html: `
       <div style="font-family:sans-serif;max-width:500px;margin:auto">
         <h2 style="color:#ef4444">Tarea vencida</h2>
         <p>Hola ${userName}, tu tarea <strong>"${taskTitle}"</strong> venció el ${dueDate} sin completarse.</p>
-        <a href="http://localhost:5173/tareas" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold">
+        <a href="${appUrl}/tareas" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold">
           Ver tareas
         </a>
       </div>
