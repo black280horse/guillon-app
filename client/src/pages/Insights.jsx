@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -10,11 +11,7 @@ import DateRangePicker from '../components/DateRangePicker'
 import { useDateRange } from '../context/DateRangeContext'
 import { useAuth } from '../context/AuthContext'
 
-const API = 'http://localhost:3001/api'
-function authHeaders() {
-  const token = localStorage.getItem('token')
-  return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-}
+const API = '/api'
 
 const DOW_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const COLORS = ['#E8A020', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b']
@@ -87,11 +84,8 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
     if (selected.length < 2) { setData([]); return }
     setLoading(true)
     try {
-      const r = await fetch(
-        `${API}/insights/comparator?products=${selected.join(',')}&date_from=${dateFrom}&date_to=${dateTo}`,
-        { headers: authHeaders() }
-      )
-      setData(await r.json())
+      const r = await axios.get(`${API}/insights/comparator`, { params: { products: selected.join(','), date_from: dateFrom, date_to: dateTo } })
+      setData(r.data)
     } finally { setLoading(false) }
   }, [selected, dateFrom, dateTo])
 
@@ -256,11 +250,8 @@ function BudgetTab({ dateFrom, dateTo }) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const r = await fetch(
-        `${API}/insights/budget?target_revenue=${target}&date_from=${dateFrom}&date_to=${dateTo}`,
-        { headers: authHeaders() }
-      )
-      setData(await r.json())
+      const r = await axios.get(`${API}/insights/budget`, { params: { target_revenue: target, date_from: dateFrom, date_to: dateTo } })
+      setData(r.data)
     } finally { setLoading(false) }
   }, [target, dateFrom, dateTo])
 
@@ -390,9 +381,8 @@ function PatternsTab({ dateFrom, dateTo }) {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`${API}/insights/patterns?date_from=${dateFrom}&date_to=${dateTo}`, { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false) })
+    axios.get(`${API}/insights/patterns`, { params: { date_from: dateFrom, date_to: dateTo } })
+      .then(r => { setData(r.data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [dateFrom, dateTo])
 
@@ -526,9 +516,8 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const qs = `date_from=${dateFrom}&date_to=${dateTo}&days=${days}${productId ? `&product_id=${productId}` : ''}`
-      const r = await fetch(`${API}/insights/projection?${qs}`, { headers: authHeaders() })
-      setData(await r.json())
+      const r = await axios.get(`${API}/insights/projection`, { params: { date_from: dateFrom, date_to: dateTo, days, ...(productId && { product_id: productId }) } })
+      setData(r.data)
     } finally { setLoading(false) }
   }, [dateFrom, dateTo, days, productId])
 
@@ -674,9 +663,8 @@ export default function Insights() {
   const [products, setProducts] = useState([])
 
   useEffect(() => {
-    fetch(`${API}/products`, { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => setProducts(d.products ?? d ?? []))
+    axios.get(`${API}/products`)
+      .then(r => setProducts(r.data.products ?? r.data ?? []))
       .catch(() => {})
   }, [])
 
@@ -687,7 +675,7 @@ export default function Insights() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-[24px] font-semibold text-[#fafafa] leading-none" style={{ letterSpacing: '-0.03em' }}>Inteligencia de Negocio</h1>
+            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#E8A020', fontWeight: 400 }}>de negocio</span></h1>
             <p className="text-[#6b7280] text-[12px] mt-1.5 tracking-[0.01em]">
               Análisis avanzado para tomar mejores decisiones
             </p>
