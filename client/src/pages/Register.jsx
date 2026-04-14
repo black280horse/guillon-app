@@ -94,7 +94,7 @@ export default function Register() {
             background: 'rgba(18,18,26,0.92)',
             border: '1px solid rgba(148,163,184,0.10)',
             borderRadius: '12px',
-            boxShadow: ''0 24px 64px rgba(0,0,0,0.70), 0 0 0 1px rgba(255,255,255,0.04) inset',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.70), 0 0 0 1px rgba(255,255,255,0.04) inset',
             padding: '28px',
           }}
         >

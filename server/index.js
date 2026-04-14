@@ -2,11 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+
+// Ensure persistent data directory exists before DB init
+try { fs.mkdirSync('/app/data', { recursive: true }); } catch (_) {}
+
 require('./db/schema'); // inicializa la DB al arrancar
 require('./db/seed');   // crea/actualiza admin al arrancar
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173',
@@ -26,7 +31,7 @@ app.use('/api/insights',  require('./routes/insights'));
 app.use('/api/settings',  require('./routes/settings'));
 
 app.get('/api/health', (_req, res) =>
-  res.json({ status: 'ok', app: 'Guillon AP', timestamp: new Date().toISOString() })
+  res.status(200).send('OK')
 );
 
 // Serve React build in production
