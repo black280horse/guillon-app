@@ -119,4 +119,42 @@ router.get('/:id/detail', (req, res) => {
   res.json({ product, sales, kpis, prevKpis });
 });
 
+// POST /api/products — crear producto
+router.post('/', (req, res) => {
+  const userId = req.user.id;
+  const { name } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: 'El nombre es requerido' });
+
+  const exists = db.prepare('SELECT id FROM products WHERE user_id = ? AND name = ?').get(userId, name.trim());
+  if (exists) return res.status(409).json({ error: 'Ya existe un producto con ese nombre' });
+
+  const result = db.prepare('INSERT INTO products (user_id, name) VALUES (?, ?)').run(userId, name.trim());
+  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json(product);
+});
+
+// PATCH /api/products/:id — actualizar nombre
+router.patch('/:id', (req, res) => {
+  const userId = req.user.id;
+  const { name } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: 'El nombre es requerido' });
+
+  const product = db.prepare('SELECT * FROM products WHERE id = ? AND user_id = ?').get(req.params.id, userId);
+  if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
+
+  db.prepare('UPDATE products SET name = ? WHERE id = ? AND user_id = ?').run(name.trim(), req.params.id, userId);
+  const updated = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
+  res.json(updated);
+});
+
+// DELETE /api/products/:id — eliminar producto
+router.delete('/:id', (req, res) => {
+  const userId = req.user.id;
+  const product = db.prepare('SELECT * FROM products WHERE id = ? AND user_id = ?').get(req.params.id, userId);
+  if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
+
+  db.prepare('DELETE FROM products WHERE id = ? AND user_id = ?').run(req.params.id, userId);
+  res.json({ ok: true });
+});
+
 module.exports = router;

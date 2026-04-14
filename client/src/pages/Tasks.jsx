@@ -278,7 +278,9 @@ function KanbanColumn({ col, tasks, colorMap, onAdd, onEdit, onUpdate, onDelete,
 
 // ─── KanbanView ───────────────────────────────────────────────────────────────
 
-function KanbanView({ tasks, colorMap, onAdd, onEdit, onUpdate, onDelete, activeId }) {
+function KanbanView({ tasks, colorMap, onAdd, onEdit, onUpdate, onDelete, activeId, showCompleted, onToggleCompleted }) {
+  const visibleCols = showCompleted ? COLUMNS : COLUMNS.filter(c => c.id !== 'completed')
+
   function getColTasks(colId) {
     return tasks.filter(t => {
       if (colId === 'pending') return t.status === 'pending' || t.status === 'overdue'
@@ -286,21 +288,37 @@ function KanbanView({ tasks, colorMap, onAdd, onEdit, onUpdate, onDelete, active
     })
   }
 
+  const completedCount = tasks.filter(t => t.status === 'completed').length
+
   return (
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-      {COLUMNS.map(col => (
-        <KanbanColumn
-          key={col.id}
-          col={col}
-          tasks={getColTasks(col.id)}
-          colorMap={colorMap}
-          onAdd={onAdd}
-          onEdit={onEdit}
-          onUpdate={onUpdate}
-          onDelete={onDelete}
-          activeId={activeId}
-        />
-      ))}
+    <div>
+      <div className={`grid gap-3 ${showCompleted ? 'grid-cols-2 xl:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+        {visibleCols.map(col => (
+          <KanbanColumn
+            key={col.id}
+            col={col}
+            tasks={getColTasks(col.id)}
+            colorMap={colorMap}
+            onAdd={onAdd}
+            onEdit={onEdit}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            activeId={activeId}
+          />
+        ))}
+      </div>
+      {/* Toggle completed */}
+      <div className="mt-3 flex justify-start">
+        <button
+          onClick={onToggleCompleted}
+          className="flex items-center gap-1.5 text-[12px] text-[#4a4a56] hover:text-[#8ea0bc] transition-colors py-1"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showCompleted ? 'M19 9l-7 7-7-7' : 'M9 5l7 7-7 7'} />
+          </svg>
+          {showCompleted ? 'Ocultar completadas' : `Mostrar completadas (${completedCount})`}
+        </button>
+      </div>
     </div>
   )
 }
@@ -886,6 +904,43 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
   )
 }
 
+// ─── Product Task Card ────────────────────────────────────────────────────────
+
+function ProductTaskCard({ name, color, pending, overdue, onClick, active }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`text-left rounded-[10px] p-4 border transition-all ${
+        active
+          ? 'bg-white/[0.06] border-white/[0.16]'
+          : 'bg-white/[0.025] border-white/[0.07] hover:bg-white/[0.04] hover:border-white/[0.12]'
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />
+        <p className="text-[13px] font-semibold text-white truncate">{name}</p>
+      </div>
+      <div className="flex gap-3">
+        {pending > 0 && (
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
+            <span className="text-[12px] text-[#8ea0bc] tabular-nums">{pending} pend.</span>
+          </div>
+        )}
+        {overdue > 0 && (
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
+            <span className="text-[12px] text-[#ef4444] tabular-nums font-medium">{overdue} venc.</span>
+          </div>
+        )}
+        {pending === 0 && overdue === 0 && (
+          <span className="text-[12px] text-[#22c55e]">✓ Al día</span>
+        )}
+      </div>
+    </button>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Tasks() {
@@ -895,8 +950,10 @@ export default function Tasks() {
   const [loading,  setLoading]  = useState(true)
   const [view,     setView]     = useState('kanban')
   const [search,   setSearch]   = useState('')
-  const [filterProd, setFilterProd] = useState('')
-  const [filterPri,  setFilterPri]  = useState('')
+  const [filterProd,   setFilterProd]   = useState('')
+  const [filterPri,    setFilterPri]    = useState('')
+  const [filterStatus, setFilterStatus] = useState('') // '' | 'pending' | 'overdue' | 'completed'
+  const [showCompleted, setShowCompleted] = useState(false)
   const [modal,    setModal]    = useState(null) // null | { task?, status? }
   const [activeId, setActiveId] = useState(null)
 
@@ -918,15 +975,37 @@ export default function Tasks() {
     return map
   }, [products])
 
+  // ── KPI counts (from all tasks, ignoring current filters)
+  const kpiCounts = useMemo(() => ({
+    completed: tasks.filter(t => t.status === 'completed').length,
+    pending:   tasks.filter(t => t.status === 'pending' || t.status === 'in_progress' || t.status === 'reviewing').length,
+    overdue:   tasks.filter(t => t.status === 'overdue').length,
+  }), [tasks])
+
+  // ── Per-product task stats
+  const productStats = useMemo(() => {
+    const map = {}
+    tasks.forEach(t => {
+      const key = t.product_name || '__general__'
+      if (!map[key]) map[key] = { name: t.product_name || 'General', pending: 0, overdue: 0 }
+      if (t.status === 'overdue') map[key].overdue++
+      else if (t.status !== 'completed') map[key].pending++
+    })
+    return Object.values(map).filter(s => s.name !== 'General' && (s.pending > 0 || s.overdue > 0))
+  }, [tasks])
+
   // ── Filtered tasks
   const filtered = useMemo(() => {
     return tasks.filter(t => {
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false
       if (filterProd && t.product_name !== filterProd) return false
       if (filterPri  && t.priority !== filterPri)  return false
+      if (filterStatus === 'completed') return t.status === 'completed'
+      if (filterStatus === 'overdue')   return t.status === 'overdue'
+      if (filterStatus === 'pending')   return t.status === 'pending' || t.status === 'in_progress' || t.status === 'reviewing'
       return true
     })
-  }, [tasks, search, filterProd, filterPri])
+  }, [tasks, search, filterProd, filterPri, filterStatus])
 
   // ── Handlers
   const handleUpdate = useCallback(async (id, changes) => {
@@ -1022,7 +1101,9 @@ export default function Tasks() {
         {/* ── Page header ─────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="text-[20px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>Tareas</h1>
+            <h1 className="text-[26px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
+              Tareas
+            </h1>
 
             {/* Tab bar */}
             <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-[8px] p-1 gap-0.5">
@@ -1060,6 +1141,62 @@ export default function Tasks() {
             Nueva tarea
           </button>
         </div>
+
+        {/* ── KPI cards ───────────────────────────────────────────────────── */}
+        {tasks.length > 0 && (
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { key: 'completed', label: 'Completadas', count: kpiCounts.completed, color: '#10b981', bg: 'bg-[#10b981]/8', ring: 'ring-[#10b981]/30', icon: 'm5 12 4 4 10-9' },
+              { key: 'pending',   label: 'Pendientes',  count: kpiCounts.pending,   color: '#3b82f6', bg: 'bg-[#3b82f6]/8', ring: 'ring-[#3b82f6]/30', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+              { key: 'overdue',   label: 'Vencidas',    count: kpiCounts.overdue,   color: '#ef4444', bg: 'bg-[#ef4444]/8', ring: 'ring-[#ef4444]/30', icon: 'M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' },
+            ].map(kpi => (
+              <button
+                key={kpi.key}
+                onClick={() => setFilterStatus(s => s === kpi.key ? '' : kpi.key)}
+                className={`relative text-left rounded-[10px] p-4 border transition-all ${
+                  filterStatus === kpi.key
+                    ? `${kpi.bg} ring-1 ${kpi.ring} border-transparent`
+                    : 'bg-white/[0.025] border-white/[0.07] hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] uppercase tracking-[0.14em] font-medium" style={{ color: kpi.color }}>{kpi.label}</p>
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: kpi.color, opacity: 0.7 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={kpi.icon} />
+                  </svg>
+                </div>
+                <p className="text-[32px] font-light tabular-nums leading-none mt-2 text-white" style={{ letterSpacing: '-0.03em' }}>
+                  {kpi.count}
+                </p>
+                {filterStatus === kpi.key && (
+                  <span className="absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-[4px]" style={{ background: `${kpi.color}25`, color: kpi.color }}>
+                    activo
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Product dashboard grid ──────────────────────────────────────── */}
+        {tasks.length > 0 && productStats.length > 0 && !filterStatus && !filterProd && !search && (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-[#4f6278] font-medium mb-2">Por producto</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+              {productStats.map(stat => (
+                <ProductTaskCard
+                  key={stat.name}
+                  name={stat.name}
+                  color={colorMap[stat.name] || '#6b7280'}
+                  pending={stat.pending}
+                  overdue={stat.overdue}
+                  active={filterProd === stat.name}
+                  onClick={() => setFilterProd(p => p === stat.name ? '' : stat.name)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Filters row ─────────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -1099,8 +1236,19 @@ export default function Tasks() {
             ))}
           </select>
 
+          {/* Clear filters */}
+          {(filterStatus || filterProd || filterPri || search) && (
+            <button
+              onClick={() => { setFilterStatus(''); setFilterProd(''); setFilterPri(''); setSearch('') }}
+              className="flex items-center gap-1 text-[12px] text-[#6b7280] hover:text-[#ef4444] transition-colors"
+            >
+              <Icon className="w-3.5 h-3.5" path="M6 6l12 12M18 6 6 18" />
+              Limpiar
+            </button>
+          )}
+
           {/* Task count */}
-          <span className="text-[12px] text-[#3f3f46] ml-1">
+          <span className="text-[12px] text-[#3f3f46] ml-auto">
             {filtered.length} {filtered.length === 1 ? 'tarea' : 'tareas'}
           </span>
         </div>
@@ -1139,6 +1287,8 @@ export default function Tasks() {
               onUpdate={handleUpdate}
               onDelete={handleDelete}
               activeId={activeId}
+              showCompleted={showCompleted || filterStatus === 'completed'}
+              onToggleCompleted={() => setShowCompleted(s => !s)}
             />
             <DragOverlay dropAnimation={null}>
               {activeTask && (

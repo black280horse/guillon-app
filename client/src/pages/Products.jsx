@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from '../components/Layout'
 import { usePreferences } from '../context/PreferencesContext'
+import { useToast } from '../context/ToastContext'
 
 function Icon({ path, className = 'w-4 h-4', stroke = 1.8 }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={stroke} d={path} /></svg>
@@ -36,12 +37,151 @@ function SummaryKpi({ label, value, color, icon }) {
   )
 }
 
+// ─── Product Modal ────────────────────────────────────────────────────────────
+
+function ProductModal({ product, onClose, onSaved, onDeleted }) {
+  const { addToast } = useToast()
+  const isEdit = Boolean(product)
+  const [name, setName] = useState(product?.name || '')
+  const [loading, setLoading] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  async function submit(e) {
+    e.preventDefault()
+    if (!name.trim()) { addToast('El nombre es requerido', 'error'); return }
+    setLoading(true)
+    try {
+      if (isEdit) {
+        const res = await axios.patch(`/api/products/${product.id}`, { name: name.trim() })
+        onSaved(res.data, 'edit')
+        addToast('Producto actualizado', 'success')
+      } else {
+        const res = await axios.post('/api/products', { name: name.trim() })
+        onSaved(res.data, 'create')
+        addToast('Producto creado', 'success')
+      }
+      onClose()
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Error al guardar', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDelete() {
+    setLoading(true)
+    try {
+      await axios.delete(`/api/products/${product.id}`)
+      onDeleted(product.id)
+      addToast('Producto eliminado', 'info')
+      onClose()
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Error al eliminar', 'error')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-[440px] bg-[#131720] border border-white/[0.09] rounded-[12px] shadow-[0_32px_64px_rgba(0,0,0,0.65)] overflow-hidden"
+        style={{ animation: 'modalIn 0.18s cubic-bezier(0.2,0,0,1) both' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <style>{`@keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(8px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/[0.07]">
+          <p className="text-[#8ea0bc] text-[11px] uppercase tracking-[0.16em] font-medium">
+            {isEdit ? 'Editar producto' : 'Nuevo producto'}
+          </p>
+          <button onClick={onClose} className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[#52525b] hover:text-[#a1a1aa] hover:bg-white/[0.05] transition-all">
+            <Icon className="w-4 h-4" path="M6 6l12 12M18 6 6 18" />
+          </button>
+        </div>
+
+        <form onSubmit={submit}>
+          <div className="px-5 py-5">
+            <label className="block text-[11px] uppercase tracking-[0.14em] text-[#6b7280] font-medium mb-2">
+              Nombre del producto
+            </label>
+            <input
+              autoFocus
+              required
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Ej: Proteína Whey, Creatina…"
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[14px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between px-5 py-4 border-t border-white/[0.07] gap-3">
+            <div>
+              {isEdit && !confirmDelete && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-[7px] text-[#52525b] hover:text-[#ef4444] hover:bg-[#ef4444]/8 text-[12px] font-medium transition-all"
+                >
+                  <Icon className="w-3.5 h-3.5" path="M6 7h12m-9 0V5h6v2m-7 0 1 12h8l1-12" />
+                  Eliminar
+                </button>
+              )}
+              {isEdit && confirmDelete && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-[#ef4444]">¿Confirmar?</span>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={loading}
+                    className="px-3 py-1.5 rounded-[6px] bg-[#ef4444]/15 text-[#ef4444] text-[12px] font-medium hover:bg-[#ef4444]/25 transition-all disabled:opacity-50"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="px-3 py-1.5 rounded-[6px] border border-white/[0.08] text-[#6b7280] text-[12px] font-medium hover:text-white transition-all"
+                  >
+                    No
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-[7px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] text-[12.5px] font-medium transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2 rounded-[7px] bg-[#E8A020] text-black text-[12.5px] font-medium disabled:opacity-50 hover:bg-[#d4911c] transition-all"
+              >
+                {loading ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function Products() {
   const navigate = useNavigate()
   const { formatCurrency } = usePreferences()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [modal, setModal] = useState(null) // null | { product? }
 
   useEffect(() => {
     axios.get('/api/products').then(response => setProducts(response.data)).finally(() => setLoading(false))
@@ -56,6 +196,18 @@ export default function Products() {
     return { revenue, investment, profit, best }
   }, [products])
 
+  function handleSaved(product, mode) {
+    if (mode === 'create') {
+      setProducts(ps => [...ps, { ...product, total_revenue: 0, total_investment: 0, sales_count: 0 }])
+    } else {
+      setProducts(ps => ps.map(p => p.id === product.id ? { ...p, name: product.name } : p))
+    }
+  }
+
+  function handleDeleted(id) {
+    setProducts(ps => ps.filter(p => p.id !== id))
+  }
+
   return (
     <Layout>
       <div className="space-y-5 max-w-[1480px] mx-auto">
@@ -68,13 +220,22 @@ export default function Products() {
             </h1>
             <p className="text-[#5a6d87] text-[13px] mt-1">Catálogo, ingresos y rentabilidad por producto</p>
           </div>
-          <button
-            onClick={() => navigate('/cargar')}
-            className="shrink-0 inline-flex items-center gap-2 rounded-[6px] bg-[#E8A020] hover:bg-[#f5b33a] px-4 py-2 text-[13px] font-medium text-[#07111f] transition-all"
-          >
-            <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
-            Cargar dato
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setModal({})}
+              className="inline-flex items-center gap-2 rounded-[6px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2 text-[13px] font-medium text-[#c0cee4] transition-all"
+            >
+              <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
+              Nuevo producto
+            </button>
+            <button
+              onClick={() => navigate('/cargar')}
+              className="inline-flex items-center gap-2 rounded-[6px] bg-[#E8A020] hover:bg-[#f5b33a] px-4 py-2 text-[13px] font-medium text-[#07111f] transition-all"
+            >
+              <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
+              Cargar dato
+            </button>
+          </div>
         </div>
 
         {/* KPI strip */}
@@ -136,15 +297,24 @@ export default function Products() {
             </div>
             <div>
               <p className="text-white font-semibold text-[17px]">Todavía no tienes productos</p>
-              <p className="text-[#7d8ca5] text-sm mt-1.5 max-w-sm mx-auto leading-relaxed">Carga tus primeras ventas para ver margen, ROAS y rendimiento por producto.</p>
+              <p className="text-[#7d8ca5] text-sm mt-1.5 max-w-sm mx-auto leading-relaxed">Crea un producto o carga tus primeras ventas para ver margen, ROAS y rendimiento.</p>
             </div>
-            <button
-              onClick={() => navigate('/cargar')}
-              className="inline-flex items-center gap-2 rounded-[14px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] px-5 py-2.5 text-[#08111f] font-semibold text-sm"
-            >
-              <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
-              Cargar primer dato
-            </button>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => setModal({})}
+                className="inline-flex items-center gap-2 rounded-[6px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-[#c0cee4] font-medium text-sm"
+              >
+                <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
+                Nuevo producto
+              </button>
+              <button
+                onClick={() => navigate('/cargar')}
+                className="inline-flex items-center gap-2 rounded-[14px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] px-5 py-2.5 text-[#08111f] font-semibold text-sm"
+              >
+                <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
+                Cargar primer dato
+              </button>
+            </div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="card p-10 text-center">
@@ -153,7 +323,7 @@ export default function Products() {
         ) : (
           <div className="space-y-2.5">
             {/* Table header — desktop */}
-            <div className="hidden lg:grid grid-cols-[40px_minmax(0,1fr)_140px_140px_100px_120px_44px] gap-4 px-4 pb-1">
+            <div className="hidden lg:grid grid-cols-[40px_minmax(0,1fr)_140px_140px_100px_120px_88px] gap-4 px-4 pb-1">
               {['#', 'Producto', 'Ingresos', 'Inversión', 'ROAS', 'Ganancia', ''].map(col => (
                 <span key={col} className="text-[10.5px] uppercase tracking-[0.2em] text-[#4f6278] font-semibold">{col}</span>
               ))}
@@ -164,23 +334,22 @@ export default function Products() {
                 ? parseFloat((product.total_revenue / product.total_investment).toFixed(2))
                 : null
               const profit = (product.total_revenue ?? 0) - (product.total_investment ?? 0)
-              const margin = product.total_revenue > 0
-                ? ((profit / product.total_revenue) * 100).toFixed(0)
-                : null
 
               return (
-                <button
+                <div
                   key={product.id}
-                  onClick={() => navigate(`/productos/${product.id}`)}
-                  className="w-full card p-4 text-left hover:border-[#4dd7ff]/18 hover:bg-white/[0.02] transition-all group"
+                  className="card p-4 hover:border-[#4dd7ff]/18 hover:bg-white/[0.02] transition-all group"
                 >
                   {/* Desktop row */}
-                  <div className="hidden lg:grid grid-cols-[40px_minmax(0,1fr)_140px_140px_100px_120px_44px] gap-4 items-center">
+                  <div className="hidden lg:grid grid-cols-[40px_minmax(0,1fr)_140px_140px_100px_120px_88px] gap-4 items-center">
                     <span className="text-[#4f6278] text-sm font-semibold">#{index + 1}</span>
-                    <div className="min-w-0">
-                      <p className="text-white text-[14px] font-semibold truncate">{product.name}</p>
+                    <button
+                      className="min-w-0 text-left"
+                      onClick={() => navigate(`/productos/${product.id}`)}
+                    >
+                      <p className="text-white text-[14px] font-semibold truncate group-hover:text-[#4dd7ff] transition-colors">{product.name}</p>
                       <p className="text-[#5a6d87] text-[11px] mt-0.5">{product.sales_count} registros</p>
-                    </div>
+                    </button>
                     <p className="text-[#67dcff] text-[14px] font-semibold">{formatCurrency(product.total_revenue)}</p>
                     <p className="text-[#ffd27d] text-[14px]">{formatCurrency(product.total_investment)}</p>
                     <div>
@@ -195,10 +364,22 @@ export default function Products() {
                     <p className={`text-[14px] font-semibold ${profit >= 0 ? 'text-[#63d68d]' : 'text-[#ff9ca8]'}`}>
                       {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
                     </p>
-                    <div className="flex items-center justify-end">
-                      <div className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[#4f6278] group-hover:text-[#4dd7ff] group-hover:bg-[#4dd7ff]/8 transition-all">
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 justify-end">
+                      <button
+                        onClick={() => setModal({ product })}
+                        title="Editar"
+                        className="w-8 h-8 rounded-[7px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all"
+                      >
+                        <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/productos/${product.id}`)}
+                        title="Ver detalle"
+                        className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all"
+                      >
                         <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
-                      </div>
+                      </button>
                     </div>
                   </div>
 
@@ -230,14 +411,31 @@ export default function Products() {
                         </div>
                       </div>
                     </div>
-                    <Icon className="w-4 h-4 text-[#4f6278] shrink-0 mt-1" path="m9 5 7 7-7 7" />
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <button onClick={() => setModal({ product })} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all">
+                        <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
+                      </button>
+                      <button onClick={() => navigate(`/productos/${product.id}`)} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all">
+                        <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
+                      </button>
+                    </div>
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      {modal && (
+        <ProductModal
+          product={modal.product}
+          onClose={() => setModal(null)}
+          onSaved={handleSaved}
+          onDeleted={handleDeleted}
+        />
+      )}
     </Layout>
   )
 }
