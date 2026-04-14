@@ -9,7 +9,7 @@ function Toggle({ checked, onChange }) {
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`relative h-7 w-12 rounded-full transition-colors ${checked ? 'bg-[#0075de]' : 'bg-[rgba(0,0,0,0.12)]'}`}
+      className={`relative h-7 w-12 rounded-full transition-colors ${checked ? 'bg-[#F59E0B]' : 'bg-white/[0.1]'}`}
     >
       <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>
@@ -19,8 +19,8 @@ function Toggle({ checked, onChange }) {
 function FieldCard({ title, description, children }) {
   return (
     <div className="card p-5">
-      <p className="font-semibold text-sm" style={{ color: "rgba(0,0,0,0.85)" }}>{title}</p>
-      <p className="text-[#a39e98] text-xs mt-1 mb-4">{description}</p>
+      <p className="text-white font-semibold text-sm">{title}</p>
+      <p className="text-[#9eb0cb] text-xs mt-1 mb-4">{description}</p>
       {children}
     </div>
   )
@@ -34,12 +34,12 @@ function DangerButton({ label, note, tone, onClick, disabled }) {
       disabled={disabled}
       className={`w-full rounded-[6px] border px-4 py-3.5 text-left transition-all disabled:opacity-60 ${
         tone === 'danger'
-          ? 'border-[rgba(239,68,68,0.20)] bg-[rgba(239,68,68,0.05)] hover:bg-[rgba(239,68,68,0.09)]'
-          : 'border-[rgba(221,91,0,0.18)] bg-[rgba(221,91,0,0.05)] hover:bg-[rgba(221,91,0,0.09)]'
+          ? 'border-[#fb7185]/18 bg-[#fb7185]/[0.07] text-white hover:bg-[#fb7185]/[0.11]'
+          : 'border-[#F59E0B]/18 bg-[#F59E0B]/[0.07] text-white hover:bg-[#F59E0B]/[0.11]'
       }`}
     >
-      <p className="font-semibold text-sm" style={{ color: "rgba(0,0,0,0.85)" }}>{label}</p>
-      <p className="text-xs text-[#615d59] mt-1">{note}</p>
+      <p className="font-semibold text-sm">{label}</p>
+      <p className="text-xs text-[#d5deed] mt-1">{note}</p>
     </button>
   )
 }
@@ -77,9 +77,9 @@ export default function Settings() {
     <Layout>
       <div className="space-y-5 max-w-[1280px] mx-auto w-full">
         <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_320px] gap-5">
-          <div className="card p-5">
+          <div className="card-elevated p-6">
             <p className="text-[10px] uppercase tracking-[0.22em] text-[#3d5068] font-medium">Configuración</p>
-            <h1 className="text-[26px] font-light text-[rgba(0,0,0,0.90)] mt-2 leading-none" style={{ letterSpacing: '-0.04em' }}>
+            <h1 className="text-[26px] font-light text-white mt-2 leading-none" style={{ letterSpacing: '-0.04em' }}>
               Preferencias <span style={{ color: '#F59E0B', fontWeight: 400 }}>operativas</span>
             </h1>
             <p className="text-[#64748b] text-[13px] mt-3 max-w-2xl leading-relaxed">
@@ -90,18 +90,18 @@ export default function Settings() {
           <div className="card p-5">
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#7d8ca5]">Resumen actual</p>
             <div className="space-y-3 mt-4">
-              <div className="rounded-[6px] border border-white/8 bg-black/[0.02] p-4">
+              <div className="rounded-[6px] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[#7d8ca5] text-xs">Moneda visual</p>
-                <p className="text-[rgba(0,0,0,0.90)] font-semibold mt-1">{preferences.currency}</p>
+                <p className="text-white font-semibold mt-1">{preferences.currency}</p>
               </div>
-              <div className="rounded-[6px] border border-white/8 bg-black/[0.02] p-4">
+              <div className="rounded-[6px] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[#7d8ca5] text-xs">Tasa ARS/USD</p>
-                <p className="text-[rgba(0,0,0,0.90)] font-semibold mt-1">{Number(preferences.exchangeRate).toLocaleString('es-AR')}</p>
+                <p className="text-white font-semibold mt-1">{Number(preferences.exchangeRate).toLocaleString('es-AR')}</p>
               </div>
-              <div className="rounded-[6px] border border-white/8 bg-black/[0.02] p-4">
+              <div className="rounded-[6px] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[#7d8ca5] text-xs">Preview conversion</p>
-                <p className="text-[rgba(0,0,0,0.90)] font-semibold mt-1">{formatCurrency(sampleBase)}</p>
-                <p className="text-[#615d59] text-xs mt-1">
+                <p className="text-white font-semibold mt-1">{formatCurrency(sampleBase)}</p>
+                <p className="text-[#8ea0bc] text-xs mt-1">
                   Base guardada: ARS {sampleBase.toLocaleString('es-AR')} {sampleConverted != null && preferences.currency === 'USD' ? `= USD ${sampleConverted.toFixed(2)}` : ''}
                 </p>
               </div>
@@ -116,10 +116,10 @@ export default function Settings() {
                 <button
                   key={currency}
                   onClick={() => updatePreference('currency', currency)}
-                  className={`rounded-[6px] border px-4 py-4 text-left transition-all ${preferences.currency === currency ? 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-[rgba(0,0,0,0.90)]' : 'border-white/10 bg-black/[0.02] text-[rgba(0,0,0,0.70)]'}`}
+                  className={`rounded-[6px] border px-4 py-4 text-left transition-all ${preferences.currency === currency ? 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
                 >
                   <p className="font-semibold">{currency}</p>
-                  <p className="text-xs text-[#615d59] mt-1">{currency === 'USD' ? 'Dolar estadounidense' : 'Peso argentino'}</p>
+                  <p className="text-xs text-[#8ea0bc] mt-1">{currency === 'USD' ? 'Dolar estadounidense' : 'Peso argentino'}</p>
                 </button>
               ))}
             </div>
@@ -127,17 +127,17 @@ export default function Settings() {
 
           <FieldCard title="Tasa de cambio" description="Usada para convertir automaticamente montos entre ARS y USD en dashboard, graficos y rankings.">
             <label className="block">
-              <span className="text-[#615d59] text-xs">ARS por 1 USD</span>
+              <span className="text-[#8ea0bc] text-xs">ARS por 1 USD</span>
               <input
                 type="number"
                 min="1"
                 step="0.01"
                 value={preferences.exchangeRate}
                 onChange={event => updatePreference('exchangeRate', Number(event.target.value) || 1)}
-                className="mt-2 w-full rounded-[6px] bg-black/[0.03] border border-white/10 px-4 py-3 text-[rgba(0,0,0,0.90)] focus:outline-none focus:border-[#0075de]/30"
+                className="mt-2 w-full rounded-[6px] bg-white/[0.04] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[#F59E0B]/30"
               />
             </label>
-            <p className="text-[#615d59] text-xs mt-3">Ejemplo: ARS 250.000 se muestran como {formatCurrency(sampleBase)} con la configuracion actual.</p>
+            <p className="text-[#8ea0bc] text-xs mt-3">Ejemplo: ARS 250.000 se muestran como {formatCurrency(sampleBase)} con la configuracion actual.</p>
           </FieldCard>
 
           <FieldCard title="Formato de numeros" description="Controla si los valores se muestran compactos o completos.">
@@ -149,10 +149,10 @@ export default function Settings() {
                 <button
                   key={option.key}
                   onClick={() => updatePreference('numberFormat', option.key)}
-                  className={`rounded-[6px] border px-4 py-4 text-left transition-all ${preferences.numberFormat === option.key ? 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-[rgba(0,0,0,0.90)]' : 'border-white/10 bg-black/[0.02] text-[rgba(0,0,0,0.70)]'}`}
+                  className={`rounded-[6px] border px-4 py-4 text-left transition-all ${preferences.numberFormat === option.key ? 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
                 >
                   <p className="font-semibold">{option.label}</p>
-                  <p className="text-xs text-[#615d59] mt-1">{option.note}</p>
+                  <p className="text-xs text-[#8ea0bc] mt-1">{option.note}</p>
                 </button>
               ))}
             </div>
@@ -162,7 +162,7 @@ export default function Settings() {
             <select
               value={preferences.timezone}
               onChange={event => updatePreference('timezone', event.target.value)}
-              className="w-full rounded-[6px] bg-black/[0.03] border border-white/10 px-4 py-3 text-[rgba(0,0,0,0.90)] focus:outline-none focus:border-[#0075de]/30"
+              className="w-full rounded-[6px] bg-white/[0.04] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[#F59E0B]/30"
             >
               <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
               <option value="America/New_York">America/New_York</option>
@@ -176,10 +176,10 @@ export default function Settings() {
                 <button
                   key={theme}
                   onClick={() => updatePreference('theme', theme)}
-                  className={`rounded-[6px] border px-4 py-4 text-left transition-all capitalize ${preferences.theme === theme ? 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-[rgba(0,0,0,0.90)]' : 'border-white/10 bg-black/[0.02] text-[rgba(0,0,0,0.70)]'}`}
+                  className={`rounded-[6px] border px-4 py-4 text-left transition-all capitalize ${preferences.theme === theme ? 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-white' : 'border-white/10 bg-white/[0.03] text-[#c0cee4]'}`}
                 >
                   <p className="font-semibold">{theme}</p>
-                  <p className="text-xs text-[#615d59] mt-1">{theme === 'dark' ? 'Modo oscuro profesional' : 'Modo claro para lectura'}</p>
+                  <p className="text-xs text-[#8ea0bc] mt-1">{theme === 'dark' ? 'Modo oscuro profesional' : 'Modo claro para lectura'}</p>
                 </button>
               ))}
             </div>
@@ -193,10 +193,10 @@ export default function Settings() {
               { key: 'weeklySummary', title: 'Resumen semanal', note: 'Resumen de productividad y negocio' },
               { key: 'aiSuggestions', title: 'Sugerencias IA', note: 'Recomendaciones contextuales dentro del dashboard' },
             ].map(item => (
-              <div key={item.key} className="flex items-center justify-between gap-4 rounded-[6px] border border-white/8 bg-black/[0.02] px-4 py-4">
+              <div key={item.key} className="flex items-center justify-between gap-4 rounded-[6px] border border-white/8 bg-white/[0.03] px-4 py-4">
                 <div>
-                  <p className="text-[rgba(0,0,0,0.90)] font-medium text-sm">{item.title}</p>
-                  <p className="text-[#615d59] text-xs mt-1">{item.note}</p>
+                  <p className="text-white font-medium text-sm">{item.title}</p>
+                  <p className="text-[#8ea0bc] text-xs mt-1">{item.note}</p>
                 </div>
                 <Toggle checked={preferences.notifications[item.key]} onChange={value => updateNotification(item.key, value)} />
               </div>

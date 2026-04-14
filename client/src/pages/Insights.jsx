@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext'
 const API = '/api'
 
 const DOW_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const COLORS = ['#0075de', '#1aae39', '#dd5b00', '#2a9d99', '#ef4444', '#391c57']
+const COLORS = ['#F59E0B', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b']
 
 function fmt(n, prefix = '$') {
   if (n == null) return '—'
@@ -32,12 +32,12 @@ function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
     <div className="card px-3 py-2 text-xs space-y-1 shadow-xl">
-      <p className="text-[#a39e98] mb-1">{fmtDate(label) || label}</p>
+      <p className="text-[#a1a1aa] mb-1">{fmtDate(label) || label}</p>
       {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-          <span className="text-[#615d59]">{p.name}:</span>
-          <span className="font-medium" style={{ color: "rgba(0,0,0,0.90)" }}>${Number(p.value).toLocaleString('es-AR', { minimumFractionDigits: 0 })}</span>
+          <span className="text-[#a1a1aa]">{p.name}:</span>
+          <span className="text-white font-medium">${Number(p.value).toLocaleString('es-AR', { minimumFractionDigits: 0 })}</span>
         </div>
       ))}
     </div>
@@ -51,8 +51,8 @@ function TabBtn({ active, onClick, children }) {
       onClick={onClick}
       className={`px-3 py-1.5 text-[13px] font-medium transition-all border-b-2 ${
         active
-          ? 'border-[#0075de] text-[rgba(0,0,0,0.90)]'
-          : 'border-transparent text-[#a39e98] hover:text-[rgba(0,0,0,0.70)]'
+          ? 'border-[#F59E0B] text-white'
+          : 'border-transparent text-[#6b7280] hover:text-[#c0cee4]'
       }`}
     >
       {children}
@@ -114,7 +114,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
     <div className="space-y-6">
       {/* Selector de productos */}
       <div className="card-vercel p-5">
-        <p className="text-[#a39e98] text-[11px] font-medium uppercase tracking-[0.12em] mb-3">
+        <p className="text-[#6b7280] text-[11px] font-medium uppercase tracking-[0.12em] mb-3">
           Seleccionar productos (máx. 4)
         </p>
         <div className="flex flex-wrap gap-2">
@@ -127,7 +127,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   active
                     ? 'border-[#F59E0B] text-[#F59E0B] bg-[#F59E0B]/10'
-                    : 'border-[#2a2a2e] text-[#a39e98] hover:border-[#3a3a3e] hover:text-[rgba(0,0,0,0.90)]'
+                    : 'border-[#2a2a2e] text-[#a1a1aa] hover:border-[#3a3a3e] hover:text-white'
                 }`}
               >
                 <span className="inline-block w-2 h-2 rounded-full mr-2"
@@ -138,7 +138,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
           })}
         </div>
         {selected.length < 2 && (
-          <p className="text-[#615d59] text-xs mt-3">Seleccioná al menos 2 productos para comparar</p>
+          <p className="text-[#52525b] text-xs mt-3">Seleccioná al menos 2 productos para comparar</p>
         )}
       </div>
 
@@ -157,12 +157,12 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/8">
-                    <th className="text-left text-[#a39e98] text-[11px] font-medium px-5 py-3 uppercase tracking-[0.1em]">Producto</th>
-                    <th className="text-right text-[#a39e98] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ingresos</th>
-                    <th className="text-right text-[#a39e98] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Inversión</th>
-                    <th className="text-right text-[#a39e98] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ganancia</th>
-                    <th className="text-right text-[#a39e98] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">ROAS</th>
-                    <th className="text-right text-[#a39e98] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Registros</th>
+                    <th className="text-left text-[#6b7280] text-[11px] font-medium px-5 py-3 uppercase tracking-[0.1em]">Producto</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ingresos</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Inversión</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ganancia</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">ROAS</th>
+                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Registros</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,12 +177,12 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                     : data.map((p, i) => {
                         const isWinner = winner?.id === p.id
                         return (
-                          <tr key={p.id} className="border-b border-white/8 hover:bg-black/[0.02] transition-colors">
+                          <tr key={p.id} className="border-b border-white/8 hover:bg-white/[0.03] transition-colors">
                             <td className="px-5 py-3">
                               <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full shrink-0"
                                   style={{ background: COLORS[i] }} />
-                                <span className="font-medium" style={{ color: "rgba(0,0,0,0.90)" }}>{p.name}</span>
+                                <span className="text-white font-medium">{p.name}</span>
                                 {isWinner && (
                                   <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.5 rounded-full font-semibold">
                                     🏆 mejor
@@ -190,8 +190,8 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                                 )}
                               </div>
                             </td>
-                            <td className="text-right px-4 py-3 text-[rgba(0,0,0,0.90)]">{fmt(p.revenue)}</td>
-                            <td className="text-right px-4 py-3 text-[#a39e98]">{fmt(p.investment)}</td>
+                            <td className="text-right px-4 py-3 text-white">{fmt(p.revenue)}</td>
+                            <td className="text-right px-4 py-3 text-[#a1a1aa]">{fmt(p.investment)}</td>
                             <td className={`text-right px-4 py-3 font-medium ${p.profit >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                               {fmt(p.profit)}
                             </td>
@@ -204,7 +204,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                                 }`}>{p.roas}x</span>
                               ) : '—'}
                             </td>
-                            <td className="text-right px-4 py-3 text-[#a39e98]">{p.records}</td>
+                            <td className="text-right px-4 py-3 text-[#a1a1aa]">{p.records}</td>
                           </tr>
                         )
                       })
@@ -217,7 +217,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
           {/* Gráfico comparativo */}
           {!loading && chartData.length > 0 && (
             <div className="card-vercel p-5">
-              <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)] mb-4" style={{ letterSpacing: '-0.01em' }}>{METRIC_LABELS[metric]} por día</p>
+              <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>{METRIC_LABELS[metric]} por día</p>
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" />
@@ -261,9 +261,9 @@ function BudgetTab({ dateFrom, dateTo }) {
 
   const InvestCard = ({ label, value, color, sub }) => (
     <div className={`card-vercel p-4 border-l-2 ${color}`}>
-      <p className="text-[#a39e98] text-[11px] mb-1.5">{label}</p>
-      <p className="text-[22px] font-light tabular-nums text-[rgba(0,0,0,0.90)]" style={{ letterSpacing: '-0.03em' }}>{fmt(value)}</p>
-      {sub && <p className="text-[#a39e98] text-xs mt-1">{sub}</p>}
+      <p className="text-[#6b7280] text-[11px] mb-1.5">{label}</p>
+      <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{fmt(value)}</p>
+      {sub && <p className="text-[#6b7280] text-xs mt-1">{sub}</p>}
     </div>
   )
 
@@ -273,15 +273,15 @@ function BudgetTab({ dateFrom, dateTo }) {
       {data && (
         <div className="grid grid-cols-3 gap-4">
           <div className="card-vercel p-4 text-center">
-            <p className="text-[#a39e98] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS promedio</p>
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS promedio</p>
             <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.avg_roas ?? '—'}x</p>
           </div>
           <div className="card-vercel p-4 text-center">
-            <p className="text-[#a39e98] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS mínimo</p>
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS mínimo</p>
             <p className="text-[22px] font-light tabular-nums text-[#ef4444]" style={{ letterSpacing: '-0.03em' }}>{data.min_roas ?? '—'}x</p>
           </div>
           <div className="card-vercel p-4 text-center">
-            <p className="text-[#a39e98] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS máximo</p>
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS máximo</p>
             <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>{data.max_roas ?? '—'}x</p>
           </div>
         </div>
@@ -289,18 +289,18 @@ function BudgetTab({ dateFrom, dateTo }) {
 
       {/* Input objetivo */}
       <div className="card-vercel p-5">
-        <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)] mb-1" style={{ letterSpacing: '-0.01em' }}>¿Cuánto querés facturar?</p>
-        <p className="text-[#a39e98] text-xs mb-4">Calculamos la inversión necesaria basándonos en tu historial de ROAS</p>
+        <p className="text-[13px] font-semibold text-white mb-1" style={{ letterSpacing: '-0.01em' }}>¿Cuánto querés facturar?</p>
+        <p className="text-[#6b7280] text-xs mb-4">Calculamos la inversión necesaria basándonos en tu historial de ROAS</p>
         <div className="flex gap-3">
           <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#615d59] font-medium">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b] font-medium">$</span>
             <input
               type="number"
               placeholder="Ej: 100000"
               value={target}
               onChange={e => setTarget(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && calc()}
-              className="w-full bg-[#0B0B0E] border border-white/8 text-[rgba(0,0,0,0.90)] pl-7 pr-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#0075de]/60 transition-colors"
+              className="w-full bg-[#0B0B0E] border border-white/8 text-white pl-7 pr-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#F59E0B]/60 transition-colors"
             />
           </div>
           <button
@@ -340,7 +340,7 @@ function BudgetTab({ dateFrom, dateTo }) {
           {/* Por producto */}
           {data.by_product?.length > 0 && (
             <div className="card-vercel p-5">
-              <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)] mb-4" style={{ letterSpacing: '-0.01em' }}>Inversión sugerida por producto</p>
+              <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Inversión sugerida por producto</p>
               <div className="space-y-3">
                 {data.by_product.map(p => {
                   const inv = parseFloat(target) / p.roas
@@ -348,9 +348,9 @@ function BudgetTab({ dateFrom, dateTo }) {
                   return (
                     <div key={p.id}>
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm text-[rgba(0,0,0,0.90)]">{p.name}</span>
+                        <span className="text-sm text-white">{p.name}</span>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-[#615d59]">ROAS {p.roas}x</span>
+                          <span className="text-xs text-[#52525b]">ROAS {p.roas}x</span>
                           <span className="text-sm font-medium text-[#F59E0B]">{fmt(inv)}</span>
                         </div>
                       </div>
@@ -406,7 +406,7 @@ function PatternsTab({ dateFrom, dateTo }) {
       {/* Por día de semana */}
       <div className="card-vercel p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)]" style={{ letterSpacing: '-0.01em' }}>Rendimiento por día de la semana</p>
+          <p className="text-[13px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>Rendimiento por día de la semana</p>
           {bestDow && (
             <span className="text-xs bg-[#10b981]/20 text-[#10b981] px-2.5 py-1 rounded-full font-medium">
               🏆 Mejor día: {bestDow.name} (ROAS {bestDow.avg_roas}x)
@@ -435,7 +435,7 @@ function PatternsTab({ dateFrom, dateTo }) {
               : d.avg_roas >= 1.5 ? 'bg-[#F59E0B]/10'
               : 'bg-[#ef4444]/10'
             }`}>
-              <p className="text-[#615d59] text-[10px]">{d.name}</p>
+              <p className="text-[#52525b] text-[10px]">{d.name}</p>
               <p className={`text-sm font-bold mt-0.5 ${
                 d.avg_roas >= 3 ? 'text-[#10b981]'
                 : d.avg_roas >= 1.5 ? 'text-[#F59E0B]'
@@ -449,7 +449,7 @@ function PatternsTab({ dateFrom, dateTo }) {
       {/* Rangos de inversión */}
       {data.investment_ranges?.length > 0 && (
         <div className="card-vercel p-5">
-          <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)] mb-4" style={{ letterSpacing: '-0.01em' }}>ROAS por rango de inversión</p>
+          <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>ROAS por rango de inversión</p>
           <div className="space-y-3">
             {data.investment_ranges.map((r, i) => {
               const best = data.investment_ranges.reduce((b, x) => x.avg_roas > b.avg_roas ? x : b)
@@ -459,8 +459,8 @@ function PatternsTab({ dateFrom, dateTo }) {
                   isBest ? 'bg-[#10b981]/10 border border-[#10b981]/20' : 'bg-[#1f1f23]'
                 }`}>
                   <div className="flex-1">
-                    <p className="text-[rgba(0,0,0,0.90)] text-sm font-medium">{r.range}</p>
-                    <p className="text-[#615d59] text-xs">{r.count} registros</p>
+                    <p className="text-white text-sm font-medium">{r.range}</p>
+                    <p className="text-[#52525b] text-xs">{r.count} registros</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {isBest && <span className="text-xs text-[#10b981]">🏆 Óptimo</span>}
@@ -480,15 +480,15 @@ function PatternsTab({ dateFrom, dateTo }) {
       {/* Mejores días */}
       {data.best_days?.length > 0 && (
         <div className="card-vercel p-5">
-          <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)] mb-4" style={{ letterSpacing: '-0.01em' }}>Top 5 días con mejor ROAS</p>
+          <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Top 5 días con mejor ROAS</p>
           <div className="space-y-2">
             {data.best_days.map((d, i) => (
               <div key={d.date} className="flex items-center gap-4 py-2 border-b border-white/8 last:border-0">
-                <span className="w-6 h-6 rounded-full bg-[#1f1f23] flex items-center justify-center text-xs text-[#615d59] font-bold shrink-0">
+                <span className="w-6 h-6 rounded-full bg-[#1f1f23] flex items-center justify-center text-xs text-[#52525b] font-bold shrink-0">
                   {i + 1}
                 </span>
-                <span className="text-[rgba(0,0,0,0.90)] text-sm flex-1">{fmtDate(d.date)} {d.date?.slice(0,4)}</span>
-                <span className="text-[#a39e98] text-sm">{fmt(d.investment)} inv.</span>
+                <span className="text-white text-sm flex-1">{fmtDate(d.date)} {d.date?.slice(0,4)}</span>
+                <span className="text-[#a1a1aa] text-sm">{fmt(d.investment)} inv.</span>
                 <span className="text-[#10b981] text-sm">{fmt(d.revenue)}</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                   d.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
@@ -539,18 +539,18 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
       <div className="card-vercel p-5">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex-1 min-w-[180px] space-y-1.5">
-            <label className="text-[#a39e98] text-xs font-medium">Producto</label>
+            <label className="text-[#a1a1aa] text-xs font-medium">Producto</label>
             <select
               value={productId}
               onChange={e => setProductId(e.target.value)}
-              className="w-full bg-[#0B0B0E] border border-white/8 text-[rgba(0,0,0,0.90)] text-sm px-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#0075de]/60"
+              className="w-full bg-[#0B0B0E] border border-white/8 text-white text-sm px-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#F59E0B]/60"
             >
               <option value="">Todos los productos</option>
               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[#a39e98] text-xs font-medium">Días a proyectar</label>
+            <label className="text-[#a1a1aa] text-xs font-medium">Días a proyectar</label>
             <div className="flex gap-1.5">
               {[7, 14, 30].map(d => (
                 <button
@@ -559,7 +559,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
                   className={`px-3 py-2 text-sm rounded-[8px] font-medium transition-all ${
                     days === d
                       ? 'bg-[#F59E0B] text-black'
-                      : 'bg-[#1f1f23] text-[#a39e98] hover:text-[rgba(0,0,0,0.90)] border border-[#2a2a2e]'
+                      : 'bg-[#1f1f23] text-[#a1a1aa] hover:text-white border border-[#2a2a2e]'
                   }`}
                 >{d}d</button>
               ))}
@@ -572,15 +572,15 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
       {data && (
         <div className="grid grid-cols-3 gap-4">
           <div className="card-vercel p-4 text-center">
-            <p className="text-[#a39e98] text-[11px] uppercase tracking-[0.12em] mb-2">Días históricos</p>
-            <p className="text-[22px] font-light tabular-nums text-[rgba(0,0,0,0.90)]" style={{ letterSpacing: '-0.03em' }}>{data.series?.length ?? 0}</p>
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días históricos</p>
+            <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{data.series?.length ?? 0}</p>
           </div>
           <div className="card-vercel p-4 text-center">
-            <p className="text-[#a39e98] text-[11px] uppercase tracking-[0.12em] mb-2">Días proyectados</p>
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días proyectados</p>
             <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.projected?.length ?? 0}</p>
           </div>
           <div className="card-vercel p-4 text-center">
-            <p className="text-[#a39e98] text-[11px] uppercase tracking-[0.12em] mb-2">Ingreso proyectado (prom/día)</p>
+            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Ingreso proyectado (prom/día)</p>
             <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>
               {data.projected?.length
                 ? fmt(data.projected.reduce((a, p) => a + p.revenue, 0) / data.projected.length)
@@ -596,8 +596,8 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
       ) : chartData.length > 0 ? (
         <div className="card-vercel p-5">
           <div className="flex items-center gap-3 mb-4">
-            <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)] flex-1" style={{ letterSpacing: '-0.01em' }}>Proyección de ingresos</p>
-            <div className="flex items-center gap-4 text-xs text-[#a39e98]">
+            <p className="text-[13px] font-semibold text-white flex-1" style={{ letterSpacing: '-0.01em' }}>Proyección de ingresos</p>
+            <div className="flex items-center gap-4 text-xs text-[#a1a1aa]">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-0.5 bg-[#F59E0B] inline-block" />
                 Real
@@ -633,13 +633,13 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
               />
             </AreaChart>
           </ResponsiveContainer>
-          <p className="text-[#615d59] text-xs mt-3 text-center">
+          <p className="text-[#52525b] text-xs mt-3 text-center">
             * La proyección se basa en el promedio móvil de los últimos 7 días del período seleccionado
           </p>
         </div>
       ) : (
         <div className="card p-10 text-center">
-          <p className="text-[#615d59] text-sm">No hay datos suficientes para proyectar</p>
+          <p className="text-[#52525b] text-sm">No hay datos suficientes para proyectar</p>
         </div>
       )}
     </div>
@@ -675,8 +675,8 @@ export default function Insights() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-[24px] font-light text-[rgba(0,0,0,0.90)] leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#F59E0B', fontWeight: 400 }}>de negocio</span></h1>
-            <p className="text-[#a39e98] text-[12px] mt-1.5 tracking-[0.01em]">
+            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#F59E0B', fontWeight: 400 }}>de negocio</span></h1>
+            <p className="text-[#6b7280] text-[12px] mt-1.5 tracking-[0.01em]">
               Análisis avanzado para tomar mejores decisiones
             </p>
           </div>

@@ -326,7 +326,7 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[#F59E0B] text-sm font-semibold">Revisar antes de importar</p>
-            <p className="text-[#615d59] text-xs mt-1">{pending.records.length} registro{pending.records.length === 1 ? '' : 's'} detectado{pending.records.length === 1 ? '' : 's'}</p>
+            <p className="text-[#8ea0bc] text-xs mt-1">{pending.records.length} registro{pending.records.length === 1 ? '' : 's'} detectado{pending.records.length === 1 ? '' : 's'}</p>
           </div>
           <div className="rounded-[8px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 px-3 py-1 text-[11px] font-semibold text-[#ffd27d]">
             {dateLabel}
@@ -335,15 +335,15 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
           <div className="bg-[#0B0B0E] rounded-[6px] px-3 py-3">
-            <p className="text-[#615d59] text-xs mb-0.5">Ingresos totales</p>
+            <p className="text-[#52525b] text-xs mb-0.5">Ingresos totales</p>
             <p className="text-[#10b981] font-bold">{fmt(totals.revenue)}</p>
           </div>
           <div className="bg-[#0B0B0E] rounded-[6px] px-3 py-3">
-            <p className="text-[#615d59] text-xs mb-0.5">Inversion total</p>
+            <p className="text-[#52525b] text-xs mb-0.5">Inversion total</p>
             <p className="text-[#ef4444] font-bold">{fmt(totals.investment)}</p>
           </div>
           <div className="bg-[#0B0B0E] rounded-[6px] px-3 py-3">
-            <p className="text-[#615d59] text-xs mb-0.5">Resultado</p>
+            <p className="text-[#52525b] text-xs mb-0.5">Resultado</p>
             <p className={`font-bold ${profit >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{fmt(profit)}</p>
           </div>
         </div>
@@ -359,7 +359,7 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
               <div key={`${record.product_name}-${index}`} className="grid grid-cols-[minmax(0,1.2fr)_110px_110px] gap-3 px-4 py-3 text-sm border-b border-white/6 last:border-b-0">
                 <div className="min-w-0">
                   <p className="text-white font-medium truncate">{record.product_name}</p>
-                  <p className="text-[#615d59] text-xs mt-1">{record.date}</p>
+                  <p className="text-[#52525b] text-xs mt-1">{record.date}</p>
                 </div>
                 <span className="text-[#10b981] font-medium">{fmt(record.revenue)}</span>
                 <span className="text-[#ef4444] font-medium">{fmt(record.investment)}</span>
@@ -447,7 +447,7 @@ function ChatMessage({ msg }) {
 function Kv({ label, value, color = 'text-white' }) {
   return (
     <div>
-      <span className="text-[#615d59]">{label}: </span>
+      <span className="text-[#52525b]">{label}: </span>
       <span className={color}>{value}</span>
     </div>
   )
@@ -458,13 +458,13 @@ function RecentHistory({ history }) {
 
   return (
     <div className="card p-4 space-y-3">
-      <p className="text-[#615d59] text-xs font-semibold tracking-widest uppercase">Cargados recientemente</p>
+      <p className="text-[#52525b] text-xs font-semibold tracking-widest uppercase">Cargados recientemente</p>
       <div className="space-y-2">
         {history.map((item, index) => (
           <div key={`${item.id ?? item.product_name}-${index}`} className="flex items-center gap-3 text-xs">
             <span className="w-1.5 h-1.5 rounded-[8px] bg-[#10b981] shrink-0" />
             <span className="text-white flex-1 truncate">{item.product_name}</span>
-            <span className="text-[#615d59]">{item.date}</span>
+            <span className="text-[#52525b]">{item.date}</span>
             <span className="text-[#10b981] font-medium">{fmt(item.revenue)}</span>
             <span className={item.roas >= 2 ? 'text-[#10b981]' : 'text-[#F59E0B]'}>
               {item.roas ? `${item.roas}x` : '-'}
@@ -643,7 +643,7 @@ export default function DataEntry() {
                 </div>
                 <div>
                   <p className="text-[#a1a1aa] text-sm font-medium">Ingresa ventas, inversion y gastos en formato libre</p>
-                  <p className="text-[#615d59] text-xs mt-1 leading-relaxed">
+                  <p className="text-[#52525b] text-xs mt-1 leading-relaxed">
                     Ejemplo — múltiples productos y fechas:
                     <br />
                     <span className="text-[#a1a1aa]">5/4/26</span>
@@ -671,7 +671,7 @@ export default function DataEntry() {
             {messages.map((message, index) => <ChatMessage key={index} msg={message} />)}
 
             {loading && (
-              <div className="flex gap-2 items-center text-[#615d59] text-sm">
+              <div className="flex gap-2 items-center text-[#52525b] text-sm">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 bg-[#52525b] rounded-[8px] animate-bounce [animation-delay:0ms]" />
                   <span className="w-1.5 h-1.5 bg-[#52525b] rounded-[8px] animate-bounce [animation-delay:150ms]" />
@@ -692,18 +692,18 @@ export default function DataEntry() {
             <div className="card border-[#F59E0B]/30 p-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[#F59E0B] text-sm font-medium">{csvRows.length} registros - {csvName}</p>
-                <button onClick={() => setCsvRows(null)} className="text-[#615d59] hover:text-[#a1a1aa] text-xs">Cancelar</button>
+                <button onClick={() => setCsvRows(null)} className="text-[#52525b] hover:text-[#a1a1aa] text-xs">Cancelar</button>
               </div>
               <div className="max-h-40 overflow-y-auto text-xs text-[#a1a1aa] space-y-1">
                 {csvRows.slice(0, 5).map((row, index) => (
                   <div key={`${row.product_name}-${index}`} className="grid grid-cols-[24px_minmax(0,1fr)_90px_90px] gap-3">
-                    <span className="text-[#615d59]">{index + 1}</span>
+                    <span className="text-[#52525b]">{index + 1}</span>
                     <span className="text-white truncate">{row.product_name}</span>
                     <span className="text-[#10b981]">{fmt(row.revenue)}</span>
                     <span className="text-[#ef4444]">{fmt(row.investment)}</span>
                   </div>
                 ))}
-                {csvRows.length > 5 && <p className="text-[#615d59]">... y {csvRows.length - 5} mas</p>}
+                {csvRows.length > 5 && <p className="text-[#52525b]">... y {csvRows.length - 5} mas</p>}
               </div>
               <button
                 onClick={handleImportCSV}
@@ -729,19 +729,19 @@ export default function DataEntry() {
                   }}
                   placeholder={'5/4/26\nCurso A: 370000\nProducto B: 430000\nServicio C: 45500\nProducto D: 24000\n\n6/4/26\nCurso A: 285000\n\nGastos:\nEmpleados: 80000'}
                   rows={5}
-                  className="w-full bg-transparent text-white text-sm px-4 pt-3 pb-1 resize-none focus:outline-none placeholder:text-[#615d59]"
+                  className="w-full bg-transparent text-white text-sm px-4 pt-3 pb-1 resize-none focus:outline-none placeholder:text-[#52525b]"
                 />
                 <div className="flex items-center justify-between px-3 pb-2">
                   <button
                     onClick={() => fileRef.current.click()}
-                    className="text-[#615d59] hover:text-[#F59E0B] text-xs flex items-center gap-1 transition-colors"
+                    className="text-[#52525b] hover:text-[#F59E0B] text-xs flex items-center gap-1 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.172 7 8.586 13.586a2 2 0 1 0 2.828 2.828l6.414-6.586a4 4 0 0 0-5.656-5.656L5.757 10.757a6 6 0 1 0 8.486 8.486L20.5 13" />
                     </svg>
                     Subir CSV
                   </button>
-                  <span className="text-[#615d59] text-xs">Enter para previsualizar</span>
+                  <span className="text-[#52525b] text-xs">Enter para previsualizar</span>
                 </div>
               </div>
 

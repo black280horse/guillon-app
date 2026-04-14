@@ -81,7 +81,7 @@ export default function Register() {
             className="text-white text-[26px] font-light leading-none mb-1.5"
             style={{ letterSpacing: '-0.04em' }}
           >
-            Guillon <span style={{ color: '#0075de', fontWeight: 400 }}>AP</span>
+            Guillon <span style={{ color: '#F59E0B', fontWeight: 400 }}>AP</span>
           </h1>
           <p className="text-[#3d5068] text-[12px] tracking-[0.12em] uppercase">
             Sales Intelligence Platform
@@ -160,16 +160,16 @@ export default function Register() {
               disabled={loading}
               className="w-full font-medium text-[14px] transition-all mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: '#0075de',
+                background: '#F59E0B',
                 color: '#07111f',
                 borderRadius: '10px',
                 padding: '9px 16px',
-                boxShadow: 'none',
+                boxShadow: '0 4px 14px rgba(245,158,11,0.22)',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
               }}
               onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#FCD34D' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#0075de' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#F59E0B' }}
             >
               {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
@@ -178,7 +178,7 @@ export default function Register() {
 
         <p className="text-center text-[#3d5068] text-[13px] mt-5">
           ¿Ya tenés cuenta?{' '}
-          <Link to="/login" className="font-medium" style={{ color: '#0075de' }}>
+          <Link to="/login" className="font-medium" style={{ color: '#F59E0B' }}>
             Iniciá sesión
           </Link>
         </p>
