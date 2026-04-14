@@ -5,3 +5,9 @@ node_modules/
 *.db-shm
 *.db-wal
 dist/
+
+# Dev tools
+.agents/
+.claude/
+skills-lock.json
+DESIGN.md
