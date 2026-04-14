@@ -155,7 +155,7 @@ export default function Login() {
               disabled={loading}
               className="w-full font-bold text-[14px] transition-all mt-2 disabled:opacity-50"
               style={{
-                background: '#F59E0B',
+                background: '#0075de',
                 color: '#1A0A00',
                 borderRadius: '10px',
                 padding: '12px 16px',
@@ -165,7 +165,7 @@ export default function Login() {
                 letterSpacing: '-0.01em',
               }}
               onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = '#FCD34D'; e.currentTarget.style.boxShadow = '0 0 32px rgba(245,158,11,0.35), 0 4px 12px rgba(0,0,0,0.30)' } }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#F59E0B'; e.currentTarget.style.boxShadow = '0 0 24px rgba(245,158,11,0.25), 0 4px 12px rgba(0,0,0,0.30)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#0075de'; e.currentTarget.style.boxShadow = '0 0 24px rgba(245,158,11,0.25), 0 4px 12px rgba(0,0,0,0.30)' }}
             >
               {loading ? 'Ingresando…' : 'Ingresar →'}
             </button>
@@ -174,7 +174,7 @@ export default function Login() {
 
         <p className="text-center text-[13px] mt-5" style={{ color: 'rgba(255,255,255,0.30)' }}>
           ¿No tenés cuenta?{' '}
-          <Link to="/register" className="font-semibold" style={{ color: '#F59E0B' }}>
+          <Link to="/register" className="font-semibold" style={{ color: '#0075de' }}>
             Registrate
           </Link>
         </p>

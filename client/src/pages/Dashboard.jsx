@@ -106,30 +106,25 @@ function CompactKpi({ label, value, formatter, color, iconPath, change, chartDat
   const delta = change !== null && change !== undefined && !Number.isNaN(parseFloat(change)) ? parseFloat(change) : null
 
   return (
-    <div className="card p-6 h-full flex flex-col gap-4">
+    <div className="card p-5 h-full flex flex-col gap-3">
       {/* Top row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em]"
-            style={{ color: 'rgba(255,255,255,0.38)' }}>
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em]"
+            style={{ color: '#a39e98' }}>
             {label}
           </p>
-          <p className="text-[38px] font-bold leading-none mt-2.5 tabular-nums"
-            style={{ color, letterSpacing: '-0.04em' }}>
+          <p className="text-[32px] font-bold leading-none mt-2 tabular-nums"
+            style={{ color, letterSpacing: '-0.03em' }}>
             {formatter(animated)}
           </p>
         </div>
         {/* Icon */}
         <div
-          className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0"
-          style={{
-            background: `${color}15`,
-            boxShadow: `0 0 20px ${color}20`,
-            border: `1px solid ${color}25`,
-            color,
-          }}
+          className="w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0"
+          style={{ background: `${color}12`, border: `1px solid ${color}22`, color }}
         >
-          <Icon className="w-5 h-5" path={iconPath} />
+          <Icon className="w-4 h-4" path={iconPath} />
         </div>
       </div>
 
@@ -139,18 +134,18 @@ function CompactKpi({ label, value, formatter, color, iconPath, change, chartDat
       {/* Delta badge */}
       <div className="flex items-center gap-2">
         {delta === null ? (
-          <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          <span className="text-[11px] font-medium" style={{ color: '#a39e98' }}>
             Sin comparativa
           </span>
         ) : (
           <span
-            className="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 rounded-[6px]"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-[9999px]"
             style={delta >= 0 ? {
-              background: 'rgba(52,211,153,0.12)',
-              color: '#34D399',
+              background: 'rgba(26,174,57,0.10)',
+              color: '#1aae39',
             } : {
-              background: 'rgba(248,113,113,0.12)',
-              color: '#F87171',
+              background: 'rgba(239,68,68,0.10)',
+              color: '#ef4444',
             }}
           >
             {delta >= 0 ? '↑' : '↓'} {Math.abs(delta).toFixed(1)}%
@@ -165,12 +160,12 @@ function CompactKpi({ label, value, formatter, color, iconPath, change, chartDat
 function ChartTooltipBox({ children }) {
   return (
     <div style={{
-      background: 'rgba(18,18,28,0.97)',
-      border: '1px solid rgba(255,255,255,0.10)',
-      borderRadius: '12px',
-      padding: '12px 16px',
-      boxShadow: '0 12px 40px rgba(0,0,0,0.60)',
-      minWidth: '180px',
+      background: '#ffffff',
+      border: '1px solid rgba(0,0,0,0.12)',
+      borderRadius: '8px',
+      padding: '10px 14px',
+      boxShadow: 'rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2px 8px, rgba(0,0,0,0.02) 0px 1px 3px',
+      minWidth: '170px',
     }}>
       {children}
     </div>
@@ -181,16 +176,16 @@ function TrendTooltip({ active, payload, label, formatCurrency }) {
   if (!active || !payload?.length) return null
   return (
     <ChartTooltipBox>
-      <p className="text-[11px] font-medium mb-2.5" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.02em' }}>
+      <p className="text-[11px] font-medium mb-2.5" style={{ color: '#a39e98', letterSpacing: '0.02em' }}>
         {longDate(label)}
       </p>
       {payload.map(item => (
         <div key={item.dataKey} className="flex items-center justify-between gap-4 py-1">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-            <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.70)' }}>{item.name}</span>
+            <span className="text-[12px]" style={{ color: '#615d59' }}>{item.name}</span>
           </div>
-          <span className="text-[13px] font-bold text-white tabular-nums">
+          <span className="text-[13px] font-bold tabular-nums" style={{ color: 'rgba(0,0,0,0.90)' }}>
             {item.dataKey === 'roas' ? `${numberValue(item.value).toFixed(2)}x` : formatCurrency(item.value)}
           </span>
         </div>
@@ -204,8 +199,8 @@ function PieTooltip({ active, payload, formatCurrency }) {
   const item = payload[0]
   return (
     <ChartTooltipBox>
-      <p className="text-white text-[13px] font-bold">{item.name}</p>
-      <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>{formatCurrency(item.value)}</p>
+      <p className="text-[13px] font-bold" style={{ color: 'rgba(0,0,0,0.90)' }}>{item.name}</p>
+      <p className="text-[12px] mt-1" style={{ color: '#615d59' }}>{formatCurrency(item.value)}</p>
     </ChartTooltipBox>
   )
 }
@@ -214,18 +209,18 @@ function RoasTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
     <ChartTooltipBox>
-      <p className="text-white text-[13px] font-bold">{label}</p>
-      <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>{numberValue(payload[0].value).toFixed(2)}x</p>
+      <p className="text-[13px] font-bold" style={{ color: 'rgba(0,0,0,0.90)' }}>{label}</p>
+      <p className="text-[12px] mt-1" style={{ color: '#615d59' }}>{numberValue(payload[0].value).toFixed(2)}x</p>
     </ChartTooltipBox>
   )
 }
 
 function SectionHeader({ title, action }) {
   return (
-    <div className="flex items-center justify-between gap-3 mb-5">
+    <div className="flex items-center justify-between gap-3 mb-4">
       <h2
-        className="text-[14px] font-semibold text-white"
-        style={{ letterSpacing: '-0.02em' }}
+        className="text-[13px] font-semibold"
+        style={{ color: 'rgba(0,0,0,0.85)', letterSpacing: '-0.01em' }}
       >
         {title}
       </h2>
@@ -243,18 +238,18 @@ function ProductRankingCards({ products, formatCurrency, navigate }) {
           onClick={() => navigate(`/productos/${product.id}`)}
           className="rounded-[14px] p-4 text-left transition-all"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: 'rgba(0,0,0,0.02)',
+            border: '1px solid rgba(0,0,0,0.10)',
           }}
           onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(245,158,11,0.25)'}
           onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10.5px] font-bold tracking-[0.14em] uppercase" style={{ color: 'rgba(255,255,255,0.30)' }}>
+              <p className="text-[10.5px] font-bold tracking-[0.14em] uppercase" style={{ color: '#a39e98' }}>
                 #{index + 1}
               </p>
-              <p className="text-white text-[14px] font-semibold mt-1" style={{ letterSpacing: '-0.02em' }}>
+              <p className="text-[rgba(0,0,0,0.90)] text-[14px] font-semibold mt-1" style={{ letterSpacing: '-0.02em' }}>
                 {product.name}
               </p>
             </div>
@@ -273,11 +268,11 @@ function ProductRankingCards({ products, formatCurrency, navigate }) {
           <div className="grid grid-cols-3 gap-2 mt-4">
             {[
               { label: 'Ingresos', val: formatCurrency(product.revenue), color: '#F59E0B' },
-              { label: 'Inversión', val: formatCurrency(product.investment), color: 'rgba(255,255,255,0.55)' },
+              { label: 'Inversión', val: formatCurrency(product.investment), color: '#615d59' },
               { label: 'Ganancia', val: formatCurrency(product.profit), color: numberValue(product.profit) >= 0 ? '#34D399' : '#F87171' },
             ].map(({ label, val, color }) => (
               <div key={label}>
-                <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</p>
+                <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: '#a39e98' }}>{label}</p>
                 <p className="text-[12.5px] font-bold mt-1 tabular-nums" style={{ color }}>{val}</p>
               </div>
             ))}
@@ -348,10 +343,10 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-[13px] font-semibold" style={{ letterSpacing: '-0.01em' }}>
+            <p className="text-[rgba(0,0,0,0.90)] text-[13px] font-semibold" style={{ letterSpacing: '-0.01em' }}>
               Recomendaciones IA
             </p>
-            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
+            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: '#a39e98' }}>
               Generá insights accionables basados en tus datos del período.
             </p>
             <button
@@ -374,7 +369,7 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
       <div className="card p-5">
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 rounded-full border-2 border-[#A78BFA] border-t-transparent animate-spin" />
-          <p className="text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>Generando recomendaciones…</p>
+          <p className="text-[13px]" style={{ color: '#615d59' }}>Generando recomendaciones…</p>
         </div>
       </div>
     )
@@ -389,7 +384,7 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-5">
       <SectionHeader title="Insights IA" />
       <div className="space-y-3">
         {insights.map((item, index) => (
@@ -398,10 +393,10 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
             className="rounded-[12px] p-4"
             style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.14)' }}
           >
-            <p className="text-white text-[13px] font-bold" style={{ letterSpacing: '-0.01em' }}>
+            <p className="text-[13px] font-bold" style={{ color: "rgba(0,0,0,0.90)" }} style={{ letterSpacing: '-0.01em' }}>
               {item.title}
             </p>
-            <p className="text-[12px] leading-relaxed mt-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            <p className="text-[12px] leading-relaxed mt-1.5" style={{ color: '#615d59' }}>
               {item.body}
             </p>
           </div>
@@ -421,11 +416,18 @@ export default function Dashboard() {
   const [sortCol, setSortCol] = useState('revenue')
   const [sortDir, setSortDir] = useState('desc')
   const [visibleSeries, setVisibleSeries] = useState({ revenue: true, investment: true, profit: true, roas: true })
+  const [tasks, setTasks] = useState([])
 
   useEffect(() => {
     setLoading(true)
-    axios.get(`/api/dashboard/summary?date_from=${dateFrom}&date_to=${dateTo}`)
-      .then(response => setSummary(response.data))
+    Promise.all([
+      axios.get(`/api/dashboard/summary?date_from=${dateFrom}&date_to=${dateTo}`),
+      axios.get('/api/tasks'),
+    ])
+      .then(([summaryRes, tasksRes]) => {
+        setSummary(summaryRes.data)
+        setTasks(tasksRes.data)
+      })
       .catch(() => setSummary(null))
       .finally(() => setLoading(false))
   }, [dateFrom, dateTo])
@@ -453,6 +455,16 @@ export default function Dashboard() {
     name: product.name,
     roas: numberValue(product.roas),
   }))
+
+  // ── Tasks today analysis ──
+  const todayIso = new Date().toISOString().slice(0, 10)
+  const tasksOverdue = tasks.filter(t => t.status === 'overdue' || (t.due_date && t.due_date < todayIso && t.status !== 'completed'))
+  const tasksToday  = tasks.filter(t => t.due_date === todayIso && t.status !== 'completed')
+  const tasksUpcoming = tasks.filter(t => {
+    if (!t.due_date || t.status === 'completed') return false
+    const diff = Math.ceil((new Date(t.due_date + 'T12:00:00') - new Date(new Date().toDateString())) / 86400000)
+    return diff > 0 && diff <= 3
+  })
 
   const alerts = []
   if (!loading && products.length > 0) {
@@ -504,12 +516,12 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1
-              className="text-[30px] font-bold text-white leading-none"
-              style={{ letterSpacing: '-0.04em' }}
+              className="text-[24px] font-bold leading-none"
+              style={{ letterSpacing: '-0.03em', color: 'rgba(0,0,0,0.90)' }}
             >
               Dashboard
             </h1>
-            <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+            <p className="text-[12.5px] mt-1" style={{ color: '#a39e98' }}>
               Visión consolidada del negocio
             </p>
           </div>
@@ -517,23 +529,23 @@ export default function Dashboard() {
         </div>
 
         {isEmpty ? (
-          <div className="card p-14 text-center space-y-4">
+          <div className="card p-12 text-center space-y-4">
             <div
-              className="w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto"
-              style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.18)', color: '#F59E0B' }}
+              className="w-12 h-12 rounded-[12px] flex items-center justify-center mx-auto"
+              style={{ background: '#f2f9ff', border: '1px solid rgba(0,117,222,0.20)', color: '#0075de' }}
             >
-              <Icon className="w-8 h-8" path="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" />
+              <Icon className="w-6 h-6" path="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" />
             </div>
             <div>
-              <p className="text-white font-bold text-[18px]" style={{ letterSpacing: '-0.02em' }}>Sin datos todavía</p>
-              <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.40)' }}>
+              <p className="font-bold text-[16px]" style={{ letterSpacing: '-0.02em', color: 'rgba(0,0,0,0.90)' }}>Sin datos todavía</p>
+              <p className="text-[13px] mt-1.5" style={{ color: '#a39e98' }}>
                 Cargá ventas e inversión para activar el dashboard.
               </p>
             </div>
             <Link
               to="/cargar"
-              className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2.5 text-[13px] font-semibold text-black"
-              style={{ background: '#F59E0B' }}
+              className="inline-flex items-center gap-2 rounded-[4px] px-4 py-2 text-[13px] font-semibold text-[rgba(0,0,0,0.90)]"
+              style={{ background: '#0075de' }}
             >
               <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Cargar datos
@@ -548,7 +560,61 @@ export default function Dashboard() {
               <CompactKpi label="Ganancia neta" value={kpis?.net_profit} formatter={formatCurrency} color={SERIES_COLORS.profit} iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4" change={changePct(kpis?.net_profit, kpis?.prev_profit)} chartData={series} chartKey="profit" loading={loading} />
             </div>
 
-            <div className="card p-6">
+            {/* ── Tasks Today ──────────────────────────────────────────────── */}
+            {!loading && (tasksOverdue.length > 0 || tasksToday.length > 0 || tasksUpcoming.length > 0) && (
+              <div className="card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-[13px] font-semibold" style={{ color: 'rgba(0,0,0,0.85)', letterSpacing: '-0.01em' }}>
+                    Tareas hoy
+                  </h2>
+                  <Link to="/tareas" className="text-[11px] font-medium" style={{ color: '#0075de' }}>
+                    Ver todas →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { label: 'Vencidas', tasks: tasksOverdue.slice(0, 4), color: '#ef4444', bg: 'rgba(239,68,68,0.06)', border: 'rgba(239,68,68,0.14)', icon: 'M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' },
+                    { label: 'Hoy',      tasks: tasksToday.slice(0, 4),   color: '#dd5b00', bg: 'rgba(221,91,0,0.06)',  border: 'rgba(221,91,0,0.14)',  icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+                    { label: 'Próximas', tasks: tasksUpcoming.slice(0, 4), color: '#0075de', bg: '#f2f9ff',             border: 'rgba(0,117,222,0.16)', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z' },
+                  ].map(group => (
+                    <div key={group.label} className="rounded-[8px] p-3" style={{ background: group.bg, border: `1px solid ${group.border}` }}>
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: group.color }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={group.icon} />
+                        </svg>
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: group.color }}>
+                          {group.label}
+                        </span>
+                        <span className="ml-auto text-[11px] font-bold tabular-nums" style={{ color: group.color }}>
+                          {group.tasks.length}
+                        </span>
+                      </div>
+                      {group.tasks.length === 0 ? (
+                        <p className="text-[11.5px]" style={{ color: '#a39e98' }}>Sin tareas</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {group.tasks.map(t => (
+                            <div key={t.id} className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: group.color }} />
+                              <div className="min-w-0">
+                                <p className="text-[12px] font-medium leading-snug truncate" style={{ color: 'rgba(0,0,0,0.85)' }}>
+                                  {t.title}
+                                </p>
+                                {t.product_name && (
+                                  <p className="text-[10.5px]" style={{ color: '#a39e98' }}>{t.product_name}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="card p-5">
               <SectionHeader
                 title="Tendencia"
                 action={
@@ -569,8 +635,8 @@ export default function Dashboard() {
                           borderColor: `${item.color}35`,
                         } : {
                           background: 'transparent',
-                          color: 'rgba(255,255,255,0.30)',
-                          borderColor: 'rgba(255,255,255,0.08)',
+                          color: '#a39e98',
+                          borderColor: 'rgba(0,0,0,0.10)',
                         }}
                       >
                         {item.label}
@@ -594,15 +660,15 @@ export default function Dashboard() {
                           </linearGradient>
                         ))}
                       </defs>
-                      <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 6" vertical={false} />
+                      <CartesianGrid stroke="rgba(0,0,0,0.08)" strokeDasharray="3 6" vertical={false} />
                       <XAxis
                         dataKey="date"
                         tickFormatter={shortDate}
-                        tick={{ fill: 'rgba(255,255,255,0.32)', fontSize: 11 }}
+                        tick={{ fill: '#a39e98', fontSize: 11 }}
                         axisLine={false} tickLine={false}
                       />
                       <YAxis
-                        tick={{ fill: 'rgba(255,255,255,0.32)', fontSize: 11 }}
+                        tick={{ fill: '#a39e98', fontSize: 11 }}
                         axisLine={false} tickLine={false}
                         width={72}
                         tickFormatter={value => formatCurrency(value)}
@@ -623,13 +689,13 @@ export default function Dashboard() {
                 {/* Product ranking table */}
                 <div className="card overflow-hidden">
                   <div className="px-6 py-5 flex items-center justify-between gap-3"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h2 className="text-[14px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
+                    style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                    <h2 className="text-[14px] font-semibold text-[rgba(0,0,0,0.90)]" style={{ letterSpacing: '-0.02em' }}>
                       Ranking de productos
                     </h2>
                     <span
                       className="text-[11px] font-medium px-2.5 py-1 rounded-[6px]"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' }}
+                      style={{ background: 'rgba(0,0,0,0.04)', color: '#a39e98' }}
                     >
                       {formatNumber(kpis?.total_records ?? 0)} reg.
                     </span>
@@ -645,7 +711,7 @@ export default function Dashboard() {
                       <div className="hidden lg:block">
                         <table className="w-full">
                           <thead>
-                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
                               {[
                                 { key: null,         label: '#' },
                                 { key: null,         label: 'Producto' },
@@ -659,7 +725,7 @@ export default function Dashboard() {
                                   key={column.label}
                                   onClick={() => column.key && toggleSort(column.key)}
                                   className={`px-5 py-3.5 text-left text-[10.5px] uppercase font-semibold tracking-[0.14em] ${column.key ? 'cursor-pointer' : ''}`}
-                                  style={{ color: 'rgba(255,255,255,0.30)' }}
+                                  style={{ color: '#a39e98' }}
                                 >
                                   {column.label}
                                   {column.key === sortCol && (
@@ -676,7 +742,7 @@ export default function Dashboard() {
                               <tr
                                 key={product.id}
                                 className="group transition-colors"
-                                style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                                style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                               >
@@ -684,12 +750,12 @@ export default function Dashboard() {
                                   {index + 1}
                                 </td>
                                 <td className="px-5 py-4">
-                                  <p className="text-[13px] font-semibold text-white">{product.name}</p>
+                                  <p className="text-[13px] font-semibold text-[rgba(0,0,0,0.90)]">{product.name}</p>
                                 </td>
                                 <td className="px-5 py-4 text-[13px] font-bold" style={{ color: '#F59E0B' }}>
                                   {formatCurrency(product.revenue)}
                                 </td>
-                                <td className="px-5 py-4 text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                <td className="px-5 py-4 text-[13px]" style={{ color: '#615d59' }}>
                                   {formatCurrency(product.investment)}
                                 </td>
                                 <td className="px-5 py-4">
@@ -733,7 +799,7 @@ export default function Dashboard() {
 
                 {/* Charts row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <div className="card p-6">
+                  <div className="card p-5">
                     <SectionHeader title="Distribución de ingresos" />
                     <div className="h-[240px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -749,7 +815,7 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="card p-6">
+                  <div className="card p-5">
                     <SectionHeader title="ROAS por producto" />
                     <div className="h-[240px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -760,18 +826,18 @@ export default function Dashboard() {
                               <stop offset="100%" stopColor="#A78BFA" />
                             </linearGradient>
                           </defs>
-                          <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 6" horizontal={false} />
+                          <CartesianGrid stroke="rgba(0,0,0,0.08)" strokeDasharray="3 6" horizontal={false} />
                           <XAxis
                             type="number"
-                            tick={{ fill: 'rgba(255,255,255,0.30)', fontSize: 11 }}
+                            tick={{ fill: '#a39e98', fontSize: 11 }}
                             axisLine={false} tickLine={false}
                           />
                           <YAxis
                             type="category" dataKey="name" width={90}
-                            tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 11 }}
+                            tick={{ fill: '#a39e98', fontSize: 11 }}
                             axisLine={false} tickLine={false}
                           />
-                          <Tooltip content={<RoasTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                          <Tooltip content={<RoasTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
                           <Bar dataKey="roas" radius={[0, 8, 8, 0]} fill="url(#roas-bar)" />
                         </BarChart>
                       </ResponsiveContainer>
@@ -783,7 +849,7 @@ export default function Dashboard() {
               {/* Right sidebar */}
               <div className="w-full xl:w-[320px] space-y-5 min-w-0">
                 {/* Alerts */}
-                <div className="card p-6">
+                <div className="card p-5">
                   <SectionHeader title="Alertas" />
                   <div className="space-y-3">
                     {loading
@@ -793,24 +859,23 @@ export default function Dashboard() {
                           key={`${alert.title}-${index}`}
                           className="rounded-[12px] p-4"
                           style={alert.tone === 'green'
-                            ? { background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.16)' }
+                            ? { background: "rgba(26,174,57,0.06)", border: "1px solid rgba(26,174,57,0.14)" }
                             : alert.tone === 'red'
-                            ? { background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.16)' }
-                            : { background: 'rgba(129,140,248,0.07)', border: '1px solid rgba(129,140,248,0.16)' }
+                            ? { background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.14)" }
+                            : { background: "#f2f9ff", border: "1px solid rgba(0,117,222,0.16)" }
                           }
                         >
-                          <p className="text-white text-[13px] font-bold" style={{ letterSpacing: '-0.01em' }}>
+                          <p className="text-[13px] font-bold" style={{ color: "rgba(0,0,0,0.90)" }} style={{ letterSpacing: '-0.01em' }}>
                             {alert.title}
                           </p>
-                          <p className="text-[12px] mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                          <p className="text-[12px] mt-1 leading-relaxed" style={{ color: '#615d59' }}>
                             {alert.body}
                           </p>
                           {alert.action && (
                             <button
                               onClick={alert.onAction}
                               className="text-[11px] font-bold mt-2.5 hover:underline"
-                              style={{ color: '#F59E0B' }}
-                            >
+                              style={{ color: "#0075de" }}>
                               {alert.action} →
                             </button>
                           )}
