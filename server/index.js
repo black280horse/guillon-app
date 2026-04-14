@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure persistent data directory exists before DB init
-try { fs.mkdirSync('/app/data', { recursive: true }); } catch (_) {}
+try { fs.mkdirSync('/data', { recursive: true }); } catch (_) {}
 
 require('./db/schema'); // inicializa la DB al arrancar
 require('./db/seed');   // crea/actualiza admin al arrancar

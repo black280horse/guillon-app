@@ -105,101 +105,81 @@ function KanbanCard({ task, colorMap, onEdit, onUpdate, onDelete, isOverlay = fa
         opacity: isDragging ? 0.25 : 1,
         zIndex: isOverlay ? 9999 : undefined,
       }}
-      className={`group relative rounded-[12px] overflow-hidden select-none transition-all duration-150 ${
+      className={`group relative rounded-[10px] overflow-hidden select-none transition-all duration-150 ${
         isCompleted
-          ? 'bg-white/[0.018] border border-white/[0.05] opacity-55'
+          ? 'opacity-45 border border-white/[0.05]'
           : isOverdue
-          ? 'bg-white/[0.03] border border-[#ef4444]/25 hover:border-[#ef4444]/40'
-          : 'bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.04]'
-      } ${isOverlay ? 'shadow-[0_20px_40px_rgba(0,0,0,0.6)] scale-[1.02]' : ''}`}
+          ? 'border border-[#F87171]/30 hover:border-[#F87171]/50'
+          : 'border border-white/[0.08] hover:border-white/[0.18] hover:bg-white/[0.035]'
+      } ${isOverlay ? 'shadow-[0_16px_40px_rgba(0,0,0,0.65)] scale-[1.02]' : ''}`}
+      style={{ background: isCompleted ? 'rgba(255,255,255,0.015)' : isOverdue ? 'rgba(248,113,113,0.05)' : 'rgba(255,255,255,0.025)' }}
     >
-      {/* Priority left border */}
-      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: pri.color }} />
+      {/* Priority left bar — thicker, stronger */}
+      <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ background: pri.color, opacity: isCompleted ? 0.3 : 1 }} />
 
-      <div className="pl-[11px] pr-2.5 py-2.5">
+      <div className="pl-3.5 pr-2.5 pt-2.5 pb-2">
         {/* Title row */}
         <div className="flex items-start gap-1.5">
-          {/* Drag handle */}
           <button
             {...attributes}
             {...listeners}
-            className="mt-[3px] text-[#3a3a42] hover:text-[#6b6b78] cursor-grab active:cursor-grabbing shrink-0 touch-none"
+            className="mt-[3px] text-[#2e2e38] hover:text-[#56566A] cursor-grab active:cursor-grabbing shrink-0 touch-none"
             onClick={e => e.stopPropagation()}
             tabIndex={-1}
           >
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-              <circle cx="7" cy="4.5" r="1.2" /><circle cx="13" cy="4.5" r="1.2" />
-              <circle cx="7" cy="9.5" r="1.2" /><circle cx="13" cy="9.5" r="1.2" />
-              <circle cx="7" cy="14.5" r="1.2" /><circle cx="13" cy="14.5" r="1.2" />
+            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+              <circle cx="7" cy="5" r="1.3" /><circle cx="13" cy="5" r="1.3" />
+              <circle cx="7" cy="10" r="1.3" /><circle cx="13" cy="10" r="1.3" />
+              <circle cx="7" cy="15" r="1.3" /><circle cx="13" cy="15" r="1.3" />
             </svg>
           </button>
-          <button
-            className="flex-1 text-left"
-            onClick={() => onEdit(task)}
-          >
-            <p className={`text-[13.5px] font-medium leading-snug ${isCompleted ? 'line-through text-[#4a4a52]' : 'text-[#e4e4e7]'}`}>
+          <button className="flex-1 text-left" onClick={() => onEdit(task)}>
+            <p className={`text-[13px] font-semibold leading-snug ${isCompleted ? 'line-through text-[#3a3a46]' : 'text-white'}`}>
               {task.title}
             </p>
           </button>
         </div>
 
-        {/* Product + priority row */}
-        <div className="flex items-center gap-1.5 mt-2 pl-[18px] flex-wrap">
+        {/* Badges row */}
+        <div className="flex items-center gap-1.5 mt-2 pl-4 flex-wrap">
           {prodColor && (
-            <span
-              className="text-[11px] px-1.5 py-0.5 rounded-[4px] font-medium truncate max-w-[120px]"
-              style={{ background: `${prodColor}20`, color: prodColor }}
-            >
+            <span className="text-[10.5px] px-1.5 py-[2px] rounded-[4px] font-medium truncate max-w-[110px]" style={{ background: `${prodColor}1C`, color: prodColor }}>
               {task.product_name}
             </span>
           )}
           {isOverdue && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded-[4px] bg-[#ef4444]/15 text-[#ef4444] font-medium">
+            <span className="text-[10.5px] px-1.5 py-[2px] rounded-[4px] font-semibold" style={{ background: 'rgba(248,113,113,0.15)', color: '#F87171' }}>
               Vencida
             </span>
           )}
-          <span
-            className="text-[11px] px-1.5 py-0.5 rounded-[4px] font-medium ml-auto shrink-0"
-            style={{ background: `${pri.color}18`, color: pri.color }}
-          >
+          <span className="text-[10.5px] px-1.5 py-[2px] rounded-[4px] font-semibold ml-auto shrink-0" style={{ background: `${pri.color}1C`, color: pri.color }}>
             {pri.label}
           </span>
         </div>
 
-        {/* Date + action row */}
-        <div className="flex items-center justify-between mt-2 pl-[18px]">
+        {/* Date + actions row */}
+        <div className="flex items-center justify-between mt-1.5 pl-4">
           {dayLbl ? (
-            <span className={`text-[11px] tabular-nums ${dayLbl.cls}`}>
+            <span className={`text-[11px] tabular-nums font-medium ${dayLbl.cls}`}>
               {task.due_date ? `${fmtDate(task.due_date)} · ` : ''}{dayLbl.text}
             </span>
           ) : (
-            <span className="text-[11px] text-[#22c55e]">✓ Listo</span>
+            <span className="text-[11px] font-medium" style={{ color: '#34D399' }}>✓ Listo</span>
           )}
-
-          {/* Hover actions */}
           <div className="hidden group-hover:flex items-center gap-0.5 shrink-0">
             {!isCompleted && (
-              <button
-                onClick={e => { e.stopPropagation(); onUpdate(task.id, { status: 'completed' }) }}
-                title="Marcar como listo"
-                className="w-6 h-6 rounded-[5px] flex items-center justify-center text-[#3a3a42] hover:text-[#10b981] hover:bg-[#10b981]/12 transition-all"
-              >
-                <Icon className="w-3.5 h-3.5" stroke={2.5} path="m5 12 4 4 10-9" />
+              <button onClick={e => { e.stopPropagation(); onUpdate(task.id, { status: 'completed' }) }} title="Listo"
+                className="w-5 h-5 rounded flex items-center justify-center text-[#3a3a42] hover:text-[#34D399] hover:bg-[#34D399]/12 transition-all">
+                <Icon className="w-3 h-3" stroke={2.5} path="m5 12 4 4 10-9" />
               </button>
             )}
-            <button
-              onClick={e => { e.stopPropagation(); onEdit(task) }}
-              title="Editar"
-              className="w-6 h-6 rounded-[5px] flex items-center justify-center text-[#3a3a42] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all"
-            >
-              <Icon className="w-3 h-3" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
+            <button onClick={e => { e.stopPropagation(); onEdit(task) }} title="Editar"
+              className="w-5 h-5 rounded flex items-center justify-center text-[#3a3a42] hover:text-[#a0a0b0] hover:bg-white/[0.06] transition-all">
+              <Icon className="w-2.5 h-2.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
             </button>
-            <button
-              onClick={e => { e.stopPropagation(); onDelete(task.id) }}
-              title="Eliminar"
-              className="w-6 h-6 rounded-[5px] flex items-center justify-center text-[#3a3a42] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
-            >
-              <Icon className="w-3.5 h-3.5" path="M6 7h12m-9 0V5h6v2m-7 0 1 12h8l1-12" />
+            <button onClick={e => { e.stopPropagation(); onDelete(task.id) }} title="Eliminar"
+              className="w-5 h-5 rounded flex items-center justify-center text-[#3a3a42] hover:text-[#F87171] hover:bg-[#F87171]/10 transition-all">
+              <Icon className="w-3 h-3" path="M6 7h12m-9 0V5h6v2m-7 0 1 12h8l1-12" />
             </button>
           </div>
         </div>
@@ -215,62 +195,48 @@ function KanbanColumn({ col, tasks, colorMap, onAdd, onEdit, onUpdate, onDelete,
 
   return (
     <div className="flex flex-col min-h-0">
-      {/* Column header — Linear style: transparent bg, color dot */}
-      <div className="px-3 py-2.5 flex items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-2">
+      {/* Column header */}
+      <div className="px-2 py-2 flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
-          <span className="text-[#c0cee4] font-medium text-[12.5px] tracking-[-0.01em]">{col.label}</span>
-          <span
-            className="text-[11px] font-medium px-1.5 py-0.5 rounded-[4px] min-w-[20px] text-center leading-none"
-            style={{ background: `${col.color}18`, color: col.color }}
-          >
+          <span className="text-white font-semibold text-[12px]">{col.label}</span>
+          <span className="text-[10.5px] font-bold px-1.5 py-[1px] rounded-[4px] tabular-nums leading-none"
+            style={{ background: `${col.color}20`, color: col.color }}>
             {tasks.length}
           </span>
         </div>
-        <button
-          onClick={() => onAdd(col.id)}
-          title="Agregar tarea"
-          className="w-6 h-6 rounded-[5px] flex items-center justify-center text-[#4a4a56] hover:text-[#8ea0bc] hover:bg-white/[0.06] transition-all"
-        >
-          <Icon className="w-3.5 h-3.5" stroke={2.5} path="M12 5v14M5 12h14" />
+        <button onClick={() => onAdd(col.id)} title="Agregar"
+          className="w-5 h-5 rounded-[4px] flex items-center justify-center text-[#3a3a46] hover:text-[#a0a0b0] hover:bg-white/[0.06] transition-all">
+          <Icon className="w-3 h-3" stroke={2.5} path="M12 5v14M5 12h14" />
         </button>
       </div>
 
       {/* Column body */}
       <div
         ref={setNodeRef}
-        className={`flex-1 rounded-[14px] p-2 flex flex-col gap-2 overflow-y-auto transition-colors duration-100 ${
-          isOver ? 'bg-white/[0.04] ring-1 ring-white/10' : 'bg-white/[0.025] ring-1 ring-white/[0.06]'
+        className={`flex-1 rounded-[12px] p-1.5 flex flex-col gap-1.5 overflow-y-auto transition-colors duration-100 ${
+          isOver ? 'bg-white/[0.05]' : 'bg-white/[0.02]'
         }`}
-        style={{ maxHeight: 'calc(100vh - 224px)' }}
+        style={{
+          maxHeight: 'calc(100vh - 210px)',
+          border: isOver ? `1px solid ${col.color}40` : '1px solid rgba(255,255,255,0.05)',
+        }}
       >
         {tasks.length === 0 && !activeId && (
-          <div className="flex items-center justify-center h-16 text-[#3a3a46] text-[12px] border border-dashed border-white/[0.07] rounded-[6px] mx-0.5">
+          <div className="flex items-center justify-center h-14 text-[11px] border border-dashed border-white/[0.06] rounded-[8px]" style={{ color: 'rgba(255,255,255,0.18)' }}>
             Sin tareas
           </div>
         )}
         {activeId && tasks.length === 0 && isOver && (
-          <div className="h-16 border-2 border-dashed rounded-[6px] mx-0.5 transition-colors" style={{ borderColor: col.color + '50' }} />
+          <div className="h-14 border-2 border-dashed rounded-[8px] transition-colors" style={{ borderColor: col.color + '50' }} />
         )}
-
         {tasks.map(task => (
-          <KanbanCard
-            key={task.id}
-            task={task}
-            colorMap={colorMap}
-            onEdit={onEdit}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-          />
+          <KanbanCard key={task.id} task={task} colorMap={colorMap} onEdit={onEdit} onUpdate={onUpdate} onDelete={onDelete} />
         ))}
-
-        {/* Add button at footer */}
-        <button
-          onClick={() => onAdd(col.id)}
-          className="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[#3f3f46] hover:text-[#71717a] hover:bg-white/[0.03] transition-all text-[12px] mt-auto shrink-0"
-        >
-          <Icon className="w-3.5 h-3.5" stroke={2} path="M12 5v14M5 12h14" />
-          Agregar tarea
+        <button onClick={() => onAdd(col.id)}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-[6px] text-[#3a3a46] hover:text-[#56566A] hover:bg-white/[0.03] transition-all text-[11.5px] mt-auto shrink-0">
+          <Icon className="w-3 h-3" stroke={2} path="M12 5v14M5 12h14" />
+          Agregar
         </button>
       </div>
     </div>
@@ -1173,46 +1139,85 @@ export default function Tasks() {
         }
       `}</style>
 
-      <div className="flex flex-col gap-3 max-w-[1560px] mx-auto overflow-x-hidden">
+      <div className="flex flex-col gap-2.5 max-w-[1560px] mx-auto overflow-x-hidden">
 
         {/* ── Page header ─────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="text-[26px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-              Tareas
-            </h1>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Title */}
+          <h1 className="text-[20px] font-bold text-white shrink-0" style={{ letterSpacing: '-0.03em' }}>
+            Tareas
+          </h1>
 
-            {/* Tab bar */}
-            <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-[12px] p-1 gap-0.5">
-              {TABS.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setView(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all ${
-                    view === tab.id
-                      ? 'bg-white/[0.08] text-white'
-                      : 'text-[#6b7280] hover:text-[#c0cee4]'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" path={tab.icon} />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Link to stats */}
-            <Link
-              to="/tareas/dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] hover:border-white/[0.14] text-[12px] font-medium transition-all"
-            >
-              <Icon className="w-3.5 h-3.5" path="M5 19V9m7 10V5m7 14v-7M3 19h18" />
-              Estadísticas
-            </Link>
+          {/* Tab bar */}
+          <div className="flex items-center bg-white/[0.05] border border-white/[0.08] rounded-[8px] p-0.5 gap-0.5">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setView(tab.id)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[12px] font-medium transition-all ${
+                  view === tab.id
+                    ? 'bg-white/[0.10] text-white shadow-sm'
+                    : 'text-[#56566A] hover:text-[#a0a0b0]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" path={tab.icon} />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
           </div>
 
+          {/* Stats link */}
+          <Link
+            to="/tareas/dashboard"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] border border-white/[0.08] text-[#56566A] hover:text-[#a0a0b0] text-[12px] font-medium transition-all"
+          >
+            <Icon className="w-3.5 h-3.5" path="M5 19V9m7 10V5m7 14v-7M3 19h18" />
+            <span className="hidden sm:inline">Stats</span>
+          </Link>
+
+          {/* Filters inline */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="relative min-w-[140px] max-w-[220px] flex-1">
+              <Icon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[#3f3f46]" path="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar..."
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[8px] pl-7 pr-3 py-1.5 text-[12px] text-white placeholder:text-[#3f3f46] focus:outline-none focus:border-white/[0.18] transition-colors"
+              />
+            </div>
+            <select
+              value={filterProd}
+              onChange={e => setFilterProd(e.target.value)}
+              className="bg-white/[0.04] border border-white/[0.08] rounded-[8px] px-2.5 py-1.5 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.18] transition-colors max-w-[140px]"
+            >
+              <option value="">Todos los productos</option>
+              {productNames.map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select
+              value={filterPri}
+              onChange={e => setFilterPri(e.target.value)}
+              className="bg-white/[0.04] border border-white/[0.08] rounded-[8px] px-2.5 py-1.5 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.18] transition-colors max-w-[120px]"
+            >
+              <option value="">Prioridad</option>
+              {Object.entries(PRIORITY_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+            {(filterStatus || filterProd || filterPri || search) && (
+              <button
+                onClick={() => { setFilterStatus(''); setFilterProd(''); setFilterPri(''); setSearch('') }}
+                className="flex items-center gap-1 text-[11.5px] text-[#4a4a56] hover:text-[#ef4444] transition-colors shrink-0"
+              >
+                <Icon className="w-3 h-3" path="M6 6l12 12M18 6 6 18" />
+                Limpiar
+              </button>
+            )}
+            <span className="text-[11.5px] text-[#3f3f46] ml-auto shrink-0 tabular-nums">{filtered.length} tareas</span>
+          </div>
+
+          {/* Nueva tarea */}
           <button
             onClick={() => setModal({ status: 'pending' })}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-[#F59E0B] text-black text-[12.5px] font-medium hover:bg-[#E8A020] transition-all shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[8px] bg-[#F59E0B] text-black text-[12.5px] font-semibold hover:bg-[#E8A020] transition-all shrink-0"
           >
             <Icon className="w-3.5 h-3.5" stroke={2.5} path="M12 5v14M5 12h14" />
             Nueva tarea
@@ -1221,35 +1226,38 @@ export default function Tasks() {
 
         {/* ── KPI cards ───────────────────────────────────────────────────── */}
         {tasks.length > 0 && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             {[
-              { key: 'completed', label: 'Completadas', count: kpiCounts.completed, color: '#10b981', bg: 'bg-[#10b981]/8', ring: 'ring-[#10b981]/30', icon: 'm5 12 4 4 10-9' },
-              { key: 'pending',   label: 'Pendientes',  count: kpiCounts.pending,   color: '#3b82f6', bg: 'bg-[#3b82f6]/8', ring: 'ring-[#3b82f6]/30', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-              { key: 'overdue',   label: 'Vencidas',    count: kpiCounts.overdue,   color: '#ef4444', bg: 'bg-[#ef4444]/8', ring: 'ring-[#ef4444]/30', icon: 'M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' },
+              { key: 'completed', label: 'Completadas', count: kpiCounts.completed, color: '#34D399', dimBg: 'rgba(52,211,153,0.08)', dimBorder: 'rgba(52,211,153,0.20)', ringColor: 'rgba(52,211,153,0.30)', icon: 'm5 12 4 4 10-9' },
+              { key: 'pending',   label: 'Pendientes',  count: kpiCounts.pending,   color: '#818CF8', dimBg: 'rgba(129,140,248,0.08)', dimBorder: 'rgba(129,140,248,0.20)', ringColor: 'rgba(129,140,248,0.30)', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+              { key: 'overdue',   label: 'Vencidas',    count: kpiCounts.overdue,   color: '#F87171', dimBg: 'rgba(248,113,113,0.08)', dimBorder: 'rgba(248,113,113,0.20)', ringColor: 'rgba(248,113,113,0.30)', icon: 'M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' },
             ].map(kpi => (
               <button
                 key={kpi.key}
                 onClick={() => setFilterStatus(s => s === kpi.key ? '' : kpi.key)}
-                className={`relative text-left rounded-[14px] p-4 border transition-all ${
-                  filterStatus === kpi.key
-                    ? `${kpi.bg} ring-1 ${kpi.ring} border-transparent`
-                    : 'bg-white/[0.025] border-white/[0.07] hover:bg-white/[0.04]'
-                }`}
+                className="relative text-left rounded-[12px] p-4 border transition-all"
+                style={filterStatus === kpi.key
+                  ? { background: kpi.dimBg, borderColor: kpi.dimBorder, boxShadow: `0 0 0 1px ${kpi.ringColor}` }
+                  : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }
+                }
+                onMouseEnter={e => { if (filterStatus !== kpi.key) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                onMouseLeave={e => { if (filterStatus !== kpi.key) e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] uppercase tracking-[0.14em] font-medium" style={{ color: kpi.color }}>{kpi.label}</p>
-                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: kpi.color, opacity: 0.7 }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={kpi.icon} />
-                  </svg>
+                {/* Icon + label row */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: kpi.dimBg, border: `1px solid ${kpi.dimBorder}` }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: kpi.color }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={kpi.icon} />
+                    </svg>
+                  </div>
+                  {filterStatus === kpi.key && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[4px]" style={{ background: `${kpi.color}22`, color: kpi.color }}>
+                      filtro activo
+                    </span>
+                  )}
                 </div>
-                <p className="text-[32px] font-light tabular-nums leading-none mt-2 text-white" style={{ letterSpacing: '-0.03em' }}>
-                  {kpi.count}
-                </p>
-                {filterStatus === kpi.key && (
-                  <span className="absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-[4px]" style={{ background: `${kpi.color}25`, color: kpi.color }}>
-                    activo
-                  </span>
-                )}
+                <p className="text-[10.5px] uppercase tracking-[0.14em] font-semibold mb-1.5" style={{ color: kpi.color }}>{kpi.label}</p>
+                <p className="text-[36px] font-bold tabular-nums leading-none text-white" style={{ letterSpacing: '-0.04em' }}>{kpi.count}</p>
               </button>
             ))}
           </div>
@@ -1274,61 +1282,6 @@ export default function Tasks() {
             </div>
           </div>
         )}
-
-        {/* ── Filters row ─────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[180px] max-w-[280px]">
-            <Icon
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#3f3f46]"
-              path="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-            />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar tareas..."
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[10px] pl-8 pr-3 py-2 text-[12px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
-            />
-          </div>
-
-          {/* Product filter */}
-          <select
-            value={filterProd}
-            onChange={e => setFilterProd(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
-          >
-            <option value="">Todos los productos</option>
-            {productNames.map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
-
-          {/* Priority filter */}
-          <select
-            value={filterPri}
-            onChange={e => setFilterPri(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
-          >
-            <option value="">Todas las prioridades</option>
-            {Object.entries(PRIORITY_META).map(([k, v]) => (
-              <option key={k} value={k}>{v.label}</option>
-            ))}
-          </select>
-
-          {/* Clear filters */}
-          {(filterStatus || filterProd || filterPri || search) && (
-            <button
-              onClick={() => { setFilterStatus(''); setFilterProd(''); setFilterPri(''); setSearch('') }}
-              className="flex items-center gap-1 text-[12px] text-[#6b7280] hover:text-[#ef4444] transition-colors"
-            >
-              <Icon className="w-3.5 h-3.5" path="M6 6l12 12M18 6 6 18" />
-              Limpiar
-            </button>
-          )}
-
-          {/* Task count */}
-          <span className="text-[12px] text-[#3f3f46] ml-auto">
-            {filtered.length} {filtered.length === 1 ? 'tarea' : 'tareas'}
-          </span>
-        </div>
 
         {/* ── Empty state ─────────────────────────────────────────────────── */}
         {tasks.length === 0 && (
