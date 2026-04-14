@@ -36,8 +36,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use((_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
 }
 
-app.listen(PORT, () => {
-  console.log(`Guillon AP server corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Guillon AP server corriendo en puerto ${PORT}`);
 
   // Iniciar servicios
   require('./services/push').init();
