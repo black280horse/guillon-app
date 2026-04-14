@@ -24,13 +24,13 @@ import { useCountUp } from '../hooks/useCountUp'
 import { usePreferences } from '../context/PreferencesContext'
 
 const SERIES_COLORS = {
-  revenue: '#E8A020',
-  investment: '#4F8CFF',
-  profit: '#10B981',
-  roas: '#8B5CF6',
+  revenue:    '#F59E0B',
+  investment: '#818CF8',
+  profit:     '#34D399',
+  roas:       '#A78BFA',
 }
 
-const PIE_COLORS = ['#E8A020', '#4F8CFF', '#10B981', '#8B5CF6', '#FB7185']
+const PIE_COLORS = ['#F59E0B', '#34D399', '#818CF8', '#22D3EE', '#F87171']
 
 function Icon({ path, className = 'w-4 h-4', stroke = 1.8 }) {
   return (
@@ -60,26 +60,38 @@ function numberValue(value) {
 
 function KpiSkeleton() {
   return (
-    <div className="card p-5 space-y-3">
-      <div className="skeleton h-3 w-24 rounded" />
-      <div className="skeleton h-8 w-28 rounded" />
-      <div className="skeleton h-10 w-full rounded" />
+    <div className="card p-6 space-y-4">
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <div className="skeleton h-2.5 w-20 rounded-full" />
+          <div className="skeleton h-10 w-32 rounded-[8px]" />
+        </div>
+        <div className="skeleton w-11 h-11 rounded-[12px]" />
+      </div>
+      <div className="skeleton h-14 w-full rounded-[8px]" />
     </div>
   )
 }
 
 function MiniArea({ data, dataKey, color }) {
   return (
-    <div className="h-12 w-full">
+    <div className="h-14 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={`mini-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={color} stopOpacity={0.28} />
-              <stop offset="95%" stopColor={color} stopOpacity={0} />
+              <stop offset="5%"  stopColor={color} stopOpacity={0.35} />
+              <stop offset="95%" stopColor={color} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} fill={`url(#mini-${dataKey})`} dot={false} />
+          <Area
+            type="monotone"
+            dataKey={dataKey}
+            stroke={color}
+            strokeWidth={2}
+            fill={`url(#mini-${dataKey})`}
+            dot={false}
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -94,77 +106,129 @@ function CompactKpi({ label, value, formatter, color, iconPath, change, chartDat
   const delta = change !== null && change !== undefined && !Number.isNaN(parseFloat(change)) ? parseFloat(change) : null
 
   return (
-    <div className="card p-5 h-full">
+    <div className="card p-6 h-full flex flex-col gap-4">
+      {/* Top row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[#7d8ca5] text-[11px] uppercase tracking-[0.14em] font-medium">{label}</p>
-          <p className="text-[32px] font-light text-white mt-2 leading-none tabular-nums" style={{ letterSpacing: '-0.03em' }}>
-            <span style={{ color }}>{formatter(animated)}</span>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em]"
+            style={{ color: 'rgba(255,255,255,0.38)' }}>
+            {label}
+          </p>
+          <p className="text-[38px] font-bold leading-none mt-2.5 tabular-nums"
+            style={{ color, letterSpacing: '-0.04em' }}>
+            {formatter(animated)}
           </p>
         </div>
-        <div className="w-9 h-9 rounded-[8px] bg-white/[0.04] border border-white/8 text-[#cfd9ea] flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4" path={iconPath} />
+        {/* Icon */}
+        <div
+          className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0"
+          style={{
+            background: `${color}15`,
+            boxShadow: `0 0 20px ${color}20`,
+            border: `1px solid ${color}25`,
+            color,
+          }}
+        >
+          <Icon className="w-5 h-5" path={iconPath} />
         </div>
       </div>
 
-      <div className="mt-4">
-        <MiniArea data={chartData} dataKey={chartKey} color={color} />
-      </div>
+      {/* Sparkline */}
+      <MiniArea data={chartData} dataKey={chartKey} color={color} />
 
-      <div className={`text-[11px] font-medium mt-2 ${delta === null ? 'text-[#7d8ca5]' : delta >= 0 ? 'text-[#10B981]' : 'text-[#FB7185]'}`}>
-        {delta === null ? 'Sin comparativa' : `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% vs período anterior`}
+      {/* Delta badge */}
+      <div className="flex items-center gap-2">
+        {delta === null ? (
+          <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.28)' }}>
+            Sin comparativa
+          </span>
+        ) : (
+          <span
+            className="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 rounded-[6px]"
+            style={delta >= 0 ? {
+              background: 'rgba(52,211,153,0.12)',
+              color: '#34D399',
+            } : {
+              background: 'rgba(248,113,113,0.12)',
+              color: '#F87171',
+            }}
+          >
+            {delta >= 0 ? '↑' : '↓'} {Math.abs(delta).toFixed(1)}%
+            <span className="font-normal opacity-70">vs anterior</span>
+          </span>
+        )}
       </div>
+    </div>
+  )
+}
+
+function ChartTooltipBox({ children }) {
+  return (
+    <div style={{
+      background: 'rgba(18,18,28,0.97)',
+      border: '1px solid rgba(255,255,255,0.10)',
+      borderRadius: '12px',
+      padding: '12px 16px',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.60)',
+      minWidth: '180px',
+    }}>
+      {children}
     </div>
   )
 }
 
 function TrendTooltip({ active, payload, label, formatCurrency }) {
   if (!active || !payload?.length) return null
-
   return (
-    <div className="card-elevated min-w-[200px] px-4 py-3">
-      <p className="text-[#8ea0bc] text-xs mb-2">{longDate(label)}</p>
+    <ChartTooltipBox>
+      <p className="text-[11px] font-medium mb-2.5" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.02em' }}>
+        {longDate(label)}
+      </p>
       {payload.map(item => (
         <div key={item.dataKey} className="flex items-center justify-between gap-4 py-1">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-            <span className="text-[#c0cee4] text-xs">{item.name}</span>
+            <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.70)' }}>{item.name}</span>
           </div>
-          <span className="text-white text-xs font-semibold">
+          <span className="text-[13px] font-bold text-white tabular-nums">
             {item.dataKey === 'roas' ? `${numberValue(item.value).toFixed(2)}x` : formatCurrency(item.value)}
           </span>
         </div>
       ))}
-    </div>
+    </ChartTooltipBox>
   )
 }
 
 function PieTooltip({ active, payload, formatCurrency }) {
   if (!active || !payload?.length) return null
   const item = payload[0]
-
   return (
-    <div className="card-elevated px-4 py-3">
-      <p className="text-white text-sm font-semibold">{item.name}</p>
-      <p className="text-[#8ea0bc] text-xs mt-1">{formatCurrency(item.value)}</p>
-    </div>
+    <ChartTooltipBox>
+      <p className="text-white text-[13px] font-bold">{item.name}</p>
+      <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>{formatCurrency(item.value)}</p>
+    </ChartTooltipBox>
   )
 }
 
 function RoasTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="card-elevated px-4 py-3">
-      <p className="text-white text-sm font-semibold">{label}</p>
-      <p className="text-[#8ea0bc] text-xs mt-1">{numberValue(payload[0].value).toFixed(2)}x</p>
-    </div>
+    <ChartTooltipBox>
+      <p className="text-white text-[13px] font-bold">{label}</p>
+      <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>{numberValue(payload[0].value).toFixed(2)}x</p>
+    </ChartTooltipBox>
   )
 }
 
 function SectionHeader({ title, action }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-5">
-      <h2 className="text-[13px] font-semibold text-white tracking-[-0.01em]">{title}</h2>
+      <h2
+        className="text-[14px] font-semibold text-white"
+        style={{ letterSpacing: '-0.02em' }}
+      >
+        {title}
+      </h2>
       {action}
     </div>
   )
@@ -172,35 +236,51 @@ function SectionHeader({ title, action }) {
 
 function ProductRankingCards({ products, formatCurrency, navigate }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 lg:hidden">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-5 lg:hidden">
       {products.map((product, index) => (
         <button
           key={product.id}
           onClick={() => navigate(`/productos/${product.id}`)}
-          className="rounded-[10px] border border-white/8 bg-white/[0.03] p-4 text-left hover:border-[#E8A020]/20 transition-all"
+          className="rounded-[14px] p-4 text-left transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(245,158,11,0.25)'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[#8ea0bc] text-[11px] uppercase tracking-[0.14em]">#{index + 1}</p>
-              <p className="text-white text-sm font-semibold mt-1">{product.name}</p>
+              <p className="text-[10.5px] font-bold tracking-[0.14em] uppercase" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                #{index + 1}
+              </p>
+              <p className="text-white text-[14px] font-semibold mt-1" style={{ letterSpacing: '-0.02em' }}>
+                {product.name}
+              </p>
             </div>
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${product.roas >= 3 ? 'bg-[#10B981]/14 text-[#7df3b8]' : product.roas >= 1.5 ? 'bg-[#E8A020]/14 text-[#ffd27d]' : 'bg-[#FB7185]/14 text-[#ffb7c5]'}`}>
+            <span
+              className="text-[11px] font-bold px-2.5 py-1 rounded-[6px]"
+              style={product.roas >= 3
+                ? { background: 'rgba(52,211,153,0.12)', color: '#34D399' }
+                : product.roas >= 1.5
+                ? { background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }
+                : { background: 'rgba(248,113,113,0.12)', color: '#F87171' }
+              }
+            >
               {product.roas ? `${numberValue(product.roas).toFixed(2)}x` : '-'}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-4 text-xs">
-            <div>
-              <p className="text-[#7d8ca5]">Ingresos</p>
-              <p className="text-white font-semibold mt-1">{formatCurrency(product.revenue)}</p>
-            </div>
-            <div>
-              <p className="text-[#7d8ca5]">Inversion</p>
-              <p className="text-[#c0cee4] font-semibold mt-1">{formatCurrency(product.investment)}</p>
-            </div>
-            <div>
-              <p className="text-[#7d8ca5]">Ganancia</p>
-              <p className={`font-semibold mt-1 ${numberValue(product.profit) >= 0 ? 'text-[#10B981]' : 'text-[#FB7185]'}`}>{formatCurrency(product.profit)}</p>
-            </div>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {[
+              { label: 'Ingresos', val: formatCurrency(product.revenue), color: '#F59E0B' },
+              { label: 'Inversión', val: formatCurrency(product.investment), color: 'rgba(255,255,255,0.55)' },
+              { label: 'Ganancia', val: formatCurrency(product.profit), color: numberValue(product.profit) >= 0 ? '#34D399' : '#F87171' },
+            ].map(({ label, val, color }) => (
+              <div key={label}>
+                <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</p>
+                <p className="text-[12.5px] font-bold mt-1 tabular-nums" style={{ color }}>{val}</p>
+              </div>
+            ))}
           </div>
         </button>
       ))}
@@ -257,12 +337,33 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
 
   if (state === 'idle') {
     return (
-      <div className="card p-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[#c0cee4] text-sm">Recomendaciones IA</p>
-          <button onClick={generate} className="rounded-[6px] bg-[#E8A020] px-3 py-1.5 text-[11px] font-medium text-black">
-            Generar
-          </button>
+      <div className="card p-5">
+        <div className="flex items-start gap-3">
+          <div
+            className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5"
+            style={{ background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.20)' }}
+          >
+            <svg className="w-4.5 h-4.5" fill="none" stroke="#A78BFA" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-[13px] font-semibold" style={{ letterSpacing: '-0.01em' }}>
+              Recomendaciones IA
+            </p>
+            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
+              Generá insights accionables basados en tus datos del período.
+            </p>
+            <button
+              onClick={generate}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-[8px] px-3.5 py-2 text-[12px] font-semibold text-black transition-all"
+              style={{ background: '#F59E0B' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#FCD34D'}
+              onMouseLeave={e => e.currentTarget.style.background = '#F59E0B'}
+            >
+              Generar insights
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -270,28 +371,39 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
 
   if (state === 'loading') {
     return (
-      <div className="card p-4">
-        <p className="text-[#c0cee4] text-sm">Generando recomendaciones...</p>
+      <div className="card p-5">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-full border-2 border-[#A78BFA] border-t-transparent animate-spin" />
+          <p className="text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>Generando recomendaciones…</p>
+        </div>
       </div>
     )
   }
 
   if (state === 'error') {
     return (
-      <div className="card p-4">
-        <p className="text-[#FB7185] text-sm">No se pudieron generar recomendaciones.</p>
+      <div className="card p-5">
+        <p className="text-[13px]" style={{ color: '#F87171' }}>No se pudieron generar recomendaciones.</p>
       </div>
     )
   }
 
   return (
-    <div className="card p-4">
-      <SectionHeader title="IA" />
+    <div className="card p-6">
+      <SectionHeader title="Insights IA" />
       <div className="space-y-3">
         {insights.map((item, index) => (
-          <div key={`${item.title}-${index}`} className="rounded-[8px] border border-white/8 bg-white/[0.03] p-3.5">
-            <p className="text-white text-sm font-semibold">{item.title}</p>
-            <p className="text-[#8ea0bc] text-xs leading-relaxed mt-1">{item.body}</p>
+          <div
+            key={`${item.title}-${index}`}
+            className="rounded-[12px] p-4"
+            style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.14)' }}
+          >
+            <p className="text-white text-[13px] font-bold" style={{ letterSpacing: '-0.01em' }}>
+              {item.title}
+            </p>
+            <p className="text-[12px] leading-relaxed mt-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              {item.body}
+            </p>
           </div>
         ))}
       </div>
@@ -388,23 +500,42 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 space-y-6 overflow-x-hidden">
+      <div className="w-full max-w-[1400px] mx-auto space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-[28px] md:text-[30px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-              Dashboard <span style={{ color: '#E8A020', fontWeight: 400 }}>comercial</span>
+            <h1
+              className="text-[30px] font-bold text-white leading-none"
+              style={{ letterSpacing: '-0.04em' }}
+            >
+              Dashboard
             </h1>
-            <p className="text-[#5a6d87] text-[12px] mt-1.5 tracking-[0.01em]">Visión consolidada del negocio</p>
+            <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              Visión consolidada del negocio
+            </p>
           </div>
           <DateRangePicker />
         </div>
 
         {isEmpty ? (
-          <div className="card p-10 text-center">
-            <p className="text-white font-semibold text-lg">Sin datos</p>
-            <p className="text-[#8ea0bc] text-sm mt-2">Carga ventas e inversion para activar el dashboard.</p>
-            <Link to="/cargar" className="inline-flex items-center gap-2 mt-5 rounded-[6px] bg-[#E8A020] px-5 py-2.5 text-sm font-medium text-black">
-              <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
+          <div className="card p-14 text-center space-y-4">
+            <div
+              className="w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto"
+              style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.18)', color: '#F59E0B' }}
+            >
+              <Icon className="w-8 h-8" path="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" />
+            </div>
+            <div>
+              <p className="text-white font-bold text-[18px]" style={{ letterSpacing: '-0.02em' }}>Sin datos todavía</p>
+              <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.40)' }}>
+                Cargá ventas e inversión para activar el dashboard.
+              </p>
+            </div>
+            <Link
+              to="/cargar"
+              className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2.5 text-[13px] font-semibold text-black"
+              style={{ background: '#F59E0B' }}
+            >
+              <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Cargar datos
             </Link>
           </div>
@@ -417,22 +548,30 @@ export default function Dashboard() {
               <CompactKpi label="Ganancia neta" value={kpis?.net_profit} formatter={formatCurrency} color={SERIES_COLORS.profit} iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4" change={changePct(kpis?.net_profit, kpis?.prev_profit)} chartData={series} chartKey="profit" loading={loading} />
             </div>
 
-            <div className="card p-5">
+            <div className="card p-6">
               <SectionHeader
                 title="Tendencia"
                 action={
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { key: 'revenue', label: 'Ingresos', color: SERIES_COLORS.revenue },
-                      { key: 'investment', label: 'Inversion', color: SERIES_COLORS.investment },
-                      { key: 'profit', label: 'Ganancia', color: SERIES_COLORS.profit },
-                      { key: 'roas', label: 'ROAS', color: SERIES_COLORS.roas },
+                      { key: 'revenue',    label: 'Ingresos',  color: SERIES_COLORS.revenue },
+                      { key: 'investment', label: 'Inversión', color: SERIES_COLORS.investment },
+                      { key: 'profit',     label: 'Ganancia',  color: SERIES_COLORS.profit },
+                      { key: 'roas',       label: 'ROAS',      color: SERIES_COLORS.roas },
                     ].map(item => (
                       <button
                         key={item.key}
                         onClick={() => setVisibleSeries(current => ({ ...current, [item.key]: !current[item.key] }))}
-                        className={`rounded-[6px] border px-3 py-1.5 text-[11px] font-medium transition-all ${visibleSeries[item.key] ? 'border-transparent text-black' : 'border-white/10 bg-white/[0.03] text-[#8ea0bc] hover:text-[#c0cee4]'}`}
-                        style={visibleSeries[item.key] ? { background: item.color } : {}}
+                        className="rounded-[8px] border px-3 py-1.5 text-[11px] font-semibold transition-all"
+                        style={visibleSeries[item.key] ? {
+                          background: `${item.color}18`,
+                          color: item.color,
+                          borderColor: `${item.color}35`,
+                        } : {
+                          background: 'transparent',
+                          color: 'rgba(255,255,255,0.30)',
+                          borderColor: 'rgba(255,255,255,0.08)',
+                        }}
                       >
                         {item.label}
                       </button>
@@ -442,20 +581,38 @@ export default function Dashboard() {
               />
 
               {loading ? (
-                <div className="skeleton h-[360px] rounded-[10px]" />
+                <div className="skeleton h-[340px] rounded-[12px]" />
               ) : (
-                <div className="h-[360px] md:h-[380px]">
+                <div className="h-[340px] md:h-[360px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={series} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
-                      <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="4 4" vertical={false} />
-                      <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: '#7d8ca5', fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: '#7d8ca5', fontSize: 12 }} axisLine={false} tickLine={false} width={72} tickFormatter={value => formatCurrency(value)} />
+                    <AreaChart data={series} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
+                      <defs>
+                        {Object.entries(SERIES_COLORS).map(([key, color]) => (
+                          <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%"   stopColor={color} stopOpacity={0.22} />
+                            <stop offset="100%" stopColor={color} stopOpacity={0.01} />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 6" vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={shortDate}
+                        tick={{ fill: 'rgba(255,255,255,0.32)', fontSize: 11 }}
+                        axisLine={false} tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fill: 'rgba(255,255,255,0.32)', fontSize: 11 }}
+                        axisLine={false} tickLine={false}
+                        width={72}
+                        tickFormatter={value => formatCurrency(value)}
+                      />
                       <Tooltip content={<TrendTooltip formatCurrency={formatCurrency} />} />
-                      {visibleSeries.revenue && <Line type="monotone" dataKey="revenue" name="Ingresos" stroke={SERIES_COLORS.revenue} strokeWidth={3} dot={false} activeDot={{ r: 4 }} />}
-                      {visibleSeries.investment && <Line type="monotone" dataKey="investment" name="Inversion" stroke={SERIES_COLORS.investment} strokeWidth={2.4} dot={false} activeDot={{ r: 4 }} />}
-                      {visibleSeries.profit && <Line type="monotone" dataKey="profit" name="Ganancia" stroke={SERIES_COLORS.profit} strokeWidth={2.4} dot={false} activeDot={{ r: 4 }} />}
-                      {visibleSeries.roas && <Line type="monotone" dataKey="roas" name="ROAS" stroke={SERIES_COLORS.roas} strokeWidth={2.2} strokeDasharray="6 5" dot={false} activeDot={{ r: 4 }} />}
-                    </LineChart>
+                      {visibleSeries.revenue    && <Area type="monotone" dataKey="revenue"    name="Ingresos"  stroke={SERIES_COLORS.revenue}    strokeWidth={2.5} fill={`url(#grad-revenue)`}    dot={false} activeDot={{ r: 4, fill: SERIES_COLORS.revenue }} />}
+                      {visibleSeries.investment && <Area type="monotone" dataKey="investment" name="Inversión" stroke={SERIES_COLORS.investment} strokeWidth={2}   fill={`url(#grad-investment)`} dot={false} activeDot={{ r: 4, fill: SERIES_COLORS.investment }} />}
+                      {visibleSeries.profit     && <Area type="monotone" dataKey="profit"     name="Ganancia"  stroke={SERIES_COLORS.profit}     strokeWidth={2}   fill={`url(#grad-profit)`}     dot={false} activeDot={{ r: 4, fill: SERIES_COLORS.profit }} />}
+                      {visibleSeries.roas       && <Area type="monotone" dataKey="roas"       name="ROAS"      stroke={SERIES_COLORS.roas}       strokeWidth={2}   fill="none" strokeDasharray="5 4" dot={false} activeDot={{ r: 4, fill: SERIES_COLORS.roas }} />}
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
               )}
@@ -463,75 +620,128 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start">
               <div className="space-y-5">
+                {/* Product ranking table */}
                 <div className="card overflow-hidden">
-                  <div className="px-5 py-5 border-b border-white/8 flex items-center justify-between gap-3">
-                    <SectionHeader title="Ranking de productos" />
-                    <span className="text-[#5a6d87] text-[11px] font-medium">{formatNumber(kpis?.total_records ?? 0)} registros</span>
+                  <div className="px-6 py-5 flex items-center justify-between gap-3"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <h2 className="text-[14px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
+                      Ranking de productos
+                    </h2>
+                    <span
+                      className="text-[11px] font-medium px-2.5 py-1 rounded-[6px]"
+                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' }}
+                    >
+                      {formatNumber(kpis?.total_records ?? 0)} reg.
+                    </span>
                   </div>
 
                   {loading ? (
-                    <div className="p-4 space-y-3">{[1, 2, 3].map(item => <div key={item} className="skeleton h-16 rounded-[8px]" />)}</div>
+                    <div className="p-5 space-y-3">
+                      {[1, 2, 3].map(item => <div key={item} className="skeleton h-14 rounded-[10px]" />)}
+                    </div>
                   ) : (
                     <>
                       <ProductRankingCards products={sorted} formatCurrency={formatCurrency} navigate={navigate} />
                       <div className="hidden lg:block">
                         <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-white/8">
-                            {[
-                              { key: null, label: '#' },
-                              { key: null, label: 'Producto' },
-                              { key: 'revenue', label: 'Ingresos' },
-                              { key: 'investment', label: 'Inversion' },
-                              { key: 'roas', label: 'ROAS' },
-                              { key: 'profit', label: 'Ganancia' },
-                              { key: null, label: '' },
-                            ].map(column => (
-                              <th key={column.label} onClick={() => column.key && toggleSort(column.key)} className={`px-4 py-3 text-left text-[11px] uppercase tracking-[0.16em] text-[#7d8ca5] ${column.key ? 'cursor-pointer hover:text-white' : ''}`}>
-                                {column.label}{column.key === sortCol && <span className="ml-1 text-[#E8A020]">{sortDir === 'desc' ? '↓' : '↑'}</span>}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sorted.map((product, index) => (
-                            <tr key={product.id} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.03] transition-colors">
-                              <td className="px-4 py-4 text-[#8ea0bc] text-sm font-semibold">#{index + 1}</td>
-                              <td className="px-4 py-4">
-                                <p className="text-white text-sm font-semibold">{product.name}</p>
-                              </td>
-                              <td className="px-4 py-4 text-sm font-semibold text-white">{formatCurrency(product.revenue)}</td>
-                              <td className="px-4 py-4 text-sm text-[#c0cee4]">{formatCurrency(product.investment)}</td>
-                              <td className="px-4 py-4">
-                                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${product.roas >= 3 ? 'bg-[#10B981]/14 text-[#7df3b8]' : product.roas >= 1.5 ? 'bg-[#E8A020]/14 text-[#ffd27d]' : 'bg-[#FB7185]/14 text-[#ffb7c5]'}`}>
-                                  {product.roas ? `${numberValue(product.roas).toFixed(2)}x` : '—'}
-                                </span>
-                              </td>
-                              <td className={`px-4 py-4 text-sm font-semibold ${numberValue(product.profit) >= 0 ? 'text-[#10B981]' : 'text-[#FB7185]'}`}>
-                                {formatCurrency(product.profit)}
-                              </td>
-                              <td className="px-4 py-4">
-                                <button onClick={() => navigate(`/productos/${product.id}`)} className="text-[#E8A020] text-xs font-semibold hover:underline">
-                                  Ver
-                                </button>
-                              </td>
+                          <thead>
+                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                              {[
+                                { key: null,         label: '#' },
+                                { key: null,         label: 'Producto' },
+                                { key: 'revenue',    label: 'Ingresos' },
+                                { key: 'investment', label: 'Inversión' },
+                                { key: 'roas',       label: 'ROAS' },
+                                { key: 'profit',     label: 'Ganancia' },
+                                { key: null,         label: '' },
+                              ].map(column => (
+                                <th
+                                  key={column.label}
+                                  onClick={() => column.key && toggleSort(column.key)}
+                                  className={`px-5 py-3.5 text-left text-[10.5px] uppercase font-semibold tracking-[0.14em] ${column.key ? 'cursor-pointer' : ''}`}
+                                  style={{ color: 'rgba(255,255,255,0.30)' }}
+                                >
+                                  {column.label}
+                                  {column.key === sortCol && (
+                                    <span className="ml-1" style={{ color: '#F59E0B' }}>
+                                      {sortDir === 'desc' ? '↓' : '↑'}
+                                    </span>
+                                  )}
+                                </th>
+                              ))}
                             </tr>
-                          ))}
-                        </tbody>
+                          </thead>
+                          <tbody>
+                            {sorted.map((product, index) => (
+                              <tr
+                                key={product.id}
+                                className="group transition-colors"
+                                style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <td className="px-5 py-4 text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                                  {index + 1}
+                                </td>
+                                <td className="px-5 py-4">
+                                  <p className="text-[13px] font-semibold text-white">{product.name}</p>
+                                </td>
+                                <td className="px-5 py-4 text-[13px] font-bold" style={{ color: '#F59E0B' }}>
+                                  {formatCurrency(product.revenue)}
+                                </td>
+                                <td className="px-5 py-4 text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                  {formatCurrency(product.investment)}
+                                </td>
+                                <td className="px-5 py-4">
+                                  <span
+                                    className="text-[11px] font-bold px-2.5 py-1 rounded-[6px]"
+                                    style={product.roas >= 3
+                                      ? { background: 'rgba(52,211,153,0.12)', color: '#34D399' }
+                                      : product.roas >= 1.5
+                                      ? { background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }
+                                      : { background: 'rgba(248,113,113,0.12)', color: '#F87171' }
+                                    }
+                                  >
+                                    {product.roas ? `${numberValue(product.roas).toFixed(2)}x` : '—'}
+                                  </span>
+                                </td>
+                                <td
+                                  className="px-5 py-4 text-[13px] font-bold"
+                                  style={{ color: numberValue(product.profit) >= 0 ? '#34D399' : '#F87171' }}
+                                >
+                                  {formatCurrency(product.profit)}
+                                </td>
+                                <td className="px-5 py-4">
+                                  <button
+                                    onClick={() => navigate(`/productos/${product.id}`)}
+                                    className="text-[11px] font-semibold px-2.5 py-1 rounded-[6px] transition-all"
+                                    style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.08)' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.16)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
+                                  >
+                                    Ver →
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
                         </table>
                       </div>
                     </>
                   )}
                 </div>
 
+                {/* Charts row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <div className="card p-5">
-                    <SectionHeader title="Distribución" />
-                    <div className="h-[260px]">
+                  <div className="card p-6">
+                    <SectionHeader title="Distribución de ingresos" />
+                    <div className="h-[240px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={52} outerRadius={82} paddingAngle={3}>
-                            {pieData.map((item, index) => <Cell key={`${item.name}-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                          <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={4} strokeWidth={0}>
+                            {pieData.map((item, index) => (
+                              <Cell key={`${item.name}-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} opacity={0.90} />
+                            ))}
                           </Pie>
                           <Tooltip content={<PieTooltip formatCurrency={formatCurrency} />} />
                         </PieChart>
@@ -539,16 +749,30 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="card p-5">
+                  <div className="card p-6">
                     <SectionHeader title="ROAS por producto" />
-                    <div className="h-[260px]">
+                    <div className="h-[240px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={roasData} layout="vertical" margin={{ top: 0, right: 8, left: 8, bottom: 0 }}>
-                          <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" horizontal={false} />
-                          <XAxis type="number" tick={{ fill: '#7d8ca5', fontSize: 11 }} axisLine={false} tickLine={false} />
-                          <YAxis type="category" dataKey="name" width={88} tick={{ fill: '#c0cee4', fontSize: 11 }} axisLine={false} tickLine={false} />
+                          <defs>
+                            <linearGradient id="roas-bar" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%"   stopColor="#818CF8" />
+                              <stop offset="100%" stopColor="#A78BFA" />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 6" horizontal={false} />
+                          <XAxis
+                            type="number"
+                            tick={{ fill: 'rgba(255,255,255,0.30)', fontSize: 11 }}
+                            axisLine={false} tickLine={false}
+                          />
+                          <YAxis
+                            type="category" dataKey="name" width={90}
+                            tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 11 }}
+                            axisLine={false} tickLine={false}
+                          />
                           <Tooltip content={<RoasTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                          <Bar dataKey="roas" radius={[0, 10, 10, 0]} fill="#8B5CF6" />
+                          <Bar dataKey="roas" radius={[0, 8, 8, 0]} fill="url(#roas-bar)" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -556,17 +780,43 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Right sidebar */}
               <div className="w-full xl:w-[320px] space-y-5 min-w-0">
-                <div className="card p-5">
+                {/* Alerts */}
+                <div className="card p-6">
                   <SectionHeader title="Alertas" />
                   <div className="space-y-3">
-                    {loading ? [1, 2].map(item => <div key={item} className="skeleton h-20 rounded-[8px]" />) : alerts.map((alert, index) => (
-                      <div key={`${alert.title}-${index}`} className={`rounded-[8px] border p-3.5 ${alert.tone === 'green' ? 'border-[#10B981]/18 bg-[#10B981]/8' : alert.tone === 'red' ? 'border-[#FB7185]/18 bg-[#FB7185]/8' : 'border-[#4F8CFF]/18 bg-[#4F8CFF]/8'}`}>
-                        <p className="text-white text-sm font-semibold">{alert.title}</p>
-                        <p className="text-[#d7e0ef] text-xs mt-1">{alert.body}</p>
-                        {alert.action && <button onClick={alert.onAction} className="text-[#E8A020] text-xs font-semibold mt-3 hover:underline">{alert.action}</button>}
-                      </div>
-                    ))}
+                    {loading
+                      ? [1, 2].map(item => <div key={item} className="skeleton h-20 rounded-[10px]" />)
+                      : alerts.map((alert, index) => (
+                        <div
+                          key={`${alert.title}-${index}`}
+                          className="rounded-[12px] p-4"
+                          style={alert.tone === 'green'
+                            ? { background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.16)' }
+                            : alert.tone === 'red'
+                            ? { background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.16)' }
+                            : { background: 'rgba(129,140,248,0.07)', border: '1px solid rgba(129,140,248,0.16)' }
+                          }
+                        >
+                          <p className="text-white text-[13px] font-bold" style={{ letterSpacing: '-0.01em' }}>
+                            {alert.title}
+                          </p>
+                          <p className="text-[12px] mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                            {alert.body}
+                          </p>
+                          {alert.action && (
+                            <button
+                              onClick={alert.onAction}
+                              className="text-[11px] font-bold mt-2.5 hover:underline"
+                              style={{ color: '#F59E0B' }}
+                            >
+                              {alert.action} →
+                            </button>
+                          )}
+                        </div>
+                      ))
+                    }
                   </div>
                 </div>
 

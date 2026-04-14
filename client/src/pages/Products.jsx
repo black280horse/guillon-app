@@ -26,7 +26,7 @@ function RoasBadge({ roas }) {
 function SummaryKpi({ label, value, color, icon }) {
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0 ${color.bg}`}>
+      <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 ${color.bg}`}>
         <Icon className={`w-4 h-4 ${color.icon}`} path={icon} />
       </div>
       <div className="min-w-0">
@@ -85,7 +85,7 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-[440px] bg-[#131720] border border-white/[0.09] rounded-[12px] shadow-[0_32px_64px_rgba(0,0,0,0.65)] overflow-hidden"
+        className="relative w-full max-w-[440px] bg-[#131720] border border-white/[0.09] rounded-[16px] shadow-[0_32px_64px_rgba(0,0,0,0.65)] overflow-hidden"
         style={{ animation: 'modalIn 0.18s cubic-bezier(0.2,0,0,1) both' }}
         onClick={e => e.stopPropagation()}
       >
@@ -96,7 +96,7 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
           <p className="text-[#8ea0bc] text-[11px] uppercase tracking-[0.16em] font-medium">
             {isEdit ? 'Editar producto' : 'Nuevo producto'}
           </p>
-          <button onClick={onClose} className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[#52525b] hover:text-[#a1a1aa] hover:bg-white/[0.05] transition-all">
+          <button onClick={onClose} className="w-7 h-7 rounded-[10px] flex items-center justify-center text-[#52525b] hover:text-[#a1a1aa] hover:bg-white/[0.05] transition-all">
             <Icon className="w-4 h-4" path="M6 6l12 12M18 6 6 18" />
           </button>
         </div>
@@ -112,7 +112,7 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Ej: Proteína Whey, Creatina…"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[14px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2.5 text-[14px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
             />
           </div>
 
@@ -123,7 +123,7 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[7px] text-[#52525b] hover:text-[#ef4444] hover:bg-[#ef4444]/8 text-[12px] font-medium transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-[10px] text-[#52525b] hover:text-[#ef4444] hover:bg-[#ef4444]/8 text-[12px] font-medium transition-all"
                 >
                   <Icon className="w-3.5 h-3.5" path="M6 7h12m-9 0V5h6v2m-7 0 1 12h8l1-12" />
                   Eliminar
@@ -136,14 +136,14 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
                     type="button"
                     onClick={handleDelete}
                     disabled={loading}
-                    className="px-3 py-1.5 rounded-[6px] bg-[#ef4444]/15 text-[#ef4444] text-[12px] font-medium hover:bg-[#ef4444]/25 transition-all disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-[8px] bg-[#ef4444]/15 text-[#ef4444] text-[12px] font-medium hover:bg-[#ef4444]/25 transition-all disabled:opacity-50"
                   >
                     Sí, eliminar
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="px-3 py-1.5 rounded-[6px] border border-white/[0.08] text-[#6b7280] text-[12px] font-medium hover:text-white transition-all"
+                    className="px-3 py-1.5 rounded-[8px] border border-white/[0.08] text-[#6b7280] text-[12px] font-medium hover:text-white transition-all"
                   >
                     No
                   </button>
@@ -154,14 +154,14 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-[7px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] text-[12.5px] font-medium transition-all"
+                className="px-4 py-2 rounded-[10px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] text-[12.5px] font-medium transition-all"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 rounded-[7px] bg-[#E8A020] text-black text-[12.5px] font-medium disabled:opacity-50 hover:bg-[#d4911c] transition-all"
+                className="px-5 py-2 rounded-[10px] bg-[#F59E0B] text-black text-[12.5px] font-medium disabled:opacity-50 hover:bg-[#E8A020] transition-all"
               >
                 {loading ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
               </button>
@@ -216,21 +216,21 @@ export default function Products() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-[26px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-              Productos <span style={{ color: '#E8A020', fontWeight: 400 }}>comerciales</span>
+              Productos <span style={{ color: '#F59E0B', fontWeight: 400 }}>comerciales</span>
             </h1>
             <p className="text-[#5a6d87] text-[13px] mt-1">Catálogo, ingresos y rentabilidad por producto</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setModal({})}
-              className="inline-flex items-center gap-2 rounded-[6px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2 text-[13px] font-medium text-[#c0cee4] transition-all"
+              className="inline-flex items-center gap-2 rounded-[8px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2 text-[13px] font-medium text-[#c0cee4] transition-all"
             >
               <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Nuevo producto
             </button>
             <button
               onClick={() => navigate('/cargar')}
-              className="inline-flex items-center gap-2 rounded-[6px] bg-[#E8A020] hover:bg-[#f5b33a] px-4 py-2 text-[13px] font-medium text-[#07111f] transition-all"
+              className="inline-flex items-center gap-2 rounded-[8px] bg-[#F59E0B] hover:bg-[#FCD34D] px-4 py-2 text-[13px] font-medium text-[#0A0A0F] transition-all"
             >
               <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Cargar dato
@@ -281,7 +281,7 @@ export default function Products() {
             value={search}
             onChange={event => setSearch(event.target.value)}
             placeholder="Buscar producto..."
-            className="w-full rounded-[14px] bg-white/[0.04] border border-white/[0.08] pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#5a6d87] focus:outline-none focus:border-[#4dd7ff]/22 transition-colors"
+            className="w-full rounded-[16px] bg-white/[0.04] border border-white/[0.08] pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#5a6d87] focus:outline-none focus:border-[#4dd7ff]/22 transition-colors"
           />
         </div>
 
@@ -302,14 +302,14 @@ export default function Products() {
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setModal({})}
-                className="inline-flex items-center gap-2 rounded-[6px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-[#c0cee4] font-medium text-sm"
+                className="inline-flex items-center gap-2 rounded-[8px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-[#c0cee4] font-medium text-sm"
               >
                 <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
                 Nuevo producto
               </button>
               <button
                 onClick={() => navigate('/cargar')}
-                className="inline-flex items-center gap-2 rounded-[14px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] px-5 py-2.5 text-[#08111f] font-semibold text-sm"
+                className="inline-flex items-center gap-2 rounded-[16px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] px-5 py-2.5 text-[#08080C] font-semibold text-sm"
               >
                 <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
                 Cargar primer dato
@@ -369,14 +369,14 @@ export default function Products() {
                       <button
                         onClick={() => setModal({ product })}
                         title="Editar"
-                        className="w-8 h-8 rounded-[7px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all"
+                        className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all"
                       >
                         <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
                       </button>
                       <button
                         onClick={() => navigate(`/productos/${product.id}`)}
                         title="Ver detalle"
-                        className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all"
+                        className="w-8 h-8 rounded-[16px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all"
                       >
                         <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
                       </button>
@@ -385,7 +385,7 @@ export default function Products() {
 
                   {/* Mobile card */}
                   <div className="lg:hidden flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-[6px] bg-white/[0.04] border border-white/8 flex items-center justify-center text-[#4f6278] text-[12px] font-bold shrink-0">
+                    <div className="w-9 h-9 rounded-[8px] bg-white/[0.04] border border-white/8 flex items-center justify-center text-[#4f6278] text-[12px] font-bold shrink-0">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -412,10 +412,10 @@ export default function Products() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-1 shrink-0">
-                      <button onClick={() => setModal({ product })} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all">
+                      <button onClick={() => setModal({ product })} className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all">
                         <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
                       </button>
-                      <button onClick={() => navigate(`/productos/${product.id}`)} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all">
+                      <button onClick={() => navigate(`/productos/${product.id}`)} className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all">
                         <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
                       </button>
                     </div>

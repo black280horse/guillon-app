@@ -3,6 +3,18 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 
+const inputStyle = {
+  width: '100%',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '10px',
+  color: '#F4F4F6',
+  padding: '11px 14px',
+  fontSize: '14px',
+  outline: 'none',
+  transition: 'border-color 150ms ease, box-shadow 150ms ease',
+}
+
 export default function Login() {
   const { setToken } = useAuth()
   const navigate = useNavigate()
@@ -29,122 +41,110 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4"
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
       style={{
-        background: 'radial-gradient(ellipse at 50% -10%, rgba(50,50,93,0.18) 0%, transparent 60%), #07111f',
+        background: '#08080C',
+        backgroundImage: 'radial-gradient(ellipse 70% 50% at 50% -10%, rgba(129,140,248,0.12) 0%, transparent 60%)',
       }}
     >
-      <div className="w-full max-w-[340px]">
+      <div className="w-full max-w-[360px]">
 
         {/* Brand */}
         <div className="text-center mb-8">
           <div
-            className="inline-flex items-center justify-center w-10 h-10 mb-4"
+            className="inline-flex items-center justify-center w-12 h-12 mb-5"
             style={{
-              background: 'linear-gradient(135deg, #E8A020 0%, #f5c842 100%)',
-              borderRadius: '8px',
-              boxShadow: '0 8px 24px rgba(232,160,32,0.32)',
+              background: 'linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%)',
+              borderRadius: '14px',
+              boxShadow: '0 0 32px rgba(245,158,11,0.35), 0 8px 24px rgba(0,0,0,0.40)',
             }}
           >
-            <span className="text-[#07111f] font-bold text-[16px]">G</span>
+            <span className="text-[#1A0A00] font-bold text-[20px]" style={{ letterSpacing: '-0.04em' }}>G</span>
           </div>
-          <h1
-            className="text-white text-[26px] font-light leading-none mb-1.5"
-            style={{ letterSpacing: '-0.04em' }}
-          >
-            Guillon <span style={{ color: '#E8A020', fontWeight: 400 }}>AP</span>
+          <h1 className="text-white text-[28px] font-bold leading-none mb-2" style={{ letterSpacing: '-0.04em' }}>
+            Guillon AP
           </h1>
-          <p className="text-[#3d5068] text-[12px] tracking-[0.12em] uppercase">
-            Sales Intelligence Platform
+          <p className="text-[11px] font-medium tracking-[0.18em] uppercase" style={{ color: 'rgba(255,255,255,0.28)' }}>
+            Business Intelligence
           </p>
         </div>
 
         {/* Card */}
         <div
           style={{
-            background: 'rgba(11, 18, 34, 0.96)',
-            border: '1px solid rgba(148,163,184,0.10)',
-            borderRadius: '8px',
-            boxShadow: 'rgba(50,50,93,0.22) 0px 20px 40px -16px, rgba(0,0,0,0.22) 0px 10px 20px -8px, rgba(255,255,255,0.02) 0px 1px 0px inset',
-            padding: '28px',
+            background: 'rgba(18,18,26,0.90)',
+            border: '1px solid rgba(255,255,255,0.09)',
+            borderRadius: '20px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.70), 0 0 0 1px rgba(255,255,255,0.04) inset',
+            padding: '32px',
           }}
         >
-          <p className="text-[#94a3b8] text-[13px] font-medium mb-6">
-            Iniciá sesión en tu cuenta
+          <p className="text-[15px] font-semibold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>
+            Iniciá sesión
+          </p>
+          <p className="text-[13px] mb-6" style={{ color: 'rgba(255,255,255,0.38)' }}>
+            Accedé a tu panel de Business OS
           </p>
 
           {error && (
             <div
-              className="text-[#fb7185] text-[13px] px-3 py-2.5 mb-5 flex items-center gap-2"
+              className="text-[13px] px-4 py-3 mb-5 flex items-center gap-2"
               style={{
-                background: 'rgba(251,113,133,0.08)',
-                border: '1px solid rgba(251,113,133,0.18)',
-                borderRadius: '6px',
+                background: 'rgba(248,113,113,0.08)',
+                border: '1px solid rgba(248,113,113,0.20)',
+                borderRadius: '10px',
+                color: '#F87171',
               }}
             >
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 001.71 3h16.94a2 2 001.71-3L13.71 3.86a2 2 00-3.42 0z" />
               </svg>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[#64748b] text-[12px] font-medium block">Email</label>
+            <div>
+              <label className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] mb-2"
+                style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Email
+              </label>
               <input
-                type="email"
-                required
+                type="email" required
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 placeholder="tu@email.com"
-                style={{
-                  width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(148,163,184,0.14)',
-                  borderRadius: '6px',
-                  color: '#f1f5f9',
-                  padding: '9px 12px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  transition: 'border-color 150ms ease, box-shadow 150ms ease',
-                }}
+                style={inputStyle}
                 onFocus={e => {
-                  e.target.style.borderColor = 'rgba(232,160,32,0.50)'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(232,160,32,0.10)'
+                  e.target.style.borderColor = 'rgba(245,158,11,0.50)'
+                  e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.10)'
                 }}
                 onBlur={e => {
-                  e.target.style.borderColor = 'rgba(148,163,184,0.14)'
+                  e.target.style.borderColor = 'rgba(255,255,255,0.10)'
                   e.target.style.boxShadow = 'none'
                 }}
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[#64748b] text-[12px] font-medium block">Contraseña</label>
+            <div>
+              <label className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] mb-2"
+                style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Contraseña
+              </label>
               <input
-                type="password"
-                required
+                type="password" required
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                 placeholder="••••••••"
-                style={{
-                  width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(148,163,184,0.14)',
-                  borderRadius: '6px',
-                  color: '#f1f5f9',
-                  padding: '9px 12px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  transition: 'border-color 150ms ease, box-shadow 150ms ease',
-                }}
+                style={inputStyle}
                 onFocus={e => {
-                  e.target.style.borderColor = 'rgba(232,160,32,0.50)'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(232,160,32,0.10)'
+                  e.target.style.borderColor = 'rgba(245,158,11,0.50)'
+                  e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.10)'
                 }}
                 onBlur={e => {
-                  e.target.style.borderColor = 'rgba(148,163,184,0.14)'
+                  e.target.style.borderColor = 'rgba(255,255,255,0.10)'
                   e.target.style.boxShadow = 'none'
                 }}
               />
@@ -153,31 +153,28 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full font-medium text-[14px] transition-all mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full font-bold text-[14px] transition-all mt-2 disabled:opacity-50"
               style={{
-                background: '#E8A020',
-                color: '#07111f',
-                borderRadius: '6px',
-                padding: '9px 16px',
-                boxShadow: '0 4px 14px rgba(232,160,32,0.22)',
+                background: '#F59E0B',
+                color: '#1A0A00',
+                borderRadius: '10px',
+                padding: '12px 16px',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 0 24px rgba(245,158,11,0.25), 0 4px 12px rgba(0,0,0,0.30)',
+                letterSpacing: '-0.01em',
               }}
-              onMouseEnter={e => { if (!loading) e.target.style.background = '#f5b33a' }}
-              onMouseLeave={e => { e.target.style.background = '#E8A020' }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = '#FCD34D'; e.currentTarget.style.boxShadow = '0 0 32px rgba(245,158,11,0.35), 0 4px 12px rgba(0,0,0,0.30)' } }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#F59E0B'; e.currentTarget.style.boxShadow = '0 0 24px rgba(245,158,11,0.25), 0 4px 12px rgba(0,0,0,0.30)' }}
             >
-              {loading ? 'Ingresando...' : 'Ingresar'}
+              {loading ? 'Ingresando…' : 'Ingresar →'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-[#3d5068] text-[13px] mt-5">
+        <p className="text-center text-[13px] mt-5" style={{ color: 'rgba(255,255,255,0.30)' }}>
           ¿No tenés cuenta?{' '}
-          <Link
-            to="/register"
-            className="font-medium transition-colors"
-            style={{ color: '#E8A020' }}
-          >
+          <Link to="/register" className="font-semibold" style={{ color: '#F59E0B' }}>
             Registrate
           </Link>
         </p>

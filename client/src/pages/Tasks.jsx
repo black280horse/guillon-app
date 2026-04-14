@@ -104,7 +104,7 @@ function KanbanCard({ task, colorMap, onEdit, onUpdate, onDelete, isOverlay = fa
         opacity: isDragging ? 0.25 : 1,
         zIndex: isOverlay ? 9999 : undefined,
       }}
-      className={`group relative rounded-[8px] overflow-hidden select-none transition-all duration-150 ${
+      className={`group relative rounded-[12px] overflow-hidden select-none transition-all duration-150 ${
         isCompleted
           ? 'bg-white/[0.018] border border-white/[0.05] opacity-55'
           : isOverdue
@@ -238,7 +238,7 @@ function KanbanColumn({ col, tasks, colorMap, onAdd, onEdit, onUpdate, onDelete,
       {/* Column body */}
       <div
         ref={setNodeRef}
-        className={`flex-1 rounded-[10px] p-2 flex flex-col gap-2 overflow-y-auto transition-colors duration-100 ${
+        className={`flex-1 rounded-[14px] p-2 flex flex-col gap-2 overflow-y-auto transition-colors duration-100 ${
           isOver ? 'bg-white/[0.04] ring-1 ring-white/10' : 'bg-white/[0.025] ring-1 ring-white/[0.06]'
         }`}
         style={{ maxHeight: 'calc(100vh - 224px)' }}
@@ -482,7 +482,7 @@ function TableView({ tasks, colorMap, onEdit, onUpdate, onDelete }) {
   }, [tasks, sortCol, sortDir])
 
   return (
-    <div className="bg-white/[0.025] border border-white/[0.07] rounded-[10px] overflow-hidden">
+    <div className="bg-white/[0.025] border border-white/[0.07] rounded-[14px] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px]">
           <thead>
@@ -496,7 +496,7 @@ function TableView({ tasks, colorMap, onEdit, onUpdate, onDelete }) {
                 >
                   {col.label}
                   {col.key === sortCol && (
-                    <span className="ml-1 text-[#E8A020]">{sortDir === 'asc' ? '↑' : '↓'}</span>
+                    <span className="ml-1 text-[#F59E0B]">{sortDir === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </th>
               ))}
@@ -578,7 +578,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               const d = new Date(c.year, c.month - 1, 1)
               return { year: d.getFullYear(), month: d.getMonth() }
             })}
-            className="w-8 h-8 rounded-[7px] border border-white/[0.08] flex items-center justify-center text-[#6b7280] hover:text-white hover:border-white/[0.16] transition-all"
+            className="w-8 h-8 rounded-[10px] border border-white/[0.08] flex items-center justify-center text-[#6b7280] hover:text-white hover:border-white/[0.16] transition-all"
           >
             <Icon className="w-4 h-4" path="M15 19l-7-7 7-7" />
           </button>
@@ -588,7 +588,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               const d = new Date(c.year, c.month + 1, 1)
               return { year: d.getFullYear(), month: d.getMonth() }
             })}
-            className="w-8 h-8 rounded-[7px] border border-white/[0.08] flex items-center justify-center text-[#6b7280] hover:text-white hover:border-white/[0.16] transition-all"
+            className="w-8 h-8 rounded-[10px] border border-white/[0.08] flex items-center justify-center text-[#6b7280] hover:text-white hover:border-white/[0.16] transition-all"
           >
             <Icon className="w-4 h-4" path="M9 5l7 7-7 7" />
           </button>
@@ -608,9 +608,9 @@ function CalendarView({ tasks, colorMap, onEdit }) {
           {cells.map((cell, i) => (
             <div
               key={i}
-              className={`min-h-[76px] rounded-[8px] p-1.5 transition-colors ${
+              className={`min-h-[76px] rounded-[12px] p-1.5 transition-colors ${
                 cell
-                  ? `cursor-pointer ${cell.date === today ? 'ring-1 ring-[#E8A020]/60 bg-[#E8A020]/[0.06]' : 'bg-white/[0.025] hover:bg-white/[0.05]'} ${cell.date === selected ? 'ring-1 ring-[#8b5cf6]/60' : ''}`
+                  ? `cursor-pointer ${cell.date === today ? 'ring-1 ring-[#F59E0B]/60 bg-[#F59E0B]/[0.06]' : 'bg-white/[0.025] hover:bg-white/[0.05]'} ${cell.date === selected ? 'ring-1 ring-[#8b5cf6]/60' : ''}`
                   : 'bg-transparent'
               }`}
               onClick={() => cell && setSelected(s => s === cell.date ? null : cell.date)}
@@ -618,7 +618,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
               {cell && (
                 <>
                   <p className={`text-[12px] font-semibold leading-none ${
-                    cell.date === today ? 'text-[#E8A020]' : 'text-[#6b7280]'
+                    cell.date === today ? 'text-[#F59E0B]' : 'text-[#6b7280]'
                   }`}>
                     {cell.day}
                   </p>
@@ -649,7 +649,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
 
       {/* Side panel */}
       {selected && (
-        <div className="w-[280px] shrink-0 bg-white/[0.025] border border-white/[0.07] rounded-[10px] p-4">
+        <div className="w-[280px] shrink-0 bg-white/[0.025] border border-white/[0.07] rounded-[14px] p-4">
           <div className="flex items-center justify-between mb-3">
             <p className="text-white font-semibold text-[13px] capitalize">{fmtDateLong(selected)}</p>
             <button
@@ -669,7 +669,7 @@ function CalendarView({ tasks, colorMap, onEdit }) {
                   <button
                     key={task.id}
                     onClick={() => onEdit(task)}
-                    className="w-full text-left rounded-[7px] bg-white/[0.04] hover:bg-white/[0.07] p-2.5 transition-colors border-l-2"
+                    className="w-full text-left rounded-[10px] bg-white/[0.04] hover:bg-white/[0.07] p-2.5 transition-colors border-l-2"
                     style={{ borderLeftColor: pri.color }}
                   >
                     <p className="text-[#e4e4e7] text-[13px] font-medium leading-snug">{task.title}</p>
@@ -754,7 +754,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-[560px] bg-[#131720] border border-white/[0.09] rounded-[12px] shadow-[0_32px_64px_rgba(0,0,0,0.65)] animate-fade-up overflow-hidden"
+        className="relative w-full max-w-[560px] bg-[#12121A] border border-white/[0.09] rounded-[16px] shadow-[0_32px_64px_rgba(0,0,0,0.65)] animate-fade-up overflow-hidden"
         onClick={e => e.stopPropagation()}
         style={{ animation: 'modalIn 0.18s cubic-bezier(0.2,0,0,1) both' }}
       >
@@ -765,7 +765,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
           </p>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[#52525b] hover:text-[#a1a1aa] hover:bg-white/[0.05] transition-all"
+            className="w-7 h-7 rounded-[10px] flex items-center justify-center text-[#52525b] hover:text-[#a1a1aa] hover:bg-white/[0.05] transition-all"
           >
             <Icon className="w-4 h-4" path="M6 6l12 12M18 6 6 18" />
           </button>
@@ -791,7 +791,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                 onChange={upd('description')}
                 rows={2}
                 placeholder="Descripción (opcional)"
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[13px] text-white placeholder:text-[#4a4a56] resize-none focus:outline-none focus:border-white/[0.16] transition-colors"
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2.5 text-[13px] text-white placeholder:text-[#4a4a56] resize-none focus:outline-none focus:border-white/[0.16] transition-colors"
               />
             </div>
 
@@ -846,7 +846,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                 <select
                   value={form.product_id}
                   onChange={upd('product_id')}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[13px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2.5 text-[13px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
                 >
                   <option value="">General</option>
                   {products.map(p => (
@@ -860,7 +860,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                   type="date"
                   value={form.due_date}
                   onChange={upd('due_date')}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2.5 text-[13px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2.5 text-[13px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
                 />
               </div>
             </div>
@@ -874,7 +874,7 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
                   type="button"
                   onClick={handleDelete}
                   disabled={loading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-[#52525b] hover:text-[#ef4444] hover:bg-[#ef4444]/8 text-[12px] font-medium transition-all disabled:opacity-40"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] text-[#52525b] hover:text-[#ef4444] hover:bg-[#ef4444]/8 text-[12px] font-medium transition-all disabled:opacity-40"
                 >
                   <Icon className="w-3.5 h-3.5" path="M6 7h12m-9 0V5h6v2m-7 0 1 12h8l1-12" />
                   Eliminar
@@ -885,14 +885,14 @@ function TaskModal({ task, initialStatus, products, colorMap, onClose, onSaved, 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-[7px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] text-[12.5px] font-medium transition-all"
+                className="px-4 py-2 rounded-[10px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] text-[12.5px] font-medium transition-all"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 rounded-[7px] bg-[#E8A020] text-black text-[12.5px] font-medium disabled:opacity-50 hover:bg-[#d4911c] transition-all"
+                className="px-5 py-2 rounded-[10px] bg-[#F59E0B] text-black text-[12.5px] font-medium disabled:opacity-50 hover:bg-[#E8A020] transition-all"
               >
                 {loading ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear tarea'}
               </button>
@@ -910,7 +910,7 @@ function ProductTaskCard({ name, color, pending, overdue, onClick, active }) {
   return (
     <button
       onClick={onClick}
-      className={`text-left rounded-[10px] p-4 border transition-all ${
+      className={`text-left rounded-[14px] p-4 border transition-all ${
         active
           ? 'bg-white/[0.06] border-white/[0.16]'
           : 'bg-white/[0.025] border-white/[0.07] hover:bg-white/[0.04] hover:border-white/[0.12]'
@@ -1077,10 +1077,10 @@ export default function Tasks() {
     return (
       <Layout>
         <div className="space-y-3">
-          <div className="skeleton h-[48px] rounded-[10px]" />
-          <div className="skeleton h-[40px] rounded-[10px]" />
+          <div className="skeleton h-[48px] rounded-[14px]" />
+          <div className="skeleton h-[40px] rounded-[14px]" />
           <div className="grid grid-cols-4 gap-3">
-            {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-[480px] rounded-[10px]" />)}
+            {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-[480px] rounded-[14px]" />)}
           </div>
         </div>
       </Layout>
@@ -1106,7 +1106,7 @@ export default function Tasks() {
             </h1>
 
             {/* Tab bar */}
-            <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-[8px] p-1 gap-0.5">
+            <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-[12px] p-1 gap-0.5">
               {TABS.map(tab => (
                 <button
                   key={tab.id}
@@ -1126,7 +1126,7 @@ export default function Tasks() {
             {/* Link to stats */}
             <Link
               to="/tareas/dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] hover:border-white/[0.14] text-[12px] font-medium transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] border border-white/[0.08] text-[#6b7280] hover:text-[#c0cee4] hover:border-white/[0.14] text-[12px] font-medium transition-all"
             >
               <Icon className="w-3.5 h-3.5" path="M5 19V9m7 10V5m7 14v-7M3 19h18" />
               Estadísticas
@@ -1135,7 +1135,7 @@ export default function Tasks() {
 
           <button
             onClick={() => setModal({ status: 'pending' })}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-[7px] bg-[#E8A020] text-black text-[12.5px] font-medium hover:bg-[#d4911c] transition-all shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-[#F59E0B] text-black text-[12.5px] font-medium hover:bg-[#E8A020] transition-all shrink-0"
           >
             <Icon className="w-3.5 h-3.5" stroke={2.5} path="M12 5v14M5 12h14" />
             Nueva tarea
@@ -1153,7 +1153,7 @@ export default function Tasks() {
               <button
                 key={kpi.key}
                 onClick={() => setFilterStatus(s => s === kpi.key ? '' : kpi.key)}
-                className={`relative text-left rounded-[10px] p-4 border transition-all ${
+                className={`relative text-left rounded-[14px] p-4 border transition-all ${
                   filterStatus === kpi.key
                     ? `${kpi.bg} ring-1 ${kpi.ring} border-transparent`
                     : 'bg-white/[0.025] border-white/[0.07] hover:bg-white/[0.04]'
@@ -1210,7 +1210,7 @@ export default function Tasks() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar tareas..."
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[7px] pl-8 pr-3 py-2 text-[12px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-[10px] pl-8 pr-3 py-2 text-[12px] text-white placeholder:text-[#4a4a56] focus:outline-none focus:border-white/[0.16] transition-colors"
             />
           </div>
 
@@ -1218,7 +1218,7 @@ export default function Tasks() {
           <select
             value={filterProd}
             onChange={e => setFilterProd(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
+            className="bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
           >
             <option value="">Todos los productos</option>
             {productNames.map(n => <option key={n} value={n}>{n}</option>)}
@@ -1228,7 +1228,7 @@ export default function Tasks() {
           <select
             value={filterPri}
             onChange={e => setFilterPri(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded-[7px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
+            className="bg-white/[0.04] border border-white/[0.08] rounded-[10px] px-3 py-2 text-[12px] text-[#8ea0bc] focus:outline-none focus:border-white/[0.16] transition-colors"
           >
             <option value="">Todas las prioridades</option>
             {Object.entries(PRIORITY_META).map(([k, v]) => (
@@ -1255,15 +1255,15 @@ export default function Tasks() {
 
         {/* ── Empty state ─────────────────────────────────────────────────── */}
         {tasks.length === 0 && (
-          <div className="bg-white/[0.025] border border-white/[0.07] rounded-[10px] py-16 text-center">
-            <div className="w-12 h-12 rounded-[10px] mx-auto bg-[#E8A020]/10 border border-[#E8A020]/20 flex items-center justify-center text-[#E8A020] mb-4">
+          <div className="bg-white/[0.025] border border-white/[0.07] rounded-[14px] py-16 text-center">
+            <div className="w-12 h-12 rounded-[14px] mx-auto bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center text-[#F59E0B] mb-4">
               <Icon className="w-6 h-6" path="M4 5h16v14H4zM9 5v14M15 5v8" />
             </div>
             <p className="text-white font-medium text-[14px]">Sin tareas todavía</p>
             <p className="text-[#6b7280] text-[12px] mt-1.5">Crea tu primera tarea para empezar a organizar el trabajo</p>
             <button
               onClick={() => setModal({ status: 'pending' })}
-              className="mt-5 inline-flex items-center gap-2 px-5 py-2 rounded-[7px] bg-[#E8A020] text-black font-medium text-[13px] hover:bg-[#d4911c] transition-all"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2 rounded-[10px] bg-[#F59E0B] text-black font-medium text-[13px] hover:bg-[#E8A020] transition-all"
             >
               <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Crear primera tarea

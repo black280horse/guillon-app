@@ -95,22 +95,22 @@ function PeriodSelector(props) {
       {PERIODS.map(p => (
         <button key={p.key} onClick={() => setPeriod(p.key)}
           className={`px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all ${
-            period === p.key ? 'bg-[#E8A020] text-black' : 'bg-[#1f1f23] border border-[#2a2a2e] text-[#a1a1aa] hover:text-white hover:border-[#3a3a3e]'
+            period === p.key ? 'bg-[#F59E0B] text-black' : 'bg-[#1f1f23] border border-[#2a2a2e] text-[#a1a1aa] hover:text-white hover:border-[#3a3a3e]'
           }`}>
           {p.label}
         </button>
       ))}
       {period === 'month' && (
         <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
-          className="bg-[#1f1f23] border border-[#2a2a2e] text-white text-xs rounded-[8px] px-3 py-1.5 focus:outline-none focus:border-[#E8A020]" />
+          className="bg-[#1f1f23] border border-[#2a2a2e] text-white text-xs rounded-[8px] px-3 py-1.5 focus:outline-none focus:border-[#F59E0B]" />
       )}
       {period === 'custom' && (
         <div className="flex items-center gap-2">
           <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-            className="bg-[#1f1f23] border border-[#2a2a2e] text-white text-xs rounded-[8px] px-3 py-1.5 focus:outline-none focus:border-[#E8A020]" />
+            className="bg-[#1f1f23] border border-[#2a2a2e] text-white text-xs rounded-[8px] px-3 py-1.5 focus:outline-none focus:border-[#F59E0B]" />
           <span className="text-[#52525b] text-xs">→</span>
           <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-            className="bg-[#1f1f23] border border-[#2a2a2e] text-white text-xs rounded-[8px] px-3 py-1.5 focus:outline-none focus:border-[#E8A020]" />
+            className="bg-[#1f1f23] border border-[#2a2a2e] text-white text-xs rounded-[8px] px-3 py-1.5 focus:outline-none focus:border-[#F59E0B]" />
         </div>
       )}
     </div>
@@ -186,16 +186,16 @@ function AIAnalysisCard({ productId, kpis, dateFrom, dateTo }) {
   }, [productId, dateFrom, dateTo])
 
   return (
-    <div className="card border-l-2 border-l-[#E8A020] p-5 space-y-4">
+    <div className="card border-l-2 border-l-[#F59E0B] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-lg">✨</span>
           <h3 className="text-white font-semibold text-sm">Análisis inteligente</h3>
         </div>
         <button onClick={analyze} disabled={state === 'loading' || kpis?.total_records === 0}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E8A020]/10 hover:bg-[#E8A020]/20 border border-[#E8A020]/30 text-[#E8A020] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
           {state === 'loading'
-            ? <><span className="w-3 h-3 border border-[#E8A020] border-t-transparent rounded-[5px] animate-spin" />Analizando…</>
+            ? <><span className="w-3 h-3 border border-[#F59E0B] border-t-transparent rounded-[5px] animate-spin" />Analizando…</>
             : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>Analizar con IA</>}
         </button>
       </div>
@@ -318,7 +318,7 @@ export default function ProductDetail() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard label="Total vendido"   value={kpis?.total_revenue}   loading={loading} color="text-white"      change={pct(kpis?.total_revenue,   prevKpis?.total_revenue)} />
           <KpiCard label="Total invertido" value={kpis?.total_investment} loading={loading} color="text-[#ef4444]" change={pct(kpis?.total_investment, prevKpis?.total_investment)} />
-          <KpiCard label="ROAS"            value={kpis?.roas}             loading={loading} color="text-[#E8A020]"  prefix="" suffix="x" change={pct(kpis?.roas, prevKpis?.roas)} />
+          <KpiCard label="ROAS"            value={kpis?.roas}             loading={loading} color="text-[#F59E0B]"  prefix="" suffix="x" change={pct(kpis?.roas, prevKpis?.roas)} />
           <KpiCard label="Ganancia neta"   value={kpis?.net_profit}       loading={loading} color="text-[#10b981]" change={pct(kpis?.net_profit, prevKpis?.net_profit)} />
         </div>
 
@@ -332,7 +332,7 @@ export default function ProductDetail() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <MiniChart data={sales} dataKey="revenue"    color="#E8A020" name="Ingresos diarios" />
+            <MiniChart data={sales} dataKey="revenue"    color="#F59E0B" name="Ingresos diarios" />
             <MiniChart data={sales} dataKey="investment" color="#3b82f6" name="Inversión diaria" />
             <MiniChart data={sales} dataKey="roas"       color="#10b981" name="ROAS diario" prefix="x" showRefLine />
           </div>
@@ -369,7 +369,7 @@ export default function ProductDetail() {
                       <td className={`px-5 py-3 text-right font-semibold ${(s.profit ?? 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                         {$fmt(s.profit)}
                       </td>
-                      <td className="px-5 py-3 text-right text-[#E8A020] font-semibold">
+                      <td className="px-5 py-3 text-right text-[#F59E0B] font-semibold">
                         {s.roas ? `${parseFloat(s.roas).toFixed(2)}x` : '—'}
                       </td>
                       <td className="px-5 py-3 text-right">
@@ -392,7 +392,7 @@ export default function ProductDetail() {
                     <td className={`px-5 py-3 text-right font-bold ${(kpis?.net_profit ?? 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                       {$fmt(kpis?.net_profit)}
                     </td>
-                    <td className="px-5 py-3 text-right text-[#E8A020] font-bold">
+                    <td className="px-5 py-3 text-right text-[#F59E0B] font-bold">
                       {kpis?.roas ? `${kpis.roas}x` : '—'}
                     </td>
                     <td />
@@ -406,7 +406,7 @@ export default function ProductDetail() {
         {!loading && sales.length === 0 && (
           <div className="card p-10 text-center">
             <p className="text-[#52525b] text-sm mb-3">No hay registros para el período seleccionado</p>
-            <Link to="/cargar" className="text-[#E8A020] text-sm hover:underline">Cargar datos →</Link>
+            <Link to="/cargar" className="text-[#F59E0B] text-sm hover:underline">Cargar datos →</Link>
           </div>
         )}
       </div>

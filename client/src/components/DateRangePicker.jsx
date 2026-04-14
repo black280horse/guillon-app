@@ -41,9 +41,9 @@ export default function DateRangePicker() {
       {/* Trigger */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 px-3.5 py-2 rounded-[10px] bg-[#1f1f23] border border-[#2a2a2e] hover:border-[#E8A020]/40 text-white text-sm font-medium transition-all"
+        className="flex items-center gap-2 px-3.5 py-2 rounded-[10px] bg-[#1f1f23] border border-[#2a2a2e] hover:border-[#F59E0B]/40 text-white text-sm font-medium transition-all"
       >
-        <svg className="w-4 h-4 text-[#E8A020] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-[#F59E0B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
@@ -72,7 +72,7 @@ export default function DateRangePicker() {
                     onClick={() => selectPreset(p.key)}
                     className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                       activeKey === p.key
-                        ? 'bg-[#E8A020]/10 text-[#E8A020] font-medium'
+                        ? 'bg-[#F59E0B]/10 text-[#F59E0B] font-medium'
                         : 'text-[#a1a1aa] hover:text-white hover:bg-[#1f1f23]'
                     }`}
                   >
@@ -94,7 +94,7 @@ export default function DateRangePicker() {
                       type="date"
                       value={tempFrom}
                       onChange={e => setTempFrom(e.target.value)}
-                      className="w-full bg-[#0B0B0E] border border-[#2a2a2e] text-white text-sm px-3 py-2 rounded-[10px] focus:outline-none focus:border-[#E8A020]/60 transition-colors"
+                      className="w-full bg-[#0B0B0E] border border-[#2a2a2e] text-white text-sm px-3 py-2 rounded-[10px] focus:outline-none focus:border-[#F59E0B]/60 transition-colors"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -104,7 +104,7 @@ export default function DateRangePicker() {
                       value={tempTo}
                       min={tempFrom}
                       onChange={e => setTempTo(e.target.value)}
-                      className="w-full bg-[#0B0B0E] border border-[#2a2a2e] text-white text-sm px-3 py-2 rounded-[10px] focus:outline-none focus:border-[#E8A020]/60 transition-colors"
+                      className="w-full bg-[#0B0B0E] border border-[#2a2a2e] text-white text-sm px-3 py-2 rounded-[10px] focus:outline-none focus:border-[#F59E0B]/60 transition-colors"
                     />
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default function DateRangePicker() {
                   <button
                     onClick={applyCustomRange}
                     disabled={!tempFrom || !tempTo}
-                    className="flex-1 py-2 rounded-[10px] bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold transition-colors disabled:opacity-40"
+                    className="flex-1 py-2 rounded-[10px] bg-[#F59E0B] hover:bg-[#E8A020] text-black text-sm font-semibold transition-colors disabled:opacity-40"
                   >
                     Aplicar
                   </button>

@@ -5,9 +5,9 @@ import axios from 'axios'
 const inputStyle = {
   width: '100%',
   background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(148,163,184,0.14)',
-  borderRadius: '6px',
-  color: '#f1f5f9',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '10px',
+  color: '#F4F4F6',
   padding: '9px 12px',
   fontSize: '14px',
   outline: 'none',
@@ -34,11 +34,11 @@ export default function Register() {
   const update = field => e => setForm(f => ({ ...f, [field]: e.target.value }))
 
   function handleFocus(e) {
-    e.target.style.borderColor = 'rgba(232,160,32,0.50)'
-    e.target.style.boxShadow   = '0 0 0 3px rgba(232,160,32,0.10)'
+    e.target.style.borderColor = 'rgba(245,158,11,0.50)'
+    e.target.style.boxShadow   = '0 0 0 3px rgba(245,158,11,0.10)'
   }
   function handleBlur(e) {
-    e.target.style.borderColor = 'rgba(148,163,184,0.14)'
+    e.target.style.borderColor = 'rgba(255,255,255,0.10)'
     e.target.style.boxShadow   = 'none'
   }
 
@@ -60,7 +60,7 @@ export default function Register() {
     <div
       className="min-h-screen flex items-center justify-center px-4 py-10"
       style={{
-        background: 'radial-gradient(ellipse at 50% -10%, rgba(50,50,93,0.18) 0%, transparent 60%), #07111f',
+        background: 'radial-gradient(ellipse at 50% -10%, rgba(50,50,93,0.18) 0%, transparent 60%), #08080C',
       }}
     >
       <div className="w-full max-w-[340px]">
@@ -70,9 +70,9 @@ export default function Register() {
           <div
             className="inline-flex items-center justify-center w-10 h-10 mb-4"
             style={{
-              background: 'linear-gradient(135deg, #E8A020 0%, #f5c842 100%)',
-              borderRadius: '8px',
-              boxShadow: '0 8px 24px rgba(232,160,32,0.32)',
+              background: 'linear-gradient(135deg, #F59E0B 0%, #f5c842 100%)',
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(245,158,11,0.32)',
             }}
           >
             <span className="text-[#07111f] font-bold text-[16px]">G</span>
@@ -81,7 +81,7 @@ export default function Register() {
             className="text-white text-[26px] font-light leading-none mb-1.5"
             style={{ letterSpacing: '-0.04em' }}
           >
-            Guillon <span style={{ color: '#E8A020', fontWeight: 400 }}>AP</span>
+            Guillon <span style={{ color: '#F59E0B', fontWeight: 400 }}>AP</span>
           </h1>
           <p className="text-[#3d5068] text-[12px] tracking-[0.12em] uppercase">
             Sales Intelligence Platform
@@ -91,10 +91,10 @@ export default function Register() {
         {/* Card */}
         <div
           style={{
-            background: 'rgba(11, 18, 34, 0.96)',
+            background: 'rgba(18,18,26,0.92)',
             border: '1px solid rgba(148,163,184,0.10)',
-            borderRadius: '8px',
-            boxShadow: 'rgba(50,50,93,0.22) 0px 20px 40px -16px, rgba(0,0,0,0.22) 0px 10px 20px -8px, rgba(255,255,255,0.02) 0px 1px 0px inset',
+            borderRadius: '12px',
+            boxShadow: ''0 24px 64px rgba(0,0,0,0.70), 0 0 0 1px rgba(255,255,255,0.04) inset',
             padding: '28px',
           }}
         >
@@ -108,7 +108,7 @@ export default function Register() {
               style={{
                 background: 'rgba(251,113,133,0.08)',
                 border: '1px solid rgba(251,113,133,0.18)',
-                borderRadius: '6px',
+                borderRadius: '10px',
               }}
             >
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,16 +160,16 @@ export default function Register() {
               disabled={loading}
               className="w-full font-medium text-[14px] transition-all mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: '#E8A020',
+                background: '#F59E0B',
                 color: '#07111f',
-                borderRadius: '6px',
+                borderRadius: '10px',
                 padding: '9px 16px',
-                boxShadow: '0 4px 14px rgba(232,160,32,0.22)',
+                boxShadow: '0 4px 14px rgba(245,158,11,0.22)',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
               }}
-              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#f5b33a' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#E8A020' }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#FCD34D' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#F59E0B' }}
             >
               {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
@@ -178,7 +178,7 @@ export default function Register() {
 
         <p className="text-center text-[#3d5068] text-[13px] mt-5">
           ¿Ya tenés cuenta?{' '}
-          <Link to="/login" className="font-medium" style={{ color: '#E8A020' }}>
+          <Link to="/login" className="font-medium" style={{ color: '#F59E0B' }}>
             Iniciá sesión
           </Link>
         </p>

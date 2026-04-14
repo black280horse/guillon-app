@@ -71,7 +71,7 @@ export default function Admin() {
             <h2 className="text-2xl font-semibold text-white">Panel de Administración</h2>
             <p className="text-zinc-500 text-sm mt-0.5">Gestión de usuarios de la plataforma</p>
           </div>
-          <span className="text-xs bg-[#E8A020]/10 text-[#E8A020] border border-[#E8A020]/30 px-2 py-0.5 rounded-full font-medium">
+          <span className="text-xs bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30 px-2 py-0.5 rounded-full font-medium">
             Admin
           </span>
         </div>
@@ -88,7 +88,7 @@ export default function Admin() {
               key={s.key}
               onClick={() => setFilter(s.key)}
               className={`bg-zinc-900 border rounded-xl p-4 text-left transition-colors ${
-                filter === s.key ? 'border-[#E8A020]' : 'border-zinc-800 hover:border-zinc-700'
+                filter === s.key ? 'border-[#F59E0B]' : 'border-zinc-800 hover:border-zinc-700'
               }`}
             >
               <p className={`text-2xl font-bold ${s.color}`}>{counts[s.key]}</p>
@@ -135,7 +135,7 @@ export default function Admin() {
                       <td className="px-6 py-4">
                         <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
                           u.plan === 'pro'
-                            ? 'bg-[#E8A020]/10 text-[#E8A020] border-[#E8A020]/30'
+                            ? 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30'
                             : 'bg-zinc-800 text-zinc-400 border-zinc-700'
                         }`}>
                           {u.plan === 'pro' ? 'Pro' : 'Free'}

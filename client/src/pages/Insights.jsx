@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext'
 const API = '/api'
 
 const DOW_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const COLORS = ['#E8A020', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b']
+const COLORS = ['#F59E0B', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b']
 
 function fmt(n, prefix = '$') {
   if (n == null) return '—'
@@ -51,7 +51,7 @@ function TabBtn({ active, onClick, children }) {
       onClick={onClick}
       className={`px-3 py-1.5 text-[13px] font-medium transition-all border-b-2 ${
         active
-          ? 'border-[#E8A020] text-white'
+          ? 'border-[#F59E0B] text-white'
           : 'border-transparent text-[#6b7280] hover:text-[#c0cee4]'
       }`}
     >
@@ -126,7 +126,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                 onClick={() => toggle(p.id)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   active
-                    ? 'border-[#E8A020] text-[#E8A020] bg-[#E8A020]/10'
+                    ? 'border-[#F59E0B] text-[#F59E0B] bg-[#F59E0B]/10'
                     : 'border-[#2a2a2e] text-[#a1a1aa] hover:border-[#3a3a3e] hover:text-white'
                 }`}
               >
@@ -184,7 +184,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                                   style={{ background: COLORS[i] }} />
                                 <span className="text-white font-medium">{p.name}</span>
                                 {isWinner && (
-                                  <span className="text-[10px] bg-[#E8A020]/20 text-[#E8A020] px-1.5 py-0.5 rounded-full font-semibold">
+                                  <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.5 rounded-full font-semibold">
                                     🏆 mejor
                                   </span>
                                 )}
@@ -199,7 +199,7 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
                               {p.roas != null ? (
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                                   p.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
-                                  : p.roas >= 1.5 ? 'bg-[#E8A020]/20 text-[#E8A020]'
+                                  : p.roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
                                   : 'bg-[#ef4444]/20 text-[#ef4444]'
                                 }`}>{p.roas}x</span>
                               ) : '—'}
@@ -274,7 +274,7 @@ function BudgetTab({ dateFrom, dateTo }) {
         <div className="grid grid-cols-3 gap-4">
           <div className="card-vercel p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS promedio</p>
-            <p className="text-[22px] font-light tabular-nums text-[#E8A020]" style={{ letterSpacing: '-0.03em' }}>{data.avg_roas ?? '—'}x</p>
+            <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.avg_roas ?? '—'}x</p>
           </div>
           <div className="card-vercel p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS mínimo</p>
@@ -300,13 +300,13 @@ function BudgetTab({ dateFrom, dateTo }) {
               value={target}
               onChange={e => setTarget(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && calc()}
-              className="w-full bg-[#0B0B0E] border border-white/8 text-white pl-7 pr-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#E8A020]/60 transition-colors"
+              className="w-full bg-[#0B0B0E] border border-white/8 text-white pl-7 pr-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#F59E0B]/60 transition-colors"
             />
           </div>
           <button
             onClick={calc}
             disabled={!target || loading}
-            className="px-5 py-2.5 bg-[#E8A020] hover:bg-[#d4911c] text-black font-medium rounded-[6px] transition-colors disabled:opacity-40 text-sm"
+            className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#E8A020] text-black font-medium rounded-[6px] transition-colors disabled:opacity-40 text-sm"
           >
             Calcular
           </button>
@@ -320,7 +320,7 @@ function BudgetTab({ dateFrom, dateTo }) {
             <InvestCard
               label="Inversión estimada (ROAS promedio)"
               value={data.estimated_investment}
-              color="border-l-[#E8A020]"
+              color="border-l-[#F59E0B]"
               sub={`Con ROAS ${data.avg_roas}x`}
             />
             <InvestCard
@@ -351,12 +351,12 @@ function BudgetTab({ dateFrom, dateTo }) {
                         <span className="text-sm text-white">{p.name}</span>
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-[#52525b]">ROAS {p.roas}x</span>
-                          <span className="text-sm font-medium text-[#E8A020]">{fmt(inv)}</span>
+                          <span className="text-sm font-medium text-[#F59E0B]">{fmt(inv)}</span>
                         </div>
                       </div>
                       <div className="h-1.5 bg-[#2a2a2e] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#E8A020] rounded-full transition-all duration-700"
+                          className="h-full bg-[#F59E0B] rounded-full transition-all duration-700"
                           style={{ width: `${Math.min(pct, 100)}%` }}
                         />
                       </div>
@@ -422,7 +422,7 @@ function PatternsTab({ dateFrom, dateTo }) {
             <YAxis yAxisId="right" orientation="right" tick={{ fill: '#52525b', fontSize: 11 }}
               tickFormatter={v => `${v}x`} />
             <Tooltip content={<ChartTooltip />} />
-            <Bar yAxisId="left" dataKey="avg_revenue" name="Ingresos prom." fill="#E8A020" radius={[4,4,0,0]} />
+            <Bar yAxisId="left" dataKey="avg_revenue" name="Ingresos prom." fill="#F59E0B" radius={[4,4,0,0]} />
             <Bar yAxisId="left" dataKey="avg_investment" name="Inversión prom." fill="#3b82f6" radius={[4,4,0,0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -432,13 +432,13 @@ function PatternsTab({ dateFrom, dateTo }) {
           {dowData.map(d => (
             <div key={d.dow} className={`text-center p-2 rounded-[8px] ${
               d.avg_roas >= 3 ? 'bg-[#10b981]/10'
-              : d.avg_roas >= 1.5 ? 'bg-[#E8A020]/10'
+              : d.avg_roas >= 1.5 ? 'bg-[#F59E0B]/10'
               : 'bg-[#ef4444]/10'
             }`}>
               <p className="text-[#52525b] text-[10px]">{d.name}</p>
               <p className={`text-sm font-bold mt-0.5 ${
                 d.avg_roas >= 3 ? 'text-[#10b981]'
-                : d.avg_roas >= 1.5 ? 'text-[#E8A020]'
+                : d.avg_roas >= 1.5 ? 'text-[#F59E0B]'
                 : 'text-[#ef4444]'
               }`}>{d.avg_roas ?? '—'}x</p>
             </div>
@@ -466,7 +466,7 @@ function PatternsTab({ dateFrom, dateTo }) {
                     {isBest && <span className="text-xs text-[#10b981]">🏆 Óptimo</span>}
                     <span className={`px-3 py-1 rounded-full text-sm font-bold ${
                       r.avg_roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
-                      : r.avg_roas >= 1.5 ? 'bg-[#E8A020]/20 text-[#E8A020]'
+                      : r.avg_roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
                       : 'bg-[#ef4444]/20 text-[#ef4444]'
                     }`}>{r.avg_roas}x</span>
                   </div>
@@ -492,7 +492,7 @@ function PatternsTab({ dateFrom, dateTo }) {
                 <span className="text-[#10b981] text-sm">{fmt(d.revenue)}</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                   d.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
-                  : d.roas >= 1.5 ? 'bg-[#E8A020]/20 text-[#E8A020]'
+                  : d.roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
                   : 'bg-[#ef4444]/20 text-[#ef4444]'
                 }`}>{d.roas}x</span>
               </div>
@@ -543,7 +543,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
             <select
               value={productId}
               onChange={e => setProductId(e.target.value)}
-              className="w-full bg-[#0B0B0E] border border-white/8 text-white text-sm px-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#E8A020]/60"
+              className="w-full bg-[#0B0B0E] border border-white/8 text-white text-sm px-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#F59E0B]/60"
             >
               <option value="">Todos los productos</option>
               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -558,7 +558,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
                   onClick={() => setDays(d)}
                   className={`px-3 py-2 text-sm rounded-[8px] font-medium transition-all ${
                     days === d
-                      ? 'bg-[#E8A020] text-black'
+                      ? 'bg-[#F59E0B] text-black'
                       : 'bg-[#1f1f23] text-[#a1a1aa] hover:text-white border border-[#2a2a2e]'
                   }`}
                 >{d}d</button>
@@ -577,7 +577,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
           </div>
           <div className="card-vercel p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días proyectados</p>
-            <p className="text-[22px] font-light tabular-nums text-[#E8A020]" style={{ letterSpacing: '-0.03em' }}>{data.projected?.length ?? 0}</p>
+            <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.projected?.length ?? 0}</p>
           </div>
           <div className="card-vercel p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Ingreso proyectado (prom/día)</p>
@@ -599,7 +599,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
             <p className="text-[13px] font-semibold text-white flex-1" style={{ letterSpacing: '-0.01em' }}>Proyección de ingresos</p>
             <div className="flex items-center gap-4 text-xs text-[#a1a1aa]">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 bg-[#E8A020] inline-block" />
+                <span className="w-3 h-0.5 bg-[#F59E0B] inline-block" />
                 Real
               </span>
               <span className="flex items-center gap-1.5">
@@ -612,8 +612,8 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="projGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#E8A020" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#E8A020" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="realGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
@@ -627,7 +627,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
               <Tooltip content={<ChartTooltip />} />
               <Area
                 type="monotone" dataKey="revenue" name="Ingresos"
-                stroke="#E8A020" strokeWidth={2}
+                stroke="#F59E0B" strokeWidth={2}
                 fill="url(#projGrad)"
                 strokeDasharray={(d) => d?.projected ? '5 3' : undefined}
               />
@@ -675,7 +675,7 @@ export default function Insights() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#E8A020', fontWeight: 400 }}>de negocio</span></h1>
+            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#F59E0B', fontWeight: 400 }}>de negocio</span></h1>
             <p className="text-[#6b7280] text-[12px] mt-1.5 tracking-[0.01em]">
               Análisis avanzado para tomar mejores decisiones
             </p>

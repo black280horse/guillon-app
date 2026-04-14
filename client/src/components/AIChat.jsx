@@ -19,17 +19,17 @@ function MessageBubble({ msg }) {
     <div className="flex justify-start">
       <div className="max-w-xs sm:max-w-sm">
         <div className="flex items-center gap-1.5 mb-1">
-          <div className="w-4 h-4 rounded-sm bg-[#E8A020]/20 flex items-center justify-center">
-            <svg className="w-2.5 h-2.5 text-[#E8A020]" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-4 h-4 rounded-sm bg-[#F59E0B]/20 flex items-center justify-center">
+            <svg className="w-2.5 h-2.5 text-[#F59E0B]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <span className="text-zinc-500 text-xs">Guillon IA</span>
         </div>
-        <div className={`bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm px-4 py-3 rounded-2xl rounded-tl-sm leading-relaxed whitespace-pre-line ${msg.streaming ? 'border-[#E8A020]/20' : ''}`}>
+        <div className={`bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm px-4 py-3 rounded-2xl rounded-tl-sm leading-relaxed whitespace-pre-line ${msg.streaming ? 'border-[#F59E0B]/20' : ''}`}>
           {msg.content}
           {msg.streaming && (
-            <span className="inline-block w-1.5 h-4 bg-[#E8A020] ml-0.5 animate-pulse rounded-sm" />
+            <span className="inline-block w-1.5 h-4 bg-[#F59E0B] ml-0.5 animate-pulse rounded-sm" />
           )}
         </div>
       </div>
@@ -153,8 +153,8 @@ function ChatPanel({ onClose }) {
       {/* Header del panel */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#E8A020]/10 border border-[#E8A020]/20 flex items-center justify-center">
-            <svg className="w-4 h-4 text-[#E8A020]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-7 h-7 rounded-lg bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center">
+            <svg className="w-4 h-4 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
@@ -202,7 +202,7 @@ function ChatPanel({ onClose }) {
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
             placeholder="Preguntá algo sobre tus ventas…"
             disabled={streaming}
-            className="flex-1 bg-zinc-900 border border-zinc-800 focus:border-[#E8A020]/50 text-white text-sm px-3 py-2 rounded-xl focus:outline-none transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+            className="flex-1 bg-zinc-900 border border-zinc-800 focus:border-[#F59E0B]/50 text-white text-sm px-3 py-2 rounded-xl focus:outline-none transition-colors placeholder:text-zinc-600 disabled:opacity-50"
           />
           {streaming ? (
             <button onClick={handleStop}
@@ -211,7 +211,7 @@ function ChatPanel({ onClose }) {
             </button>
           ) : (
             <button onClick={() => sendMessage()} disabled={!input.trim()}
-              className="w-9 h-9 bg-[#E8A020] hover:bg-[#d4911c] text-black rounded-xl flex items-center justify-center transition-colors disabled:opacity-40 shrink-0">
+              className="w-9 h-9 bg-[#F59E0B] hover:bg-[#E8A020] text-black rounded-xl flex items-center justify-center transition-colors disabled:opacity-40 shrink-0">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0l-7 7m7-7l7 7" />
               </svg>
@@ -251,7 +251,7 @@ export default function AIChat() {
         className={`fixed bottom-20 right-4 z-50 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-200 lg:bottom-6
           ${open
             ? 'bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white'
-            : 'bg-[#E8A020] hover:bg-[#d4911c] text-black'
+            : 'bg-[#F59E0B] hover:bg-[#E8A020] text-black'
           }`}
         style={{ width: 52, height: 52 }}
         title="Asistente IA"

@@ -16,8 +16,8 @@ export default function Pending() {
 
         {/* Ícono */}
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-full bg-[#E8A020]/10 border border-[#E8A020]/30 flex items-center justify-center">
-            <svg className="w-10 h-10 text-[#E8A020]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-20 h-20 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30 flex items-center justify-center">
+            <svg className="w-10 h-10 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
             </svg>
@@ -34,7 +34,7 @@ export default function Pending() {
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-left space-y-2">
           <p className="text-zinc-400 text-sm flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#E8A020] inline-block" />
+            <span className="w-2 h-2 rounded-full bg-[#F59E0B] inline-block" />
             Revisión en proceso
           </p>
           <p className="text-zinc-600 text-sm flex items-center gap-2">

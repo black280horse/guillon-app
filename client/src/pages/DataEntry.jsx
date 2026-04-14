@@ -322,13 +322,13 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
 
   return (
     <div className="animate-fade-up">
-      <div className="card border-l-2 border-l-[#E8A020] p-5 space-y-4">
+      <div className="card border-l-2 border-l-[#F59E0B] p-5 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[#E8A020] text-sm font-semibold">Revisar antes de importar</p>
+            <p className="text-[#F59E0B] text-sm font-semibold">Revisar antes de importar</p>
             <p className="text-[#8ea0bc] text-xs mt-1">{pending.records.length} registro{pending.records.length === 1 ? '' : 's'} detectado{pending.records.length === 1 ? '' : 's'}</p>
           </div>
-          <div className="rounded-[8px] bg-[#E8A020]/10 border border-[#E8A020]/20 px-3 py-1 text-[11px] font-semibold text-[#ffd27d]">
+          <div className="rounded-[8px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 px-3 py-1 text-[11px] font-semibold text-[#ffd27d]">
             {dateLabel}
           </div>
         </div>
@@ -379,7 +379,7 @@ function ConfirmCard({ pending, onConfirm, onEdit, loading }) {
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="flex-1 py-2 rounded-[6px] bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold transition-colors disabled:opacity-50"
+            className="flex-1 py-2 rounded-[6px] bg-[#F59E0B] hover:bg-[#E8A020] text-black text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {loading ? 'Importando...' : `Confirmar e importar ${pending.records.length}`}
           </button>
@@ -412,7 +412,7 @@ function ChatMessage({ msg }) {
               <Kv label="Fecha" value={data.date} />
               <Kv label="Ingresos" value={fmt(data.revenue)} color="text-[#10b981]" />
               <Kv label="Inversion" value={fmt(data.investment)} color="text-[#ef4444]" />
-              <Kv label="Ganancia" value={fmt(data.profit)} color="text-[#E8A020]" />
+              <Kv label="Ganancia" value={fmt(data.profit)} color="text-[#F59E0B]" />
               <Kv label="ROAS" value={data.roas ? `${data.roas}x` : '-'} />
             </div>
           )}
@@ -466,7 +466,7 @@ function RecentHistory({ history }) {
             <span className="text-white flex-1 truncate">{item.product_name}</span>
             <span className="text-[#52525b]">{item.date}</span>
             <span className="text-[#10b981] font-medium">{fmt(item.revenue)}</span>
-            <span className={item.roas >= 2 ? 'text-[#10b981]' : 'text-[#E8A020]'}>
+            <span className={item.roas >= 2 ? 'text-[#10b981]' : 'text-[#F59E0B]'}>
               {item.roas ? `${item.roas}x` : '-'}
             </span>
           </div>
@@ -625,7 +625,7 @@ export default function DataEntry() {
       <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-3xl mx-auto flex flex-col gap-4 w-full min-w-0" style={{ minHeight: 'calc(100dvh - 80px)' }}>
         <div>
           <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-            Cargar <span style={{ color: '#E8A020', fontWeight: 400 }}>datos</span>
+            Cargar <span style={{ color: '#F59E0B', fontWeight: 400 }}>datos</span>
           </h1>
           <p className="text-[#3d5068] text-[13px] mt-1.5">Texto libre o CSV — múltiples productos, gastos y fecha global.</p>
         </div>
@@ -636,8 +636,8 @@ export default function DataEntry() {
           <div className="flex-1 space-y-3 overflow-y-auto pr-1 pb-2 min-h-[220px]" style={{ maxHeight: '50vh' }}>
             {messages.length === 0 && !pending && (
               <div className="flex flex-col items-center justify-center py-10 text-center space-y-3">
-                <div className="w-14 h-14 rounded-[8px] bg-[#E8A020]/10 border border-[#E8A020]/20 flex items-center justify-center">
-                  <svg className="w-7 h-7 text-[#E8A020]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 rounded-[8px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-5 5v-5z" />
                   </svg>
                 </div>
@@ -689,9 +689,9 @@ export default function DataEntry() {
           )}
 
           {csvRows && (
-            <div className="card border-[#E8A020]/30 p-4 space-y-3">
+            <div className="card border-[#F59E0B]/30 p-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[#E8A020] text-sm font-medium">{csvRows.length} registros - {csvName}</p>
+                <p className="text-[#F59E0B] text-sm font-medium">{csvRows.length} registros - {csvName}</p>
                 <button onClick={() => setCsvRows(null)} className="text-[#52525b] hover:text-[#a1a1aa] text-xs">Cancelar</button>
               </div>
               <div className="max-h-40 overflow-y-auto text-xs text-[#a1a1aa] space-y-1">
@@ -708,7 +708,7 @@ export default function DataEntry() {
               <button
                 onClick={handleImportCSV}
                 disabled={loading}
-                className="w-full bg-[#E8A020] hover:bg-[#d4911c] text-black text-sm font-semibold py-2 rounded-[6px] transition-colors disabled:opacity-50"
+                className="w-full bg-[#F59E0B] hover:bg-[#E8A020] text-black text-sm font-semibold py-2 rounded-[6px] transition-colors disabled:opacity-50"
               >
                 Importar {csvRows.length} registros
               </button>
@@ -717,7 +717,7 @@ export default function DataEntry() {
 
           {!pending && (
             <div className="flex gap-2 items-end flex-col sm:flex-row">
-              <div className="flex-1 w-full bg-[#1f1f23] border border-[#2a2a2e] focus-within:border-[#E8A020]/50 rounded-[8px] transition-colors">
+              <div className="flex-1 w-full bg-[#1f1f23] border border-[#2a2a2e] focus-within:border-[#F59E0B]/50 rounded-[8px] transition-colors">
                 <textarea
                   value={input}
                   onChange={event => setInput(event.target.value)}
@@ -734,7 +734,7 @@ export default function DataEntry() {
                 <div className="flex items-center justify-between px-3 pb-2">
                   <button
                     onClick={() => fileRef.current.click()}
-                    className="text-[#52525b] hover:text-[#E8A020] text-xs flex items-center gap-1 transition-colors"
+                    className="text-[#52525b] hover:text-[#F59E0B] text-xs flex items-center gap-1 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.172 7 8.586 13.586a2 2 0 1 0 2.828 2.828l6.414-6.586a4 4 0 0 0-5.656-5.656L5.757 10.757a6 6 0 1 0 8.486 8.486L20.5 13" />
@@ -748,7 +748,7 @@ export default function DataEntry() {
               <button
                 onClick={handleSend}
                 disabled={loading || !input.trim()}
-                className="w-12 h-12 bg-[#E8A020] hover:bg-[#d4911c] text-black rounded-[8px] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+                className="w-12 h-12 bg-[#F59E0B] hover:bg-[#E8A020] text-black rounded-[8px] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0-7 7m7-7 7 7" />

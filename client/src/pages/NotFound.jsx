@@ -7,13 +7,13 @@ export default function NotFound() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <span className="text-2xl font-bold text-white">
-            Guillon <span className="text-[#E8A020]">AP</span>
+            Guillon <span className="text-[#F59E0B]">AP</span>
           </span>
         </div>
 
         {/* 404 */}
         <div>
-          <p className="text-8xl font-black text-[#E8A020] tabular-nums leading-none">404</p>
+          <p className="text-8xl font-black text-[#F59E0B] tabular-nums leading-none">404</p>
           <h1 className="text-xl font-semibold text-white mt-3">Página no encontrada</h1>
           <p className="text-zinc-500 text-sm mt-2">
             La ruta que buscás no existe o fue movida.
@@ -23,7 +23,7 @@ export default function NotFound() {
         {/* Acción */}
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#E8A020] hover:bg-[#d4911c] text-black font-semibold rounded-xl transition-colors text-sm"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F59E0B] hover:bg-[#E8A020] text-black font-semibold rounded-xl transition-colors text-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
