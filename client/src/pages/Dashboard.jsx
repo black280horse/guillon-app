@@ -114,7 +114,7 @@ function CompactKpi({ label, value, formatter, color, iconPath, change, chartDat
             style={{ color: 'rgba(255,255,255,0.35)' }}>
             {label}
           </p>
-          <p className="text-[34px] font-bold leading-none mt-2 tabular-nums"
+          <p className="text-[32px] font-bold leading-[1.1] mt-3 tabular-nums"
             style={{ color, letterSpacing: '-0.04em' }}>
             {formatter(animated)}
           </p>
