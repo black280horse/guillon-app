@@ -181,7 +181,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .sidebar-fixed {
   position: fixed;
   inset: 0 auto 0 0;
-  width: 232px;
+  width: 160px;
   z-index: 40;
   display: flex;
   flex-direction: column;
@@ -192,7 +192,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 .main-content {
-  margin-left: 232px;
+  margin-left: 160px;
   flex: 1;
   min-height: 100dvh;
   display: flex;
@@ -203,7 +203,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .main-frame {
   flex: 1;
-  padding: 16px;
+  padding: 12px;
   min-width: 0;
 }
 
@@ -217,7 +217,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 .page-shell {
-  padding: 28px 30px;
+  padding: 24px 16px;
   min-width: 0;
 }
 
@@ -348,9 +348,9 @@ input, textarea, select, button {
 ══════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
-  .sidebar-fixed  { width: 210px; }
-  .main-content   { margin-left: 210px; }
-  .page-shell     { padding: 22px 22px; }
+  .sidebar-fixed  { width: 152px; }
+  .main-content   { margin-left: 152px; }
+  .page-shell     { padding: 20px 16px; }
 }
 
 @media (max-width: 768px) {
@@ -366,4 +366,54 @@ input, textarea, select, button {
   }
   .page-shell     { padding: 20px 16px 100px; }
   .bottom-nav     { display: flex; }
+}
+
+/* ══════════════════════════════════════════════════════
+   DM SANS FONT (Tasks module)
+══════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════
+   GLOBAL SCROLLBAR
+══════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ══════════════════════════════════════════════════════
+   TASKS MODULE — card hover states
+══════════════════════════════════════════════════════ */
+.tk-card {
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.tk-card:hover {
+  background: #21213a !important;
+  border-color: rgba(255,255,255,0.13) !important;
+  transform: translateY(-1px);
+}
+.tk-card-overdue {
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.tk-card-overdue:hover {
+  background: rgba(239,68,68,0.08) !important;
+  border-left-color: rgba(239,68,68,0.8) !important;
+  transform: translateY(-1px);
+}
+.tk-sidebar-icon {
+  transition: background 0.12s ease;
+}
+.tk-sidebar-icon:hover {
+  background: rgba(255,255,255,0.05) !important;
+}
+.tk-pill:hover {
+  background: rgba(255,255,255,0.06) !important;
+}
+.tk-col-add:hover {
+  background: rgba(255,255,255,0.05) !important;
+}
+.tk-hdr-btn:hover {
+  background: rgba(255,255,255,0.1) !important;
+}
+.tk-checkbox:hover {
+  border-color: rgba(232,160,32,0.5) !important;
 }
