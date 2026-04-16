@@ -620,7 +620,7 @@ export default function Dashboard() {
               {loading ? (
                 <div className="skeleton h-[340px] rounded-[12px]" />
               ) : (
-                <div className="h-[340px] md:h-[360px]">
+                <div className="h-[340px] md:h-[360px] mt-3">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={series} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
                       <defs>
