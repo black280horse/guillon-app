@@ -528,7 +528,7 @@ export default function Dashboard() {
                 { label: 'Hoy',       list: tasksToday.slice(0,4),    color: '#F59E0B', bg: 'rgba(245,158,11,0.07)',  border: 'rgba(245,158,11,0.18)' },
                 { label: 'Próximas',  list: tasksUpcoming.slice(0,4), color: '#818CF8', bg: 'rgba(129,140,248,0.07)', border: 'rgba(129,140,248,0.16)' },
               ].map(g => (
-                <div key={g.label} className="rounded-[12px] p-3.5" style={{ background: g.bg, border: `1px solid ${g.border}` }}>
+                <div key={g.label} className="rounded-[12px]" style={{ background: g.bg, border: `1px solid ${g.border}`, padding: '14px 16px' }}>
                   <div className="flex items-center gap-2 mb-2.5">
                     <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: g.color }}>{g.label}</span>
                     <span className="ml-auto text-[11px] font-bold tabular-nums" style={{ color: g.color }}>{g.list.length}</span>
@@ -540,7 +540,7 @@ export default function Dashboard() {
                           <div key={t.id} className="flex items-start gap-2">
                             <span className="w-1 h-1 rounded-full mt-[7px] shrink-0" style={{ background: g.color }} />
                             <div className="min-w-0">
-                              <p className="text-[12px] font-medium leading-snug text-white truncate">{t.title}</p>
+                              <p className="text-[12px] font-medium text-white truncate" style={{ lineHeight: '1.4' }}>{t.title}</p>
                               {t.product_name && <p className="text-[10.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{t.product_name}</p>}
                             </div>
                           </div>
