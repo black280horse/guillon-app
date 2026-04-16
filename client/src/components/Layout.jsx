@@ -140,7 +140,7 @@ export default function Layout({ children }) {
 
                         {/* Label */}
                         <span
-                          className="text-[12.5px] font-medium leading-[1.4] transition-colors duration-150"
+                          className="text-[12.5px] font-medium leading-[1.4] transition-colors duration-150 truncate min-w-0"
                           style={{ color: isActive ? '#F4F4F6' : 'rgba(255,255,255,0.50)' }}
                         >
                           {label}

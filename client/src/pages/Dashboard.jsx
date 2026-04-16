@@ -340,7 +340,7 @@ function AIRecommendations({ summary, dateFrom, dateTo }) {
             </p>
             <button
               onClick={generate}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-[8px] px-3.5 py-2 text-[12px] font-semibold text-black transition-all"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[14px] font-semibold text-black transition-all"
               style={{ background: '#F59E0B' }}
               onMouseEnter={e => e.currentTarget.style.background = '#FCD34D'}
               onMouseLeave={e => e.currentTarget.style.background = '#F59E0B'}
@@ -577,15 +577,15 @@ export default function Dashboard() {
             </Link>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 grid grid-cols-2 xl:grid-cols-4 gap-4">
               <CompactKpi label="Total vendido" value={kpis?.total_revenue} formatter={formatCurrency} color={SERIES_COLORS.revenue} iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" change={changePct(kpis?.total_revenue, kpis?.prev_revenue)} chartData={series} chartKey="revenue" loading={loading} />
               <CompactKpi label="Total invertido" value={kpis?.total_investment} formatter={formatCurrency} color={SERIES_COLORS.investment} iconPath="M4 17 9 12l3 3 8-8M4 7h5v5" change={changePct(kpis?.total_investment, kpis?.prev_investment)} chartData={series} chartKey="investment" loading={loading} />
               <CompactKpi label="ROAS" value={kpis?.roas} formatter={value => `${numberValue(value).toFixed(2)}x`} color={SERIES_COLORS.roas} iconPath="M4 19h16M6 15l4-4 3 3 5-6" change={changePct(kpis?.roas, kpis?.prev_roas)} chartData={series} chartKey="roas" loading={loading} />
               <CompactKpi label="Ganancia neta" value={kpis?.net_profit} formatter={formatCurrency} color={SERIES_COLORS.profit} iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4" change={changePct(kpis?.net_profit, kpis?.prev_profit)} chartData={series} chartKey="profit" loading={loading} />
             </div>
 
-            <div className="card p-6">
+            <div className="card p-5 col-span-12 lg:col-span-8">
               <SectionHeader
                 title="Tendencia"
                 action={
@@ -618,9 +618,9 @@ export default function Dashboard() {
               />
 
               {loading ? (
-                <div className="skeleton h-[340px] rounded-[12px]" />
+                <div className="skeleton h-[380px] rounded-[12px]" />
               ) : (
-                <div className="h-[340px] md:h-[360px] mt-3">
+                <div className="h-[380px] mt-3">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={series} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
                       <defs>
@@ -655,214 +655,206 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start">
-              <div className="space-y-5">
-                {/* Product ranking table */}
-                <div className="card overflow-hidden">
-                  <div className="px-6 py-5 flex items-center justify-between gap-3"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h2 className="text-[14px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
-                      Ranking de productos
-                    </h2>
-                    <span
-                      className="text-[11px] font-medium px-2.5 py-1 rounded-[6px]"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' }}
-                    >
-                      {formatNumber(kpis?.total_records ?? 0)} reg.
-                    </span>
-                  </div>
-
-                  {loading ? (
-                    <div className="p-5 space-y-3">
-                      {[1, 2, 3].map(item => <div key={item} className="skeleton h-14 rounded-[10px]" />)}
-                    </div>
-                  ) : (
-                    <>
-                      <ProductRankingCards products={sorted} formatCurrency={formatCurrency} navigate={navigate} />
-                      <div className="hidden lg:block">
-                        <table className="w-full">
-                          <thead>
-                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                              {[
-                                { key: null,         label: '#' },
-                                { key: null,         label: 'Producto' },
-                                { key: 'revenue',    label: 'Ingresos' },
-                                { key: 'investment', label: 'Inversión' },
-                                { key: 'roas',       label: 'ROAS' },
-                                { key: 'profit',     label: 'Ganancia' },
-                                { key: null,         label: '' },
-                              ].map(column => (
-                                <th
-                                  key={column.label}
-                                  onClick={() => column.key && toggleSort(column.key)}
-                                  className={`px-5 py-3.5 text-left text-[10.5px] uppercase font-semibold tracking-[0.14em] ${column.key ? 'cursor-pointer' : ''}`}
-                                  style={{ color: 'rgba(255,255,255,0.30)' }}
-                                >
-                                  {column.label}
-                                  {column.key === sortCol && (
-                                    <span className="ml-1" style={{ color: '#F59E0B' }}>
-                                      {sortDir === 'desc' ? '↓' : '↑'}
-                                    </span>
-                                  )}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sorted.map((product, index) => (
-                              <tr
-                                key={product.id}
-                                className="group transition-colors"
-                                style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                              >
-                                <td className="px-5 py-4 text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                                  {index + 1}
-                                </td>
-                                <td className="px-5 py-4">
-                                  <p className="text-[13px] font-semibold text-white">{product.name}</p>
-                                </td>
-                                <td className="px-5 py-4 text-[13px] font-bold" style={{ color: '#F59E0B' }}>
-                                  {formatCurrency(product.revenue)}
-                                </td>
-                                <td className="px-5 py-4 text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                  {formatCurrency(product.investment)}
-                                </td>
-                                <td className="px-5 py-4">
-                                  <span
-                                    className="text-[11px] font-bold px-2.5 py-1 rounded-[6px]"
-                                    style={product.roas >= 3
-                                      ? { background: 'rgba(52,211,153,0.12)', color: '#34D399' }
-                                      : product.roas >= 1.5
-                                      ? { background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }
-                                      : { background: 'rgba(248,113,113,0.12)', color: '#F87171' }
-                                    }
-                                  >
-                                    {product.roas ? `${numberValue(product.roas).toFixed(2)}x` : '—'}
-                                  </span>
-                                </td>
-                                <td
-                                  className="px-5 py-4 text-[13px] font-bold"
-                                  style={{ color: numberValue(product.profit) >= 0 ? '#34D399' : '#F87171' }}
-                                >
-                                  {formatCurrency(product.profit)}
-                                </td>
-                                <td className="px-5 py-4">
-                                  <button
-                                    onClick={() => navigate(`/productos/${product.id}`)}
-                                    className="text-[11px] font-semibold px-2.5 py-1 rounded-[6px] transition-all"
-                                    style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.08)' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.16)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
-                                  >
-                                    Ver →
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+            {/* Right panel - col 9-12, same row as trend chart */}
+            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+              <div className="card p-5">
+                <SectionHeader title="Alertas" />
+                <div className="space-y-3">
+                  {loading
+                    ? [1, 2].map(item => <div key={item} className="skeleton h-20 rounded-[10px]" />)
+                    : alerts.map((alert, index) => (
+                      <div
+                        key={`${alert.title}-${index}`}
+                        className="rounded-[12px] p-4"
+                        style={alert.tone === 'green'
+                          ? { background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.16)' }
+                          : alert.tone === 'red'
+                          ? { background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.16)' }
+                          : { background: 'rgba(129,140,248,0.07)', border: '1px solid rgba(129,140,248,0.16)' }
+                        }
+                      >
+                        <p className="text-white text-[13px] font-bold" style={{ letterSpacing: '-0.01em' }}>
+                          {alert.title}
+                        </p>
+                        <p className="text-[12px] mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                          {alert.body}
+                        </p>
+                        {alert.action && (
+                          <button
+                            onClick={alert.onAction}
+                            className="text-[11px] font-bold mt-2.5 hover:underline"
+                            style={{ color: '#F59E0B' }}
+                          >
+                            {alert.action} →
+                          </button>
+                        )}
                       </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Charts row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <div className="card p-6">
-                    <SectionHeader title="Distribución de ingresos" />
-                    <div className="h-[240px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={4} strokeWidth={0}>
-                            {pieData.map((item, index) => (
-                              <Cell key={`${item.name}-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} opacity={0.90} />
-                            ))}
-                          </Pie>
-                          <Tooltip content={<PieTooltip formatCurrency={formatCurrency} />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  <div className="card p-6">
-                    <SectionHeader title="ROAS por producto" />
-                    <div className="h-[240px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={roasData} layout="vertical" margin={{ top: 0, right: 8, left: 8, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="roas-bar" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%"   stopColor="#818CF8" />
-                              <stop offset="100%" stopColor="#A78BFA" />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 6" horizontal={false} />
-                          <XAxis
-                            type="number"
-                            tick={{ fill: 'rgba(255,255,255,0.30)', fontSize: 11 }}
-                            axisLine={false} tickLine={false}
-                          />
-                          <YAxis
-                            type="category" dataKey="name" width={90}
-                            tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 11 }}
-                            axisLine={false} tickLine={false}
-                          />
-                          <Tooltip content={<RoasTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                          <Bar dataKey="roas" radius={[0, 8, 8, 0]} fill="url(#roas-bar)" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
+                    ))
+                  }
                 </div>
               </div>
+              {!loading && kpis?.total_records > 0 && (
+                <AIRecommendations summary={summary} dateFrom={dateFrom} dateTo={dateTo} />
+              )}
+            </div>
 
-              {/* Right sidebar */}
-              <div className="w-full xl:w-[320px] space-y-5 min-w-0">
-                {/* Alerts */}
-                <div className="card p-6">
-                  <SectionHeader title="Alertas" />
-                  <div className="space-y-3">
-                    {loading
-                      ? [1, 2].map(item => <div key={item} className="skeleton h-20 rounded-[10px]" />)
-                      : alerts.map((alert, index) => (
-                        <div
-                          key={`${alert.title}-${index}`}
-                          className="rounded-[12px] p-4"
-                          style={alert.tone === 'green'
-                            ? { background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.16)' }
-                            : alert.tone === 'red'
-                            ? { background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.16)' }
-                            : { background: 'rgba(129,140,248,0.07)', border: '1px solid rgba(129,140,248,0.16)' }
-                          }
-                        >
-                          <p className="text-white text-[13px] font-bold" style={{ letterSpacing: '-0.01em' }}>
-                            {alert.title}
-                          </p>
-                          <p className="text-[12px] mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                            {alert.body}
-                          </p>
-                          {alert.action && (
-                            <button
-                              onClick={alert.onAction}
-                              className="text-[11px] font-bold mt-2.5 hover:underline"
-                              style={{ color: '#F59E0B' }}
-                            >
-                              {alert.action} →
-                            </button>
-                          )}
-                        </div>
-                      ))
-                    }
-                  </div>
+            {/* Product ranking - full width */}
+            <div className="col-span-12 card overflow-hidden">
+              <div className="px-6 py-5 flex items-center justify-between gap-3"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <h2 className="text-[14px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
+                  Ranking de productos
+                </h2>
+                <span
+                  className="text-[11px] font-medium px-2.5 py-1 rounded-[6px]"
+                  style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' }}
+                >
+                  {formatNumber(kpis?.total_records ?? 0)} reg.
+                </span>
+              </div>
+              {loading ? (
+                <div className="p-5 space-y-3">
+                  {[1, 2, 3].map(item => <div key={item} className="skeleton h-14 rounded-[10px]" />)}
                 </div>
+              ) : (
+                <>
+                  <ProductRankingCards products={sorted} formatCurrency={formatCurrency} navigate={navigate} />
+                  <div className="hidden lg:block">
+                    <table className="w-full">
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          {[
+                            { key: null,         label: '#' },
+                            { key: null,         label: 'Producto' },
+                            { key: 'revenue',    label: 'Ingresos' },
+                            { key: 'investment', label: 'Inversión' },
+                            { key: 'roas',       label: 'ROAS' },
+                            { key: 'profit',     label: 'Ganancia' },
+                            { key: null,         label: '' },
+                          ].map(column => (
+                            <th
+                              key={column.label}
+                              onClick={() => column.key && toggleSort(column.key)}
+                              className={`px-5 py-3.5 text-left text-[10.5px] uppercase font-semibold tracking-[0.14em] ${column.key ? 'cursor-pointer' : ''}`}
+                              style={{ color: 'rgba(255,255,255,0.30)' }}
+                            >
+                              {column.label}
+                              {column.key === sortCol && (
+                                <span className="ml-1" style={{ color: '#F59E0B' }}>
+                                  {sortDir === 'desc' ? '↓' : '↑'}
+                                </span>
+                              )}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sorted.map((product, index) => (
+                          <tr
+                            key={product.id}
+                            className="group transition-colors"
+                            style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <td className="px-5 py-4 text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                              {index + 1}
+                            </td>
+                            <td className="px-5 py-4">
+                              <p className="text-[13px] font-semibold text-white truncate max-w-[200px]">{product.name}</p>
+                            </td>
+                            <td className="px-5 py-4 text-[13px] font-bold" style={{ color: '#F59E0B' }}>
+                              {formatCurrency(product.revenue)}
+                            </td>
+                            <td className="px-5 py-4 text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                              {formatCurrency(product.investment)}
+                            </td>
+                            <td className="px-5 py-4">
+                              <span
+                                className="text-[11px] font-bold px-2.5 py-1 rounded-[6px]"
+                                style={product.roas >= 3
+                                  ? { background: 'rgba(52,211,153,0.12)', color: '#34D399' }
+                                  : product.roas >= 1.5
+                                  ? { background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }
+                                  : { background: 'rgba(248,113,113,0.12)', color: '#F87171' }
+                                }
+                              >
+                                {product.roas ? `${numberValue(product.roas).toFixed(2)}x` : '—'}
+                              </span>
+                            </td>
+                            <td
+                              className="px-5 py-4 text-[13px] font-bold"
+                              style={{ color: numberValue(product.profit) >= 0 ? '#34D399' : '#F87171' }}
+                            >
+                              {formatCurrency(product.profit)}
+                            </td>
+                            <td className="px-5 py-4">
+                              <button
+                                onClick={() => navigate(`/productos/${product.id}`)}
+                                className="text-[11px] font-semibold px-2.5 py-1 rounded-[6px] transition-all"
+                                style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.08)' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.16)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
+                              >
+                                Ver →
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
 
-                {!loading && kpis?.total_records > 0 && (
-                  <AIRecommendations summary={summary} dateFrom={dateFrom} dateTo={dateTo} />
-                )}
+            {/* Pie chart */}
+            <div className="col-span-12 lg:col-span-6 card p-5">
+              <SectionHeader title="Distribución de ingresos" />
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={4} strokeWidth={0}>
+                      {pieData.map((item, index) => (
+                        <Cell key={`${item.name}-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} opacity={0.90} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<PieTooltip formatCurrency={formatCurrency} />} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </>
+
+            {/* Bar chart */}
+            <div className="col-span-12 lg:col-span-6 card p-5">
+              <SectionHeader title="ROAS por producto" />
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={roasData} layout="vertical" margin={{ top: 0, right: 8, left: 8, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="roas-bar" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stopColor="#818CF8" />
+                        <stop offset="100%" stopColor="#A78BFA" />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 6" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tick={{ fill: 'rgba(255,255,255,0.30)', fontSize: 11 }}
+                      axisLine={false} tickLine={false}
+                    />
+                    <YAxis
+                      type="category" dataKey="name" width={90}
+                      tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 11 }}
+                      axisLine={false} tickLine={false}
+                    />
+                    <Tooltip content={<RoasTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                    <Bar dataKey="roas" radius={[0, 8, 8, 0]} fill="url(#roas-bar)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </Layout>
