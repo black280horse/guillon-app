@@ -499,16 +499,16 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="w-full max-w-[1400px] mx-auto space-y-6 overflow-x-hidden">
+      <div className="w-full space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1
-              className="text-[30px] font-bold text-white leading-none"
+              className="text-[28px] font-semibold text-white leading-none"
               style={{ letterSpacing: '-0.04em' }}
             >
               Dashboard
             </h1>
-            <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+            <p className="text-[12.5px] mt-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>
               Visión consolidada del negocio
             </p>
           </div>
