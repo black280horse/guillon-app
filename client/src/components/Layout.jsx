@@ -63,7 +63,7 @@ export default function Layout({ children }) {
       <aside className="sidebar-fixed">
 
         {/* Brand */}
-        <div className="px-5 pt-6 pb-5">
+        <div className="px-4 pt-5 pb-4">
           <div className="flex items-center gap-3">
             {/* Logo mark */}
             <div
@@ -91,7 +91,7 @@ export default function Layout({ children }) {
         <div className="mx-5 h-px bg-white/[0.06]" />
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+        <nav className="flex-1 px-2 py-3 space-y-5 overflow-y-auto">
           {NAV.map(section => (
             <div key={section.group}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.20em] px-3 mb-2"
@@ -104,10 +104,10 @@ export default function Layout({ children }) {
                     key={to}
                     to={to}
                     className={({ isActive }) =>
-                      `group relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 transition-all duration-150 ${
+                      `group relative flex items-center gap-2 rounded-[10px] px-3 py-2.5 transition-all duration-150 ${
                         isActive
                           ? 'bg-white/[0.07]'
-                          : 'hover:bg-white/[0.04]'
+                          : 'hover:bg-white/[0.06]'
                       }`
                     }
                   >
@@ -140,7 +140,7 @@ export default function Layout({ children }) {
 
                         {/* Label */}
                         <span
-                          className="text-[13px] font-medium leading-none transition-colors duration-150"
+                          className="text-[12.5px] font-medium leading-[1.4] transition-colors duration-150"
                           style={{ color: isActive ? '#F4F4F6' : 'rgba(255,255,255,0.50)' }}
                         >
                           {label}
@@ -191,7 +191,7 @@ export default function Layout({ children }) {
                           d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3zm-2.5 9 1.8 1.8L15 10.1" />
                       </svg>
                     </div>
-                    <span className="text-[13px] font-medium"
+                    <span className="text-[12.5px] font-medium leading-[1.4]"
                       style={{ color: isActive ? '#F4F4F6' : 'rgba(255,255,255,0.50)' }}>
                       Admin
                     </span>
