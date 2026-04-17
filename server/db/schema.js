@@ -2,8 +2,17 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = process.env.DB_PATH
-  || (process.env.NODE_ENV === 'production' ? '/data/database.sqlite' : path.join(__dirname, '..', 'guillon.db'));
+function resolveDbPath() {
+  if (process.env.DB_PATH) return process.env.DB_PATH;
+  try {
+    fs.accessSync('/data', fs.constants.W_OK);
+    return '/data/database.sqlite';
+  } catch {
+    return path.join(__dirname, '..', 'guillon.db');
+  }
+}
+const DB_PATH = resolveDbPath();
+console.log('[DB] Path:', DB_PATH);
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new Database(DB_PATH);
 
