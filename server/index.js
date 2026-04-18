@@ -2,12 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 
-// Ensure persistent data directory exists before DB init
-try { fs.mkdirSync('/data', { recursive: true }); } catch (_) {}
-
-require('./db/schema'); // inicializa la DB al arrancar
+require('./db/schema'); // inicializa la DB al arrancar (detecta /data solo si existe como volume)
 require('./db/seed');   // crea/actualiza admin al arrancar
 
 const app = express();

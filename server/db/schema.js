@@ -13,7 +13,10 @@ function resolveDbPath() {
 }
 const DB_PATH = resolveDbPath();
 console.log('[DB] Path:', DB_PATH);
-fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+// Only create parent dir for local paths; /data must exist from volume mount, never created synthetically
+if (!DB_PATH.startsWith('/data')) {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+}
 const db = new Database(DB_PATH);
 
 db.pragma('journal_mode = WAL');
