@@ -833,11 +833,9 @@ export default function Tasks() {
       color: colorMap[p.name] || '#6b7280',
       tasks: filteredTasks.filter(t => t.product_id === p.id),
     }))
-    // General column for unassigned
+    // General column always visible so users can create/drop tasks without a product
     const generalTasks = filteredTasks.filter(t => !t.product_id)
-    if (generalTasks.length > 0 || products.length === 0) {
-      cols.push({ colId: 'product-null', productId: null, label: 'General', color: '#6b7280', tasks: generalTasks })
-    }
+    cols.push({ colId: 'product-null', productId: null, label: 'General', color: '#6b7280', tasks: generalTasks })
     return cols
   }, [products, filteredTasks, colorMap])
 

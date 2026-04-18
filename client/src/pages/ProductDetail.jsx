@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
-  ResponsiveContainer, LineChart, Line,
+  ResponsiveContainer, LineChart, Line, AreaChart, Area,
   XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine,
 } from 'recharts'
 import axios from 'axios'
@@ -29,8 +29,30 @@ function ChartTip({ active, payload, label, prefix = '$' }) {
   )
 }
 
+/* ── Sparkline ───────────────────────────────────────────────────────────────── */
+function MiniSparkline({ data, dataKey, color }) {
+  if (!data?.length) return null
+  const id = `spark-${dataKey}`
+  return (
+    <div style={{ height: 40, marginTop: 10 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={1.5}
+            fill={`url(#${id})`} dot={false} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
 /* ── KPI Card ────────────────────────────────────────────────────────────────── */
-function KpiCard({ label, value, color = 'text-white', prefix = '$', suffix = '', change, loading }) {
+function KpiCard({ label, value, color = 'text-white', prefix = '$', suffix = '', change, loading, sparkData, sparkKey, sparkColor }) {
   const anim = useCountUp(loading ? 0 : (value ?? 0))
   const display = prefix === '$' ? $fmt(anim) : `${anim.toFixed(2)}${suffix}`
 
@@ -40,6 +62,7 @@ function KpiCard({ label, value, color = 'text-white', prefix = '$', suffix = ''
         <div className="skeleton h-3 w-20 rounded" />
         <div className="skeleton h-8 w-28 rounded" />
         <div className="skeleton h-3 w-16 rounded" />
+        <div className="skeleton h-8 w-full rounded" />
       </div>
     )
   }
@@ -48,14 +71,18 @@ function KpiCard({ label, value, color = 'text-white', prefix = '$', suffix = ''
   const hasChange = change !== null && change !== undefined && !isNaN(pct)
 
   return (
-    <div className="card p-5 space-y-1.5 hover:border-[#3a3a3e] transition-colors">
-      <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider">{label}</p>
+    <div className="card p-5 hover:border-[#3a3a3e] transition-colors">
+      <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">{label}</p>
       <p className={`text-[28px] font-light tabular-nums leading-none ${color}`} style={{ letterSpacing: '-0.03em' }}>{display}</p>
       {hasChange && (
-        <p className={`text-xs font-semibold ${pct >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-          {pct >= 0 ? '↑' : '↓'} {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% vs anterior
-        </p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-[5px] ${pct >= 0 ? 'bg-[#10b981]/10 text-[#10b981]' : 'bg-[#ef4444]/10 text-[#ef4444]'}`}>
+            {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
+          </span>
+          <span className="text-[#52525b] text-xs">vs período anterior</span>
+        </div>
       )}
+      {sparkData && <MiniSparkline data={sparkData} dataKey={sparkKey} color={sparkColor} />}
     </div>
   )
 }
@@ -186,21 +213,24 @@ function AIAnalysisCard({ productId, kpis, dateFrom, dateTo }) {
   }, [productId, dateFrom, dateTo])
 
   return (
-    <div className="card border-l-2 border-l-[#F59E0B] p-5 space-y-4">
+    <div style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.02) 100%)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 16 }} className="p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-lg">✨</span>
-          <h3 className="text-white font-semibold text-sm">Análisis inteligente</h3>
+          <div>
+            <h3 className="text-white font-semibold text-sm">Análisis inteligente</h3>
+            <p className="text-[#52525b] text-xs">Recomendaciones basadas en los datos del período</p>
+          </div>
         </div>
         <button onClick={analyze} disabled={state === 'loading' || kpis?.total_records === 0}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#A78BFA]/10 hover:bg-[#A78BFA]/20 border border-[#A78BFA]/30 text-[#A78BFA] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
           {state === 'loading'
-            ? <><span className="w-3 h-3 border border-[#F59E0B] border-t-transparent rounded-[5px] animate-spin" />Analizando…</>
+            ? <><span className="w-3 h-3 border border-[#A78BFA] border-t-transparent rounded-[5px] animate-spin" />Analizando…</>
             : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>Analizar con IA</>}
         </button>
       </div>
 
-      {state === 'idle' && <p className="text-[#52525b] text-sm">Hacé clic para obtener recomendaciones basadas en los datos del período.</p>}
+      {state === 'idle' && null}
       {state === 'error' && <p className="text-[#ef4444] text-sm">{result}</p>}
 
       {state === 'done' && result && (
@@ -316,10 +346,10 @@ export default function ProductDetail() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="Total vendido"   value={kpis?.total_revenue}   loading={loading} color="text-white"      change={pct(kpis?.total_revenue,   prevKpis?.total_revenue)} />
-          <KpiCard label="Total invertido" value={kpis?.total_investment} loading={loading} color="text-[#ef4444]" change={pct(kpis?.total_investment, prevKpis?.total_investment)} />
-          <KpiCard label="ROAS"            value={kpis?.roas}             loading={loading} color="text-[#F59E0B]"  prefix="" suffix="x" change={pct(kpis?.roas, prevKpis?.roas)} />
-          <KpiCard label="Ganancia neta"   value={kpis?.net_profit}       loading={loading} color="text-[#10b981]" change={pct(kpis?.net_profit, prevKpis?.net_profit)} />
+          <KpiCard label="Total vendido"   value={kpis?.total_revenue}   loading={loading} color="text-white"      change={pct(kpis?.total_revenue,   prevKpis?.total_revenue)} sparkData={sales} sparkKey="revenue"    sparkColor="#F59E0B" />
+          <KpiCard label="Total invertido" value={kpis?.total_investment} loading={loading} color="text-[#ef4444]" change={pct(kpis?.total_investment, prevKpis?.total_investment)} sparkData={sales} sparkKey="investment" sparkColor="#ef4444" />
+          <KpiCard label="ROAS"            value={kpis?.roas}             loading={loading} color="text-[#F59E0B]"  prefix="" suffix="x" change={pct(kpis?.roas, prevKpis?.roas)} sparkData={sales} sparkKey="roas"       sparkColor="#A78BFA" />
+          <KpiCard label="Ganancia neta"   value={kpis?.net_profit}       loading={loading} color="text-[#10b981]" change={pct(kpis?.net_profit, prevKpis?.net_profit)} sparkData={sales} sparkKey="profit"     sparkColor="#10b981" />
         </div>
 
         {/* Health score */}

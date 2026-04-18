@@ -173,6 +173,50 @@ function ProductModal({ product, onClose, onSaved, onDeleted }) {
   )
 }
 
+// ─── Product avatar ───────────────────────────────────────────────────────────
+const AVATAR_COLORS = [
+  { bg: 'rgba(167,139,250,0.18)', color: '#A78BFA' },
+  { bg: 'rgba(245,158,11,0.18)',  color: '#F59E0B' },
+  { bg: 'rgba(34,211,238,0.18)',  color: '#22D3EE' },
+  { bg: 'rgba(52,211,153,0.18)',  color: '#34D399' },
+  { bg: 'rgba(248,113,113,0.18)', color: '#F87171' },
+  { bg: 'rgba(129,140,248,0.18)', color: '#818CF8' },
+]
+
+function ProductAvatar({ name, index }) {
+  const { bg, color } = AVATAR_COLORS[index % AVATAR_COLORS.length]
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  return (
+    <div
+      className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 text-[11px] font-bold"
+      style={{ background: bg, color }}
+    >
+      {initials}
+    </div>
+  )
+}
+
+// ─── KPI card ────────────────────────────────────────────────────────────────
+function ProductKpi({ label, value, sub, iconPath, iconBg, iconColor }) {
+  return (
+    <div className="card p-5 flex items-center gap-4">
+      <div
+        className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: iconBg }}
+      >
+        <svg className="w-5 h-5" fill="none" stroke={iconColor} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={iconPath} />
+        </svg>
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.38)' }}>{label}</p>
+        <p className="text-[22px] font-bold leading-tight mt-0.5 text-white tabular-nums" style={{ letterSpacing: '-0.03em' }}>{value}</p>
+        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.30)' }}>{sub}</p>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Products() {
@@ -181,253 +225,382 @@ export default function Products() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [modal, setModal] = useState(null) // null | { product? }
+  const [sortBy, setSortBy] = useState('revenue')
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [modal, setModal] = useState(null)
 
   useEffect(() => {
-    axios.get('/api/products').then(response => setProducts(response.data)).finally(() => setLoading(false))
+    axios.get('/api/products').then(r => setProducts(r.data)).finally(() => setLoading(false))
   }, [])
 
-  const filtered = useMemo(() => products.filter(product => product.name.toLowerCase().includes(search.toLowerCase())), [products, search])
   const summary = useMemo(() => {
-    const revenue = products.reduce((acc, item) => acc + (item.total_revenue ?? 0), 0)
-    const investment = products.reduce((acc, item) => acc + (item.total_investment ?? 0), 0)
-    const profit = revenue - investment
-    const best = [...products].sort((a, b) => (b.total_revenue ?? 0) - (a.total_revenue ?? 0))[0]
-    return { revenue, investment, profit, best }
+    const revenue    = products.reduce((a, p) => a + (p.total_revenue    ?? 0), 0)
+    const investment = products.reduce((a, p) => a + (p.total_investment ?? 0), 0)
+    return { revenue, investment, profit: revenue - investment }
   }, [products])
 
+  const sortedFiltered = useMemo(() => {
+    const base = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+    return [...base].sort((a, b) => {
+      if (sortBy === 'revenue')    return (b.total_revenue    ?? 0) - (a.total_revenue    ?? 0)
+      if (sortBy === 'investment') return (b.total_investment ?? 0) - (a.total_investment ?? 0)
+      if (sortBy === 'roas') {
+        const ra = a.total_investment > 0 ? a.total_revenue / a.total_investment : 0
+        const rb = b.total_investment > 0 ? b.total_revenue / b.total_investment : 0
+        return rb - ra
+      }
+      const pa = (a.total_revenue ?? 0) - (a.total_investment ?? 0)
+      const pb = (b.total_revenue ?? 0) - (b.total_investment ?? 0)
+      return pb - pa
+    })
+  }, [products, search, sortBy])
+
+  const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / pageSize))
+  const paginated  = sortedFiltered.slice((page - 1) * pageSize, page * pageSize)
+
   function handleSaved(product, mode) {
-    if (mode === 'create') {
-      setProducts(ps => [...ps, { ...product, total_revenue: 0, total_investment: 0, sales_count: 0 }])
-    } else {
-      setProducts(ps => ps.map(p => p.id === product.id ? { ...p, name: product.name } : p))
-    }
+    if (mode === 'create') setProducts(ps => [...ps, { ...product, total_revenue: 0, total_investment: 0, sales_count: 0 }])
+    else setProducts(ps => ps.map(p => p.id === product.id ? { ...p, name: product.name } : p))
+    setPage(1)
   }
 
   function handleDeleted(id) {
     setProducts(ps => ps.filter(p => p.id !== id))
+    setPage(1)
   }
 
   return (
     <Layout>
-      <div className="space-y-5 max-w-[1480px] mx-auto">
+      <div className="w-full space-y-6">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-[26px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-              Productos <span style={{ color: '#F59E0B', fontWeight: 400 }}>comerciales</span>
+            <h1 className="text-[28px] font-semibold text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
+              Productos <span style={{ color: '#F59E0B' }}>comerciales</span>
             </h1>
-            <p className="text-[#5a6d87] text-[13px] mt-1">Catálogo, ingresos y rentabilidad por producto</p>
+            <p className="text-[12.5px] mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>
+              Catálogo, ingresos y rentabilidad por producto
+            </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setModal({})}
-              className="inline-flex items-center gap-2 rounded-[8px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2 text-[13px] font-medium text-[#c0cee4] transition-all"
+              className="inline-flex items-center gap-2 rounded-[10px] border px-4 py-2.5 text-[13px] font-semibold transition-all"
+              style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#F4F4F6' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
             >
               <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
               Nuevo producto
             </button>
             <button
               onClick={() => navigate('/cargar')}
-              className="inline-flex items-center gap-2 rounded-[8px] bg-[#F59E0B] hover:bg-[#FCD34D] px-4 py-2 text-[13px] font-medium text-[#0A0A0F] transition-all"
+              className="inline-flex items-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold text-black transition-all"
+              style={{ background: '#F59E0B' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#FCD34D'}
+              onMouseLeave={e => e.currentTarget.style.background = '#F59E0B'}
             >
-              <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
-              Cargar dato
+              <Icon className="w-4 h-4" stroke={2.2} path="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" />
+              Cargar datos
             </button>
           </div>
         </div>
 
-        {/* KPI strip */}
-        <div className="card p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-white/[0.06]">
-            <SummaryKpi
-              label="Productos"
-              value={products.length}
-              color={{ bg: 'bg-[#4dd7ff]/10', icon: 'text-[#4dd7ff]', text: 'text-white' }}
-              icon="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"
-            />
-            <div className="pl-4">
-              <SummaryKpi
-                label="Ingresos"
-                value={formatCurrency(summary.revenue)}
-                color={{ bg: 'bg-[#f5b641]/10', icon: 'text-[#f5b641]', text: 'text-[#67dcff]' }}
-                icon="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6"
-              />
-            </div>
-            <div className="pl-4">
-              <SummaryKpi
-                label="Inversión"
-                value={formatCurrency(summary.investment)}
-                color={{ bg: 'bg-[#8c7cff]/10', icon: 'text-[#8c7cff]', text: 'text-[#ffd27d]' }}
-                icon="M4 17 9 12l3 3 8-8M4 7h5v5"
-              />
-            </div>
-            <div className="pl-4">
-              <SummaryKpi
-                label="Ganancia neta"
-                value={formatCurrency(summary.profit)}
-                color={{ bg: 'bg-[#22c55e]/10', icon: 'text-[#22c55e]', text: summary.profit >= 0 ? 'text-[#63d68d]' : 'text-[#ff9ca8]' }}
-                icon="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a6d87]" path="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
-          <input
-            value={search}
-            onChange={event => setSearch(event.target.value)}
-            placeholder="Buscar producto..."
-            className="w-full rounded-[16px] bg-white/[0.04] border border-white/[0.08] pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#5a6d87] focus:outline-none focus:border-[#4dd7ff]/22 transition-colors"
+        {/* KPI cards */}
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <ProductKpi
+            label="Total productos"
+            value={products.length}
+            sub="Productos registrados"
+            iconPath="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"
+            iconBg="rgba(34,211,238,0.12)"
+            iconColor="#22D3EE"
+          />
+          <ProductKpi
+            label="Ingresos totales"
+            value={formatCurrency(summary.revenue)}
+            sub="Ingresos generados"
+            iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6"
+            iconBg="rgba(245,158,11,0.12)"
+            iconColor="#F59E0B"
+          />
+          <ProductKpi
+            label="Inversión total"
+            value={formatCurrency(summary.investment)}
+            sub="Inversión realizada"
+            iconPath="M4 17 9 12l3 3 8-8M4 7h5v5"
+            iconBg="rgba(167,139,250,0.12)"
+            iconColor="#A78BFA"
+          />
+          <ProductKpi
+            label="Ganancia neta"
+            value={formatCurrency(summary.profit)}
+            sub="Ganancia obtenida"
+            iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4"
+            iconBg="rgba(52,211,153,0.12)"
+            iconColor="#34D399"
           />
         </div>
 
-        {/* Product list */}
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search */}
+          <div className="relative flex-1">
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" fill="none" stroke="rgba(255,255,255,0.30)" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+            </svg>
+            <input
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              placeholder="Buscar producto..."
+              className="w-full rounded-[10px] pl-10 pr-4 py-2.5 text-[13px] text-white focus:outline-none transition-colors"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(245,158,11,0.40)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.10)'}
+            />
+          </div>
+          {/* Category (visual only) */}
+          <select
+            className="rounded-[10px] px-4 py-2.5 text-[13px] text-white appearance-none focus:outline-none"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', minWidth: 160 }}
+          >
+            <option>Todas las categorías</option>
+          </select>
+          {/* Sort */}
+          <select
+            value={sortBy}
+            onChange={e => { setSortBy(e.target.value); setPage(1) }}
+            className="rounded-[10px] px-4 py-2.5 text-[13px] text-white appearance-none focus:outline-none"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', minWidth: 180 }}
+          >
+            <option value="revenue">Ordenar por: Ingresos</option>
+            <option value="investment">Ordenar por: Inversión</option>
+            <option value="roas">Ordenar por: ROAS</option>
+            <option value="profit">Ordenar por: Ganancia</option>
+          </select>
+        </div>
+
+        {/* Table */}
         {loading ? (
-          <div className="space-y-2.5">
-            {[1, 2, 3, 4].map(item => <div key={item} className="skeleton h-[76px] rounded-[20px]" />)}
+          <div className="card overflow-hidden">
+            <div className="p-5 space-y-3">
+              {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-14 rounded-[10px]" />)}
+            </div>
           </div>
         ) : products.length === 0 ? (
-          <div className="card p-14 text-center space-y-4">
-            <div className="w-14 h-14 rounded-[22px] bg-[linear-gradient(135deg,rgba(245,182,65,0.16),rgba(77,215,255,0.08))] border border-[#f5b641]/16 flex items-center justify-center mx-auto text-[#ffd27d]">
-              <Icon className="w-7 h-7" path="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zm0 0v18m8-13.5l-8 4.5-8-4.5" />
+          <div className="card p-14 flex flex-col items-center gap-4 text-center">
+            <div
+              className="w-14 h-14 rounded-[20px] flex items-center justify-center"
+              style={{ background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.18)', color: '#A78BFA' }}
+            >
+              <Icon className="w-7 h-7" path="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
             </div>
             <div>
-              <p className="text-white font-semibold text-[17px]">Todavía no tienes productos</p>
-              <p className="text-[#7d8ca5] text-sm mt-1.5 max-w-sm mx-auto leading-relaxed">Crea un producto o carga tus primeras ventas para ver margen, ROAS y rendimiento.</p>
+              <p className="text-white font-semibold text-[17px]" style={{ letterSpacing: '-0.02em' }}>Aún no hay productos registrados</p>
+              <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                Comienza agregando tu primer producto o carga tus datos para ver el catálogo.
+              </p>
             </div>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setModal({})}
-                className="inline-flex items-center gap-2 rounded-[8px] border border-white/[0.10] bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-[#c0cee4] font-medium text-sm"
+                className="inline-flex items-center gap-2 rounded-[10px] border px-4 py-2.5 text-[13px] font-semibold"
+                style={{ borderColor: 'rgba(167,139,250,0.30)', background: 'rgba(167,139,250,0.08)', color: '#A78BFA' }}
               >
                 <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
                 Nuevo producto
               </button>
               <button
                 onClick={() => navigate('/cargar')}
-                className="inline-flex items-center gap-2 rounded-[16px] bg-[linear-gradient(135deg,#f5b641_0%,#ffcf73_100%)] px-5 py-2.5 text-[#08080C] font-semibold text-sm"
+                className="inline-flex items-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold text-black"
+                style={{ background: '#F59E0B' }}
               >
-                <Icon className="w-4 h-4" stroke={2} path="M12 5v14M5 12h14" />
-                Cargar primer dato
+                <Icon className="w-4 h-4" stroke={2} path="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" />
+                Cargar datos
               </button>
             </div>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="card p-10 text-center">
-            <p className="text-[#7d8ca5] text-sm">Sin resultados para <span className="text-white">"{search}"</span></p>
-          </div>
         ) : (
-          <div className="space-y-2.5">
-            {/* Table header — desktop */}
-            <div className="hidden lg:grid grid-cols-[40px_minmax(0,1fr)_140px_140px_100px_120px_88px] gap-4 px-4 pb-1">
-              {['#', 'Producto', 'Ingresos', 'Inversión', 'ROAS', 'Ganancia', ''].map(col => (
-                <span key={col} className="text-[10.5px] uppercase tracking-[0.2em] text-[#4f6278] font-semibold">{col}</span>
+          <div className="card overflow-hidden">
+            {/* Table header */}
+            <div
+              className="hidden lg:grid px-5 py-3.5"
+              style={{
+                gridTemplateColumns: '48px minmax(0,1fr) 140px 130px 90px 130px 80px',
+                gap: '8px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              {['#', 'PRODUCTO', 'INGRESOS ↓', 'INVERSIÓN', 'ROAS', 'GANANCIA', 'ACCIÓN'].map(col => (
+                <span key={col} className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.28)' }}>{col}</span>
               ))}
             </div>
 
-            {filtered.map((product, index) => {
-              const roas = product.total_investment > 0
-                ? parseFloat((product.total_revenue / product.total_investment).toFixed(2))
-                : null
-              const profit = (product.total_revenue ?? 0) - (product.total_investment ?? 0)
+            {/* Rows */}
+            {paginated.length === 0 ? (
+              <div className="p-10 text-center">
+                <p className="text-[13px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  Sin resultados para <span className="text-white">"{search}"</span>
+                </p>
+              </div>
+            ) : (
+              paginated.map((product, idx) => {
+                const globalIdx = (page - 1) * pageSize + idx
+                const roas   = product.total_investment > 0 ? product.total_revenue / product.total_investment : null
+                const profit = (product.total_revenue ?? 0) - (product.total_investment ?? 0)
 
-              return (
-                <div
-                  key={product.id}
-                  className="card p-4 hover:border-[#4dd7ff]/18 hover:bg-white/[0.02] transition-all group"
-                >
-                  {/* Desktop row */}
-                  <div className="hidden lg:grid grid-cols-[40px_minmax(0,1fr)_140px_140px_100px_120px_88px] gap-4 items-center">
-                    <span className="text-[#4f6278] text-sm font-semibold">#{index + 1}</span>
-                    <button
-                      className="min-w-0 text-left"
-                      onClick={() => navigate(`/productos/${product.id}`)}
+                return (
+                  <div
+                    key={product.id}
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {/* Desktop row */}
+                    <div
+                      className="hidden lg:grid items-center px-5 py-4"
+                      style={{ gridTemplateColumns: '48px minmax(0,1fr) 140px 130px 90px 130px 80px', gap: '8px' }}
                     >
-                      <p className="text-white text-[14px] font-semibold truncate group-hover:text-[#4dd7ff] transition-colors">{product.name}</p>
-                      <p className="text-[#5a6d87] text-[11px] mt-0.5">{product.sales_count} registros</p>
-                    </button>
-                    <p className="text-[#67dcff] text-[14px] font-semibold">{formatCurrency(product.total_revenue)}</p>
-                    <p className="text-[#ffd27d] text-[14px]">{formatCurrency(product.total_investment)}</p>
-                    <div>
-                      {roas != null ? (
-                        <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-[5px] ${roas >= 3 ? 'bg-[#22c55e]/10 text-[#63d68d]' : roas >= 1.5 ? 'bg-[#f5b641]/10 text-[#ffd27d]' : 'bg-[#fb7185]/10 text-[#ff9ca8]'}`}>
-                          {roas}x
-                        </span>
-                      ) : (
-                        <span className="text-[#4f6278] text-sm">—</span>
-                      )}
-                    </div>
-                    <p className={`text-[14px] font-semibold ${profit >= 0 ? 'text-[#63d68d]' : 'text-[#ff9ca8]'}`}>
-                      {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
-                    </p>
-                    {/* Actions */}
-                    <div className="flex items-center gap-1 justify-end">
-                      <button
-                        onClick={() => setModal({ product })}
-                        title="Editar"
-                        className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all"
+                      <span
+                        className="text-[11px] font-bold px-1.5 py-0.5 rounded-[5px] w-fit"
+                        style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.38)' }}
                       >
-                        <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
+                        #{globalIdx + 1}
+                      </span>
+                      <button className="flex items-center gap-3 min-w-0 text-left" onClick={() => navigate(`/productos/${product.id}`)}>
+                        <ProductAvatar name={product.name} index={globalIdx} />
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-semibold text-white truncate">{product.name}</p>
+                          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>{product.sales_count ?? 0} registros</p>
+                        </div>
                       </button>
-                      <button
-                        onClick={() => navigate(`/productos/${product.id}`)}
-                        title="Ver detalle"
-                        className="w-8 h-8 rounded-[16px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all"
+                      <p className="text-[13px] font-semibold tabular-nums" style={{ color: '#F59E0B' }}>{formatCurrency(product.total_revenue)}</p>
+                      <p className="text-[13px] tabular-nums" style={{ color: 'rgba(255,255,255,0.55)' }}>{formatCurrency(product.total_investment)}</p>
+                      <div>
+                        {roas != null ? (
+                          <span
+                            className="text-[11px] font-bold px-2 py-0.5 rounded-[5px]"
+                            style={roas >= 3
+                              ? { background: 'rgba(52,211,153,0.12)', color: '#34D399' }
+                              : roas >= 1.5
+                              ? { background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }
+                              : { background: 'rgba(248,113,113,0.12)', color: '#F87171' }
+                            }
+                          >
+                            {roas.toFixed(2)}x
+                          </span>
+                        ) : <span style={{ color: 'rgba(255,255,255,0.25)' }}>—</span>}
+                      </div>
+                      <p
+                        className="text-[13px] font-semibold tabular-nums"
+                        style={{ color: profit >= 0 ? '#34D399' : '#F87171' }}
                       >
-                        <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
-                      </button>
+                        {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setModal({ product })}
+                          className="w-7 h-7 rounded-[7px] flex items-center justify-center transition-all"
+                          style={{ color: 'rgba(255,255,255,0.28)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#F4F4F6'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; e.currentTarget.style.background = 'transparent' }}
+                        >
+                          <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
+                        </button>
+                        <button
+                          onClick={() => navigate(`/productos/${product.id}`)}
+                          className="w-7 h-7 rounded-[7px] flex items-center justify-center transition-all"
+                          style={{ color: 'rgba(255,255,255,0.28)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#F59E0B'; e.currentTarget.style.background = 'rgba(245,158,11,0.10)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; e.currentTarget.style.background = 'transparent' }}
+                        >
+                          <Icon className="w-3.5 h-3.5" path="m9 5 7 7-7 7" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Mobile card */}
-                  <div className="lg:hidden flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-[8px] bg-white/[0.04] border border-white/8 flex items-center justify-center text-[#4f6278] text-[12px] font-bold shrink-0">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-white text-[14px] font-semibold">{product.name}</p>
-                        <RoasBadge roas={roas} />
-                      </div>
-                      <p className="text-[#5a6d87] text-[11px] mt-0.5">{product.sales_count} registros</p>
-                      <div className="grid grid-cols-3 gap-3 mt-3">
-                        <div>
-                          <p className="text-[#5a6d87] text-[10px] uppercase tracking-[0.14em]">Ingresos</p>
-                          <p className="text-[#67dcff] text-[13px] font-semibold mt-1">{formatCurrency(product.total_revenue)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[#5a6d87] text-[10px] uppercase tracking-[0.14em]">Inversión</p>
-                          <p className="text-[#ffd27d] text-[13px] font-semibold mt-1">{formatCurrency(product.total_investment)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[#5a6d87] text-[10px] uppercase tracking-[0.14em]">Ganancia</p>
-                          <p className={`text-[13px] font-semibold mt-1 ${profit >= 0 ? 'text-[#63d68d]' : 'text-[#ff9ca8]'}`}>
-                            {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
-                          </p>
+                    {/* Mobile card */}
+                    <div className="lg:hidden flex items-start gap-3 px-4 py-4">
+                      <ProductAvatar name={product.name} index={globalIdx} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-semibold text-white">{product.name}</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{product.sales_count ?? 0} registros</p>
+                        <div className="grid grid-cols-3 gap-2 mt-3">
+                          {[
+                            { l: 'Ingresos',  v: formatCurrency(product.total_revenue),   c: '#F59E0B' },
+                            { l: 'Inversión', v: formatCurrency(product.total_investment), c: 'rgba(255,255,255,0.55)' },
+                            { l: 'Ganancia',  v: formatCurrency(profit),                   c: profit >= 0 ? '#34D399' : '#F87171' },
+                          ].map(({ l, v, c }) => (
+                            <div key={l}>
+                              <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.28)' }}>{l}</p>
+                              <p className="text-[12.5px] font-semibold mt-0.5 tabular-nums" style={{ color: c }}>{v}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <button onClick={() => setModal({ product })} className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#4f6278] hover:text-[#a1a1aa] hover:bg-white/[0.06] transition-all">
-                        <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
-                      </button>
-                      <button onClick={() => navigate(`/productos/${product.id}`)} className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#4f6278] hover:text-[#4dd7ff] hover:bg-[#4dd7ff]/8 transition-all">
-                        <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
-                      </button>
+                      <div className="flex flex-col gap-1">
+                        <button onClick={() => setModal({ product })} className="w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                          <Icon className="w-3.5 h-3.5" path="m16.86 4.49-.7-.7a2 2 0 0 0-2.83 0L4 13.12V17h3.88l9.33-9.33a2 2 0 0 0 0-2.83z" />
+                        </button>
+                        <button onClick={() => navigate(`/productos/${product.id}`)} className="w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: '#F59E0B' }}>
+                          <Icon className="w-4 h-4" path="m9 5 7 7-7 7" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })
+            )}
+
+            {/* Pagination footer */}
+            <div
+              className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Mostrando {sortedFiltered.length === 0 ? 0 : (page - 1) * pageSize + 1} a {Math.min(page * pageSize, sortedFiltered.length)} de {sortedFiltered.length} productos
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="w-7 h-7 rounded-[6px] flex items-center justify-center transition-all disabled:opacity-30"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)' }}
+                >
+                  <Icon className="w-3.5 h-3.5" path="m15 18-6-6 6-6" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[12px] font-semibold transition-all"
+                    style={n === page
+                      ? { background: '#F59E0B', color: '#000' }
+                      : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)' }
+                    }
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="w-7 h-7 rounded-[6px] flex items-center justify-center transition-all disabled:opacity-30"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)' }}
+                >
+                  <Icon className="w-3.5 h-3.5" path="m9 18 6-6-6-6" />
+                </button>
+                <span className="text-[12px] ml-2" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  Registros por página: {pageSize}
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Modal */}
       {modal && (
         <ProductModal
           product={modal.product}

@@ -553,37 +553,67 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* KPI cards - always show, $0 when no data */}
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <CompactKpi label="Total vendido" value={kpis?.total_revenue} formatter={formatCurrency} color={SERIES_COLORS.revenue} iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" change={changePct(kpis?.total_revenue, kpis?.prev_revenue)} chartData={series} chartKey="revenue" loading={loading} />
+          <CompactKpi label="Total invertido" value={kpis?.total_investment} formatter={formatCurrency} color={SERIES_COLORS.investment} iconPath="M4 17 9 12l3 3 8-8M4 7h5v5" change={changePct(kpis?.total_investment, kpis?.prev_investment)} chartData={series} chartKey="investment" loading={loading} />
+          <CompactKpi label="ROAS" value={kpis?.roas} formatter={value => `${numberValue(value).toFixed(2)}x`} color={SERIES_COLORS.roas} iconPath="M4 19h16M6 15l4-4 3 3 5-6" change={changePct(kpis?.roas, kpis?.prev_roas)} chartData={series} chartKey="roas" loading={loading} />
+          <CompactKpi label="Ganancia neta" value={kpis?.net_profit} formatter={formatCurrency} color={SERIES_COLORS.profit} iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4" change={changePct(kpis?.net_profit, kpis?.prev_profit)} chartData={series} chartKey="profit" loading={loading} />
+        </div>
+
         {isEmpty ? (
-          <div className="card p-14 text-center space-y-4">
-            <div
-              className="w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto"
-              style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.18)', color: '#F59E0B' }}
-            >
-              <Icon className="w-8 h-8" path="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Empty body */}
+            <div className="card p-12 flex flex-col items-center justify-center gap-4 text-center">
+              <div
+                className="w-16 h-16 rounded-[20px] flex items-center justify-center"
+                style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.16)', color: '#F59E0B' }}
+              >
+                <Icon className="w-8 h-8" path="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-[17px]" style={{ letterSpacing: '-0.02em' }}>Aún no hay datos para mostrar</p>
+                <p className="text-[13px] mt-1.5 leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                  Cargá tus datos para comenzar a ver insights y métricas de tu negocio en este período.
+                </p>
+              </div>
+              <Link
+                to="/cargar"
+                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2.5 text-[13px] font-semibold text-black"
+                style={{ background: '#F59E0B' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#FCD34D'}
+                onMouseLeave={e => e.currentTarget.style.background = '#F59E0B'}
+              >
+                Cargar datos
+              </Link>
             </div>
-            <div>
-              <p className="text-white font-bold text-[18px]" style={{ letterSpacing: '-0.02em' }}>Sin datos todavía</p>
-              <p className="text-[13px] mt-1.5" style={{ color: 'rgba(255,255,255,0.40)' }}>
-                Cargá ventas e inversión para activar el dashboard.
-              </p>
+            {/* 3-step guide */}
+            <div className="card p-6">
+              <p className="text-[13px] font-semibold text-white mb-5" style={{ letterSpacing: '-0.02em' }}>Comenzá en 3 pasos</p>
+              <div className="space-y-4">
+                {[
+                  { n: 1, title: 'Cargar datos',    sub: 'Importá tus ventas, inversión y resultados.' },
+                  { n: 2, title: 'Revisar métricas', sub: 'Analizá el rendimiento de tus campañas.' },
+                  { n: 3, title: 'Obtener insights', sub: 'Recibí recomendaciones basadas en datos.' },
+                ].map(step => (
+                  <div key={step.n} className="flex items-start gap-4">
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[12px] font-bold text-black"
+                      style={{ background: '#F59E0B' }}
+                    >
+                      {step.n}
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-white">{step.title}</p>
+                      <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.40)' }}>{step.sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <Link
-              to="/cargar"
-              className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2.5 text-[13px] font-semibold text-black"
-              style={{ background: '#F59E0B' }}
-            >
-              <Icon className="w-4 h-4" stroke={2.2} path="M12 5v14M5 12h14" />
-              Cargar datos
-            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 grid grid-cols-2 xl:grid-cols-4 gap-4">
-              <CompactKpi label="Total vendido" value={kpis?.total_revenue} formatter={formatCurrency} color={SERIES_COLORS.revenue} iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6" change={changePct(kpis?.total_revenue, kpis?.prev_revenue)} chartData={series} chartKey="revenue" loading={loading} />
-              <CompactKpi label="Total invertido" value={kpis?.total_investment} formatter={formatCurrency} color={SERIES_COLORS.investment} iconPath="M4 17 9 12l3 3 8-8M4 7h5v5" change={changePct(kpis?.total_investment, kpis?.prev_investment)} chartData={series} chartKey="investment" loading={loading} />
-              <CompactKpi label="ROAS" value={kpis?.roas} formatter={value => `${numberValue(value).toFixed(2)}x`} color={SERIES_COLORS.roas} iconPath="M4 19h16M6 15l4-4 3 3 5-6" change={changePct(kpis?.roas, kpis?.prev_roas)} chartData={series} chartKey="roas" loading={loading} />
-              <CompactKpi label="Ganancia neta" value={kpis?.net_profit} formatter={formatCurrency} color={SERIES_COLORS.profit} iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4" change={changePct(kpis?.net_profit, kpis?.prev_profit)} chartData={series} chartKey="profit" loading={loading} />
-            </div>
 
             <div className="card p-5 col-span-12 lg:col-span-8">
               <SectionHeader

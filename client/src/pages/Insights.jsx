@@ -49,10 +49,10 @@ function TabBtn({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 text-[13px] font-medium transition-all border-b-2 ${
+      className={`px-4 py-2 rounded-full text-[13px] font-medium transition-all ${
         active
-          ? 'border-[#F59E0B] text-white'
-          : 'border-transparent text-[#6b7280] hover:text-[#c0cee4]'
+          ? 'bg-[#A78BFA]/20 text-[#A78BFA] border border-[#A78BFA]/30'
+          : 'text-[#6b7280] hover:text-[#a1a1aa] border border-transparent'
       }`}
     >
       {children}
@@ -68,17 +68,22 @@ function Skeleton({ h = 'h-8', w = 'w-full' }) {
 // ══════════════════════════════════════════════════════════════════════════════
 // TAB 1: COMPARADOR
 // ══════════════════════════════════════════════════════════════════════════════
+const PILL_COLORS = ['#F59E0B', '#A78BFA', '#22D3EE', '#10b981']
+
 function ComparatorTab({ dateFrom, dateTo, products }) {
   const [selected, setSelected] = useState([])
   const [metric, setMetric] = useState('revenue')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
+  const [showAddMenu, setShowAddMenu] = useState(false)
+  const [aiRecs, setAiRecs] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
 
-  const toggle = (id) => {
-    setSelected(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id].slice(0, 4)
-    )
+  const addProduct = (id) => {
+    if (selected.length < 4 && !selected.includes(id)) setSelected(prev => [...prev, id])
+    setShowAddMenu(false)
   }
+  const removeProduct = (id) => setSelected(prev => prev.filter(x => x !== id))
 
   const load = useCallback(async () => {
     if (selected.length < 2) { setData([]); return }
@@ -91,14 +96,11 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
 
   useEffect(() => { load() }, [load])
 
-  const METRIC_LABELS = { revenue: 'Ingresos', investment: 'Inversión', profit: 'Ganancia' }
-
-  // Merge series por fecha
   const chartData = (() => {
     if (!data.length) return []
     const map = {}
     data.forEach(prod => {
-      prod.series.forEach(row => {
+      prod.series?.forEach(row => {
         if (!map[row.date]) map[row.date] = { date: row.date }
         map[row.date][prod.name] = row[metric]
       })
@@ -106,133 +108,221 @@ function ComparatorTab({ dateFrom, dateTo, products }) {
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
   })()
 
-  const winner = data.length
-    ? data.reduce((best, p) => (!best || (p[metric] || 0) > (best[metric] || 0)) ? p : best, null)
-    : null
+  const agg = data.reduce((acc, p) => ({
+    revenue: acc.revenue + (p.revenue || 0),
+    investment: acc.investment + (p.investment || 0),
+    profit: acc.profit + (p.profit || 0),
+  }), { revenue: 0, investment: 0, profit: 0 })
+
+  const autoInsights = []
+  if (data.length >= 2) {
+    const byRoas = [...data].sort((a, b) => (b.roas || 0) - (a.roas || 0))
+    autoInsights.push({ icon: '🏆', text: `${byRoas[0].name} tiene el ROAS más alto (${byRoas[0].roas}x)` })
+    const byRevenue = [...data].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+    if (byRevenue[0].name !== byRoas[0].name)
+      autoInsights.push({ icon: '💰', text: `${byRevenue[0].name} genera más ingresos en el período` })
+    const lowRoas = data.filter(p => (p.roas || 0) < 1.5)
+    if (lowRoas.length)
+      autoInsights.push({ icon: '⚠️', text: `${lowRoas.map(p => p.name).join(', ')} ${lowRoas.length > 1 ? 'tienen' : 'tiene'} ROAS bajo 1.5x` })
+    const byProfit = [...data].sort((a, b) => (b.profit || 0) - (a.profit || 0))
+    autoInsights.push({ icon: '📊', text: `${byProfit[0].name} es el más rentable (${fmt(byProfit[0].profit)} ganancia)` })
+  }
+
+  const generateAI = async () => {
+    setAiLoading(true)
+    try {
+      const r = await axios.post(`${API}/ai/compare`, { products: selected, date_from: dateFrom, date_to: dateTo })
+      setAiRecs(r.data.recommendations || ['Sin recomendaciones disponibles'])
+    } catch { setAiRecs(['Error al conectar con la IA']) }
+    finally { setAiLoading(false) }
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Selector de productos */}
-      <div className="card-vercel p-5">
-        <p className="text-[#6b7280] text-[11px] font-medium uppercase tracking-[0.12em] mb-3">
-          Seleccionar productos (máx. 4)
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {products.map((p, i) => {
-            const active = selected.includes(p.id)
+    <div className="space-y-5">
+      {/* Product pill selector */}
+      <div className="card p-5">
+        <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-3">Comparar productos (máx. 4)</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {selected.map((id, i) => {
+            const p = products.find(x => x.id === id)
+            if (!p) return null
+            const color = PILL_COLORS[i % PILL_COLORS.length]
             return (
-              <button
-                key={p.id}
-                onClick={() => toggle(p.id)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
-                  active
-                    ? 'border-[#F59E0B] text-[#F59E0B] bg-[#F59E0B]/10'
-                    : 'border-[#2a2a2e] text-[#a1a1aa] hover:border-[#3a3a3e] hover:text-white'
-                }`}
-              >
-                <span className="inline-block w-2 h-2 rounded-full mr-2"
-                  style={{ background: active ? COLORS[selected.indexOf(p.id)] : '#52525b' }} />
+              <span key={id} style={{ background: `${color}20`, borderColor: `${color}40`, color }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border">
                 {p.name}
-              </button>
+                <button onClick={() => removeProduct(id)} className="hover:opacity-70 leading-none text-base">&times;</button>
+              </span>
             )
           })}
+          {selected.length < 4 && (
+            <div className="relative">
+              <button onClick={() => setShowAddMenu(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-[#3a3a3e] text-[#52525b] hover:border-[#a1a1aa] hover:text-[#a1a1aa] transition-all">
+                + Agregar
+              </button>
+              {showAddMenu && (
+                <div className="absolute left-0 top-full mt-1 bg-[#1a1a1e] border border-[#2a2a2e] rounded-[10px] shadow-2xl z-20 min-w-[200px] py-1">
+                  {products.filter(p => !selected.includes(p.id)).map(p => (
+                    <button key={p.id} onClick={() => addProduct(p.id)}
+                      className="w-full text-left px-4 py-2.5 text-sm text-[#a1a1aa] hover:bg-[#2a2a2e] hover:text-white transition-colors">
+                      {p.name}
+                    </button>
+                  ))}
+                  {products.filter(p => !selected.includes(p.id)).length === 0 && (
+                    <p className="px-4 py-2.5 text-xs text-[#52525b]">Todos los productos seleccionados</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {selected.length < 2 && (
+            <span className="text-[#52525b] text-xs ml-1">Seleccioná al menos 2 para comparar</span>
+          )}
         </div>
-        {selected.length < 2 && (
-          <p className="text-[#52525b] text-xs mt-3">Seleccioná al menos 2 productos para comparar</p>
-        )}
       </div>
 
       {selected.length >= 2 && (
         <>
-          {/* Métrica toggle */}
-          <div className="flex gap-2">
-            {Object.entries(METRIC_LABELS).map(([key, label]) => (
-              <TabBtn key={key} active={metric === key} onClick={() => setMetric(key)}>{label}</TabBtn>
-            ))}
-          </div>
-
-          {/* Tabla KPIs comparativa */}
-          <div className="card-vercel overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/8">
-                    <th className="text-left text-[#6b7280] text-[11px] font-medium px-5 py-3 uppercase tracking-[0.1em]">Producto</th>
-                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ingresos</th>
-                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Inversión</th>
-                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Ganancia</th>
-                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">ROAS</th>
-                    <th className="text-right text-[#6b7280] text-[11px] font-medium px-4 py-3 uppercase tracking-[0.1em]">Registros</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading
-                    ? [1,2,3].map(i => (
-                        <tr key={i} className="border-b border-white/8">
-                          {[1,2,3,4,5,6].map(j => (
-                            <td key={j} className="px-4 py-3"><Skeleton h="h-4" /></td>
-                          ))}
-                        </tr>
-                      ))
-                    : data.map((p, i) => {
-                        const isWinner = winner?.id === p.id
-                        return (
-                          <tr key={p.id} className="border-b border-white/8 hover:bg-white/[0.03] transition-colors">
-                            <td className="px-5 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full shrink-0"
-                                  style={{ background: COLORS[i] }} />
-                                <span className="text-white font-medium">{p.name}</span>
-                                {isWinner && (
-                                  <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.5 rounded-full font-semibold">
-                                    🏆 mejor
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="text-right px-4 py-3 text-white">{fmt(p.revenue)}</td>
-                            <td className="text-right px-4 py-3 text-[#a1a1aa]">{fmt(p.investment)}</td>
-                            <td className={`text-right px-4 py-3 font-medium ${p.profit >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                              {fmt(p.profit)}
-                            </td>
-                            <td className="text-right px-4 py-3">
-                              {p.roas != null ? (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                  p.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
-                                  : p.roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
-                                  : 'bg-[#ef4444]/20 text-[#ef4444]'
-                                }`}>{p.roas}x</span>
-                              ) : '—'}
-                            </td>
-                            <td className="text-right px-4 py-3 text-[#a1a1aa]">{p.records}</td>
-                          </tr>
-                        )
-                      })
-                  }
-                </tbody>
-              </table>
+          {/* Aggregate KPI cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="card p-4">
+              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Seleccionados</p>
+              <p className="text-[26px] font-light text-white leading-none">{data.length}</p>
+              <p className="text-[#52525b] text-xs mt-1">productos</p>
+            </div>
+            <div className="card p-4">
+              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Ingresos totales</p>
+              <p className="text-[22px] font-light text-[#F59E0B] leading-none tabular-nums">{fmt(agg.revenue)}</p>
+            </div>
+            <div className="card p-4">
+              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Inversión total</p>
+              <p className="text-[22px] font-light text-[#ef4444] leading-none tabular-nums">{fmt(agg.investment)}</p>
+            </div>
+            <div className="card p-4">
+              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Ganancia neta</p>
+              <p className={`text-[22px] font-light leading-none tabular-nums ${agg.profit >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{fmt(agg.profit)}</p>
             </div>
           </div>
 
-          {/* Gráfico comparativo */}
-          {!loading && chartData.length > 0 && (
-            <div className="card-vercel p-5">
-              <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>{METRIC_LABELS[metric]} por día</p>
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" />
-                  <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: '#52525b', fontSize: 11 }} />
-                  <YAxis tick={{ fill: '#52525b', fontSize: 11 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend wrapperStyle={{ color: '#a1a1aa', fontSize: 12 }} />
-                  {data.map((p, i) => (
-                    <Line key={p.id} type="monotone" dataKey={p.name}
-                      stroke={COLORS[i]} strokeWidth={2} dot={false} />
+          {/* Chart + Auto insights */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
+            <div className="card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <p className="text-white font-semibold text-sm flex-1">Evolución comparada</p>
+                <div className="flex gap-1.5">
+                  {[['revenue','Ingresos'],['investment','Inversión'],['profit','Ganancia']].map(([m, label]) => (
+                    <button key={m} onClick={() => setMetric(m)}
+                      className={`px-2.5 py-1 rounded-[6px] text-xs font-medium transition-all ${metric === m ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'text-[#52525b] hover:text-[#a1a1aa]'}`}>
+                      {label}
+                    </button>
                   ))}
-                </LineChart>
-              </ResponsiveContainer>
+                </div>
+              </div>
+              {loading ? <div className="skeleton h-52 rounded-xl" /> : chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" />
+                    <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: '#52525b', fontSize: 10 }} />
+                    <YAxis tick={{ fill: '#52525b', fontSize: 10 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+                    <Tooltip content={<ChartTooltip />} />
+                    {data.map((p, i) => (
+                      <Line key={p.id} type="monotone" dataKey={p.name}
+                        stroke={PILL_COLORS[i % PILL_COLORS.length]} strokeWidth={2} dot={false} />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-52 flex items-center justify-center text-[#52525b] text-sm">Sin datos para el período</div>
+              )}
             </div>
-          )}
+            <div className="card p-5 space-y-3">
+              <p className="text-white font-semibold text-sm">Insights destacados</p>
+              {autoInsights.length ? (
+                <div className="space-y-2">
+                  {autoInsights.map((ins, i) => (
+                    <div key={i} className="flex gap-2.5 p-3 bg-[#1f1f23] rounded-[10px]">
+                      <span className="text-base shrink-0">{ins.icon}</span>
+                      <p className="text-[#a1a1aa] text-xs leading-relaxed">{ins.text}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[#52525b] text-xs">Los insights aparecen cuando hay datos del período seleccionado.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Detailed table + AI recommendations */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#2a2a2e]">
+                <p className="text-white font-semibold text-sm">Comparativa detallada</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#2a2a2e] text-[#52525b]">
+                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Producto</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Ingresos</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Inversión</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Ganancia</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">ROAS</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2a2a2e]">
+                    {loading ? [1,2,3].map(i => (
+                      <tr key={i}>{[1,2,3,4,5].map(j => <td key={j} className="px-4 py-3"><div className="skeleton h-4 rounded" /></td>)}</tr>
+                    )) : data.map((p, i) => {
+                      const isWinner = data.length > 1 && (p[metric] || 0) === Math.max(...data.map(x => x[metric] || 0))
+                      return (
+                        <tr key={p.id} className="hover:bg-[#1f1f23] transition-colors">
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PILL_COLORS[i % PILL_COLORS.length] }} />
+                              <span className="text-white font-medium">{p.name}</span>
+                              {isWinner && <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.5 rounded-full">🏆</span>}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-right text-white">{fmt(p.revenue)}</td>
+                          <td className="px-4 py-3 text-right text-[#a1a1aa]">{fmt(p.investment)}</td>
+                          <td className={`px-4 py-3 text-right font-medium ${(p.profit || 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{fmt(p.profit)}</td>
+                          <td className="px-4 py-3 text-right">
+                            {p.roas != null ? (
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]' : p.roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{p.roas}x</span>
+                            ) : '—'}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.02) 100%)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 16 }} className="p-5 flex flex-col gap-3">
+              <p className="text-white font-semibold text-sm">✨ Recomendaciones IA</p>
+              <div className="flex-1">
+                {aiRecs ? (
+                  <div className="space-y-2.5">
+                    {aiRecs.map((rec, i) => (
+                      <div key={i} className="flex gap-2.5">
+                        <span className="text-[#A78BFA] text-xs font-bold shrink-0">{i + 1}.</span>
+                        <p className="text-[#a1a1aa] text-xs leading-relaxed">{rec}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[#52525b] text-xs">Generá recomendaciones personalizadas basadas en los datos comparados.</p>
+                )}
+              </div>
+              <button disabled={aiLoading || selected.length < 2} onClick={generateAI}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#A78BFA]/10 hover:bg-[#A78BFA]/20 border border-[#A78BFA]/30 text-[#A78BFA] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
+                {aiLoading
+                  ? <><span className="w-3 h-3 border border-[#A78BFA] border-t-transparent rounded-full animate-spin" />Analizando…</>
+                  : 'Generar nuevo análisis'}
+              </button>
+            </div>
+          </div>
         </>
       )}
     </div>
@@ -260,7 +350,7 @@ function BudgetTab({ dateFrom, dateTo }) {
   const calc = async () => { await load() }
 
   const InvestCard = ({ label, value, color, sub }) => (
-    <div className={`card-vercel p-4 border-l-2 ${color}`}>
+    <div className={`card p-4 border-l-2 ${color}`}>
       <p className="text-[#6b7280] text-[11px] mb-1.5">{label}</p>
       <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{fmt(value)}</p>
       {sub && <p className="text-[#6b7280] text-xs mt-1">{sub}</p>}
@@ -272,15 +362,15 @@ function BudgetTab({ dateFrom, dateTo }) {
       {/* ROAS histórico */}
       {data && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="card-vercel p-4 text-center">
+          <div className="card p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS promedio</p>
             <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.avg_roas ?? '—'}x</p>
           </div>
-          <div className="card-vercel p-4 text-center">
+          <div className="card p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS mínimo</p>
             <p className="text-[22px] font-light tabular-nums text-[#ef4444]" style={{ letterSpacing: '-0.03em' }}>{data.min_roas ?? '—'}x</p>
           </div>
-          <div className="card-vercel p-4 text-center">
+          <div className="card p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS máximo</p>
             <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>{data.max_roas ?? '—'}x</p>
           </div>
@@ -288,7 +378,7 @@ function BudgetTab({ dateFrom, dateTo }) {
       )}
 
       {/* Input objetivo */}
-      <div className="card-vercel p-5">
+      <div className="card p-5">
         <p className="text-[13px] font-semibold text-white mb-1" style={{ letterSpacing: '-0.01em' }}>¿Cuánto querés facturar?</p>
         <p className="text-[#6b7280] text-xs mb-4">Calculamos la inversión necesaria basándonos en tu historial de ROAS</p>
         <div className="flex gap-3">
@@ -339,7 +429,7 @@ function BudgetTab({ dateFrom, dateTo }) {
 
           {/* Por producto */}
           {data.by_product?.length > 0 && (
-            <div className="card-vercel p-5">
+            <div className="card p-5">
               <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Inversión sugerida por producto</p>
               <div className="space-y-3">
                 {data.by_product.map(p => {
@@ -404,7 +494,7 @@ function PatternsTab({ dateFrom, dateTo }) {
   return (
     <div className="space-y-6">
       {/* Por día de semana */}
-      <div className="card-vercel p-5">
+      <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[13px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>Rendimiento por día de la semana</p>
           {bestDow && (
@@ -448,7 +538,7 @@ function PatternsTab({ dateFrom, dateTo }) {
 
       {/* Rangos de inversión */}
       {data.investment_ranges?.length > 0 && (
-        <div className="card-vercel p-5">
+        <div className="card p-5">
           <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>ROAS por rango de inversión</p>
           <div className="space-y-3">
             {data.investment_ranges.map((r, i) => {
@@ -479,7 +569,7 @@ function PatternsTab({ dateFrom, dateTo }) {
 
       {/* Mejores días */}
       {data.best_days?.length > 0 && (
-        <div className="card-vercel p-5">
+        <div className="card p-5">
           <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Top 5 días con mejor ROAS</p>
           <div className="space-y-2">
             {data.best_days.map((d, i) => (
@@ -536,7 +626,7 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
   return (
     <div className="space-y-6">
       {/* Controles */}
-      <div className="card-vercel p-5">
+      <div className="card p-5">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex-1 min-w-[180px] space-y-1.5">
             <label className="text-[#a1a1aa] text-xs font-medium">Producto</label>
@@ -571,15 +661,15 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
       {/* Stats proyección */}
       {data && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="card-vercel p-4 text-center">
+          <div className="card p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días históricos</p>
             <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{data.series?.length ?? 0}</p>
           </div>
-          <div className="card-vercel p-4 text-center">
+          <div className="card p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días proyectados</p>
             <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.projected?.length ?? 0}</p>
           </div>
-          <div className="card-vercel p-4 text-center">
+          <div className="card p-4 text-center">
             <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Ingreso proyectado (prom/día)</p>
             <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>
               {data.projected?.length
@@ -592,9 +682,9 @@ function ProjectionsTab({ dateFrom, dateTo, products }) {
 
       {/* Gráfico */}
       {loading ? (
-        <div className="card-vercel p-5"><Skeleton h="h-64" /></div>
+        <div className="card p-5"><Skeleton h="h-64" /></div>
       ) : chartData.length > 0 ? (
-        <div className="card-vercel p-5">
+        <div className="card p-5">
           <div className="flex items-center gap-3 mb-4">
             <p className="text-[13px] font-semibold text-white flex-1" style={{ letterSpacing: '-0.01em' }}>Proyección de ingresos</p>
             <div className="flex items-center gap-4 text-xs text-[#a1a1aa]">
@@ -675,7 +765,7 @@ export default function Insights() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#F59E0B', fontWeight: 400 }}>de negocio</span></h1>
+            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#A78BFA', fontWeight: 400 }}>de negocio</span></h1>
             <p className="text-[#6b7280] text-[12px] mt-1.5 tracking-[0.01em]">
               Análisis avanzado para tomar mejores decisiones
             </p>
@@ -684,7 +774,7 @@ export default function Insights() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0 overflow-x-auto border-b border-white/8">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {TABS.map(t => (
             <TabBtn key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
               {t.label}
@@ -692,12 +782,38 @@ export default function Insights() {
           ))}
         </div>
 
-        {/* Content */}
-        <div className="animate-fade-up">
-          {tab === 'comparator'  && <ComparatorTab  dateFrom={dateFrom} dateTo={dateTo} products={products} />}
-          {tab === 'budget'      && <BudgetTab      dateFrom={dateFrom} dateTo={dateTo} />}
-          {tab === 'patterns'    && <PatternsTab    dateFrom={dateFrom} dateTo={dateTo} />}
-          {tab === 'projections' && <ProjectionsTab dateFrom={dateFrom} dateTo={dateTo} products={products} />}
+        {/* Content + right panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-5 items-start animate-fade-up">
+          <div>
+            {tab === 'comparator'  && <ComparatorTab  dateFrom={dateFrom} dateTo={dateTo} products={products} />}
+            {tab === 'budget'      && <BudgetTab      dateFrom={dateFrom} dateTo={dateTo} />}
+            {tab === 'patterns'    && <PatternsTab    dateFrom={dateFrom} dateTo={dateTo} />}
+            {tab === 'projections' && <ProjectionsTab dateFrom={dateFrom} dateTo={dateTo} products={products} />}
+          </div>
+          <div className="card p-5 space-y-4 sticky top-4">
+            <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider">
+              {products.length > 0 ? 'DATOS DISPONIBLES' : 'SIN DATOS'}
+            </p>
+            {products.length > 0 ? (
+              <div className="space-y-2.5">
+                {['Comparador activo', 'Patrones disponibles', 'Proyecciones listas'].map(item => (
+                  <div key={item} className="flex items-center gap-2 text-xs text-[#a1a1aa]">
+                    <span className="text-[#10b981] font-bold">✓</span> {item}
+                  </div>
+                ))}
+                <div className="pt-1 border-t border-[#2a2a2e]">
+                  <p className="text-[#52525b] text-xs">{products.length} producto{products.length !== 1 ? 's' : ''} cargado{products.length !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-[#52525b] text-xs leading-relaxed">Cargá datos para desbloquear todos los insights y comparaciones.</p>
+                <a href="/cargar" className="block w-full text-center px-3 py-2 bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-semibold rounded-[8px] hover:bg-[#F59E0B]/20 transition-all">
+                  Cargar datos
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Layout>
