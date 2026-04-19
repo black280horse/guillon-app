@@ -624,8 +624,8 @@ export default function DataEntry() {
     <Layout>
       <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-3xl mx-auto flex flex-col gap-4 w-full min-w-0" style={{ minHeight: 'calc(100dvh - 80px)' }}>
         <div>
-          <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-            Cargar <span style={{ color: '#F59E0B', fontWeight: 400 }}>datos</span>
+          <h1 className="text-[28px] font-semibold text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
+            Cargar <span style={{ color: '#F59E0B' }}>datos</span>
           </h1>
           <p className="text-[#3d5068] text-[13px] mt-1.5">Texto libre o CSV — múltiples productos, gastos y fecha global.</p>
         </div>

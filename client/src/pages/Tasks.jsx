@@ -5,10 +5,9 @@ import {
   PointerSensor, TouchSensor,
   useSensor, useSensors, closestCenter,
 } from '@dnd-kit/core'
-import { NavLink, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useToast } from '../context/ToastContext'
-import { useAuth } from '../context/AuthContext'
+import Layout from '../components/Layout'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -79,14 +78,6 @@ const COLUMNS_STATUS = [
   { id: 'completed',   label: 'Listo',       color: '#10b981' },
 ]
 
-// Sidebar nav items
-const SIDEBAR_NAV = [
-  { to: '/dashboard',       label: 'Home',      icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10' },
-  { to: '/tareas/dashboard',label: 'Dashboard', icon: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z' },
-  { to: '/productos',       label: 'Productos', icon: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z' },
-  { to: '/insights',        label: 'Insights',  icon: 'M5 19V9m7 10V5m7 14v-7M3 19h18' },
-  { to: '/tareas',          label: 'Tareas',    icon: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9 2 2 4-4' },
-]
 
 // ─── Icon ─────────────────────────────────────────────────────────────────────
 
@@ -455,7 +446,7 @@ function ProductColumn({ colId, label, color, tasks, colorMap, onAdd, onEdit, on
       borderRadius: 12,
       border: isOver ? `1px solid rgba(232,160,32,0.25)` : '1px solid rgba(255,255,255,0.07)',
       display: 'flex', flexDirection: 'column',
-      maxHeight: 'calc(100vh - 180px)',
+      maxHeight: 'calc(100dvh - 160px)',
       overflow: 'hidden',
       transition: 'background 0.12s ease, border-color 0.12s ease',
     }}>
@@ -547,7 +538,7 @@ function OverdueColumn({ tasks, colorMap, onEdit, onUpdate }) {
       border: '1px solid rgba(255,255,255,0.07)',
       borderTop: '2px solid rgba(239,68,68,0.4)',
       display: 'flex', flexDirection: 'column',
-      maxHeight: 'calc(100vh - 180px)',
+      maxHeight: 'calc(100dvh - 160px)',
       overflow: 'hidden',
     }}>
       {/* Header */}
@@ -621,118 +612,6 @@ function OverdueColumn({ tasks, colorMap, onEdit, onUpdate }) {
   )
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-
-function TasksSidebar({ user, onLogout }) {
-  const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?'
-
-  return (
-    <aside style={{
-      width: 64, minWidth: 64, height: '100vh',
-      background: '#0d0d18',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      position: 'relative', zIndex: 10, flexShrink: 0,
-    }}>
-      {/* Logo */}
-      <div style={{ width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: '50%',
-          background: '#E8A020',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#000', fontSize: 18, fontWeight: 800,
-          fontFamily: "'DM Sans', sans-serif",
-          userSelect: 'none',
-        }}>
-          G
-        </div>
-      </div>
-
-      {/* Nav icons */}
-      <nav style={{ marginTop: 24, display: 'flex', flexDirection: 'column', width: '100%' }}>
-        {SIDEBAR_NAV.map(({ to, label, icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/tareas'}
-            style={({ isActive }) => ({
-              width: 64, height: 52,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
-              background: isActive ? 'rgba(232,160,32,0.12)' : 'transparent',
-              borderLeft: isActive ? '2px solid #E8A020' : '2px solid transparent',
-              textDecoration: 'none', cursor: 'pointer',
-              transition: 'background 0.12s ease',
-            })}
-            className={({ isActive }) => isActive ? '' : 'tk-sidebar-icon'}
-          >
-            {({ isActive }) => (
-              <>
-                <SvgIcon
-                  d={icon} size={20} stroke={1.8}
-                  color={isActive ? '#E8A020' : 'rgba(255,255,255,0.4)'}
-                />
-                <span style={{
-                  fontSize: 10, color: isActive ? '#E8A020' : 'rgba(255,255,255,0.35)',
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500, lineHeight: 1,
-                }}>
-                  {label}
-                </span>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Bottom zone */}
-      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        {/* Settings */}
-        <NavLink
-          to="/configuracion"
-          style={({ isActive }) => ({
-            width: 64, height: 52,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
-            background: isActive ? 'rgba(232,160,32,0.12)' : 'transparent',
-            borderLeft: isActive ? '2px solid #E8A020' : '2px solid transparent',
-            textDecoration: 'none',
-          })}
-          className={({ isActive }) => isActive ? '' : 'tk-sidebar-icon'}
-        >
-          {({ isActive }) => (
-            <>
-              <SvgIcon
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-                size={20} stroke={1.8}
-                color={isActive ? '#E8A020' : 'rgba(255,255,255,0.4)'}
-              />
-              <span style={{ fontSize: 10, color: isActive ? '#E8A020' : 'rgba(255,255,255,0.35)', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
-                Config
-              </span>
-            </>
-          )}
-        </NavLink>
-
-        {/* Avatar */}
-        <div
-          onClick={onLogout}
-          title="Cerrar sesión"
-          style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: '#2a2a3e',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#E8A020', fontSize: 13, fontWeight: 700,
-            fontFamily: "'DM Sans', sans-serif",
-            cursor: 'pointer', marginBottom: 16,
-            userSelect: 'none',
-          }}
-        >
-          {initials}
-        </div>
-      </div>
-    </aside>
-  )
-}
 
 // ─── Filter Pill ──────────────────────────────────────────────────────────────
 
@@ -772,8 +651,6 @@ function FilterPill({ label, count, badgeStyle, active, onClick }) {
 
 export default function Tasks() {
   const { addToast } = useToast()
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
 
   const [tasks,    setTasks]    = useState([])
   const [products, setProducts] = useState([])
@@ -900,8 +777,6 @@ export default function Tasks() {
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null
 
-  function handleLogout() { logout(); navigate('/login') }
-
   // Filter pills config
   const pills = [
     { id: '',          label: 'Todo',       count: counts.all,         badge: { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' } },
@@ -913,26 +788,18 @@ export default function Tasks() {
 
   if (loading) {
     return (
-      <div style={{ position: 'fixed', inset: 0, background: '#0d0d18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
-        <div style={{ display: 'flex', gap: 12 }}>
+      <Layout>
+        <div className="flex gap-4 pt-2 overflow-hidden">
           {[0,1,2,3].map(i => (
-            <div key={i} style={{ width: 280, height: 400, borderRadius: 12, background: '#13131f', border: '1px solid rgba(255,255,255,0.07)', opacity: 0.5 + i * 0.1 }} />
+            <div key={i} className="skeleton rounded-xl shrink-0" style={{ width: 280, height: 420, opacity: 0.5 + i * 0.1 }} />
           ))}
         </div>
-      </div>
+      </Layout>
     )
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: '#0d0d18',
-      display: 'flex',
-      fontFamily: "'DM Sans', sans-serif",
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-      overflow: 'hidden',
-    }}>
+    <Layout>
       <style>{`
         @keyframes modalIn {
           from { opacity: 0; transform: scale(0.96) translateY(8px); }
@@ -940,91 +807,50 @@ export default function Tasks() {
         }
       `}</style>
 
-      {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <TasksSidebar user={user} onLogout={handleLogout} />
-
-      {/* ── Main content ─────────────────────────────────────────────── */}
+      {/* Full-bleed kanban — bleeds out of page-shell padding */}
       <div style={{
-        flex: 1,
-        height: '100vh',
-        overflow: 'hidden',
+        margin: '-24px -16px',
+        height: 'calc(100dvh - 24px)',
         display: 'flex',
         flexDirection: 'column',
-        minWidth: 0,
+        overflow: 'hidden',
       }}>
 
-        {/* ── Header ───────────────────────────────────────────────── */}
-        <header style={{
-          height: 64, flexShrink: 0,
-          padding: '0 28px',
+        {/* ── Page header ──────────────────────────────────────────── */}
+        <div style={{
+          height: 60, flexShrink: 0,
+          padding: '0 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
-          background: '#0d0d18',
         }}>
-          {/* Left */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button style={{
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'rgba(255,255,255,0.5)', marginRight: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <SvgIcon d="M4 6h16M4 12h16M4 18h16" size={20} stroke={1.8} />
-            </button>
-            <span style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 22, fontWeight: 700, color: '#ffffff',
-              letterSpacing: '-0.3px',
-            }}>
-              Tareas
-            </span>
-          </div>
-
-          {/* Right */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="tk-hdr-btn" style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: 'rgba(255,255,255,0.06)',
+          <span style={{ fontSize: 20, fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>
+            Tareas
+          </span>
+          <button
+            onClick={() => setModal({ status: 'pending' })}
+            style={{
+              height: 34, padding: '0 14px', borderRadius: 8,
+              background: '#F59E0B', color: '#000',
+              fontSize: 13, fontWeight: 700,
               border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'rgba(255,255,255,0.6)',
+              display: 'flex', alignItems: 'center', gap: 6,
               transition: 'background 0.12s ease',
-            }}>
-              <SvgIcon d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" size={16} stroke={1.8} />
-            </button>
-            <button className="tk-hdr-btn" style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: 'rgba(255,255,255,0.06)',
-              border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'rgba(255,255,255,0.6)',
-              transition: 'background 0.12s ease',
-            }}>
-              <SvgIcon d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6.002 6.002 0 0 0-4-5.659V5a2 2 0 1 0-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" size={16} stroke={1.8} />
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: '50%',
-                background: '#2a2a3e',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#E8A020', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer',
-              }}>
-                {user?.name ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
-              </div>
-              <SvgIcon d="M6 9l6 6 6-6" size={14} color="rgba(255,255,255,0.4)" stroke={1.8} />
-            </div>
-          </div>
-        </header>
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#E8A020' }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#F59E0B' }}
+          >
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+            Nueva tarea
+          </button>
+        </div>
 
         {/* ── Filter bar ───────────────────────────────────────────── */}
         <div style={{
-          height: 60, flexShrink: 0,
-          padding: '0 28px',
+          height: 52, flexShrink: 0,
+          padding: '0 24px',
           display: 'flex', alignItems: 'center', gap: 8,
-          background: '#0d0d18',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
-          {/* Filter pills */}
           {pills.map(p => (
             <FilterPill
               key={p.id}
@@ -1035,35 +861,13 @@ export default function Tasks() {
               onClick={() => setFilterStatus(s => s === p.id ? '' : p.id)}
             />
           ))}
-
-          {/* Nueva tarea button — right side */}
-          <div style={{ marginLeft: 'auto' }}>
-            <button
-              onClick={() => setModal({ status: 'pending' })}
-              style={{
-                height: 36, padding: '0 16px', borderRadius: 8,
-                background: '#E8A020', color: '#000000',
-                fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700,
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                transition: 'background 0.12s ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#d4921c' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#E8A020' }}
-            >
-              <span style={{ fontSize: 18, lineHeight: 1, fontWeight: 400 }}>+</span>
-              <span>Nueva Tarea</span>
-              <span style={{ width: 1, height: 20, background: 'rgba(0,0,0,0.2)', margin: '0 2px' }} />
-              <span style={{ fontSize: 12 }}>▾</span>
-            </button>
-          </div>
         </div>
 
         {/* ── Kanban area ──────────────────────────────────────────── */}
         <div style={{
           flex: 1,
           overflowX: 'auto', overflowY: 'hidden',
-          padding: '20px 28px',
+          padding: '20px 24px',
           display: 'flex', gap: 16, alignItems: 'flex-start',
         }}>
           {tasks.length === 0 ? (
@@ -1153,6 +957,6 @@ export default function Tasks() {
           onDeleted={handleDeleted}
         />
       )}
-    </div>
+    </Layout>
   )
 }
