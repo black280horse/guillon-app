@@ -75,6 +75,10 @@ router.post('/chat', async (req, res) => {
   const { messages } = req.body;
 
   if (!messages?.length) return res.status(400).json({ error: 'messages requerido' });
+  if (!Array.isArray(messages) || messages.length > 50)
+    return res.status(400).json({ error: 'messages debe ser un array de máximo 50 elementos' });
+  if (messages.some(m => typeof m.content === 'string' && m.content.length > 8000))
+    return res.status(400).json({ error: 'Mensaje demasiado largo' });
 
   // Construir contexto del negocio
   const user = db.prepare('SELECT name, business_name, plan FROM users WHERE id = ?').get(userId);
@@ -123,7 +127,7 @@ ${products.map(p => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  // CORS handled by the cors() middleware in index.js — no manual header needed
 
   await chatStream({ messages, businessContext, res });
 });

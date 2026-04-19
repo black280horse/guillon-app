@@ -1,7 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
-// El modelo solicitado por el usuario
-const MODEL = 'claude-sonnet-4-5';
+const MODEL = 'claude-sonnet-4-6';
 
 function getClient() {
   if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'tu_anthropic_api_key') {

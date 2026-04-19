@@ -19,6 +19,10 @@ async function sendEmail({ to, subject, html }) {
   await transporter.sendMail({ from: `"Guillon AP" <${process.env.EMAIL_USER}>`, to, subject, html });
 }
 
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function emailNuevoRegistro({ adminEmail, userName, userEmail, businessName }) {
   return sendEmail({
     to: adminEmail,
@@ -28,9 +32,9 @@ function emailNuevoRegistro({ adminEmail, userName, userEmail, businessName }) {
         <h2 style="color:#E8A020">Nuevo usuario registrado</h2>
         <p>Hay un nuevo usuario esperando aprobación:</p>
         <table style="width:100%;border-collapse:collapse">
-          <tr><td style="padding:8px;font-weight:bold">Nombre</td><td>${userName}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold">Email</td><td>${userEmail}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold">Negocio</td><td>${businessName || '—'}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold">Nombre</td><td>${esc(userName)}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold">Email</td><td>${esc(userEmail)}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold">Negocio</td><td>${esc(businessName) || '—'}</td></tr>
         </table>
         <p style="margin-top:16px">Accedé al panel admin para aprobar o rechazar este usuario.</p>
       </div>

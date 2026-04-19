@@ -10,7 +10,7 @@ function requireAuth(req, res, next) {
   const token = header.slice(7);
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(payload.id);
+    const user = db.prepare('SELECT id, name, email, business_name, role, status, plan, access_expires_at, created_at FROM users WHERE id = ?').get(payload.id);
     if (!user) return res.status(401).json({ error: 'Usuario no encontrado' });
     if (user.status !== 'active') return res.status(403).json({ error: 'Cuenta no activa' });
     req.user = user;
