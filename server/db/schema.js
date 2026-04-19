@@ -1,22 +1,26 @@
 const Database = require('better-sqlite3');
-const path = require('path');
 const fs = require('fs');
 
 function resolveDbPath() {
-  if (process.env.DB_PATH) return process.env.DB_PATH;
+  // NUNCA usar fallback local. Forzar /data/database.sqlite
+  // Si /data no existe, fallar explícitamente para que se vea el error
+  const dbPath = '/data/database.sqlite';
+
+  // Verificar que /data existe y es accesible
   try {
     fs.accessSync('/data', fs.constants.W_OK);
-    return '/data/database.sqlite';
-  } catch {
-    return path.join(__dirname, '..', 'guillon.db');
+    console.log('[DB] Volume /data is accessible');
+  } catch (err) {
+    console.error('[DB] CRITICAL: Volume /data is NOT accessible or not writable!');
+    console.error('[DB] This means the volume is not properly mounted.');
+    console.error('[DB] Error:', err.message);
+    throw new Error('Database volume /data is not accessible. Cannot proceed.');
   }
+
+  return dbPath;
 }
 const DB_PATH = resolveDbPath();
 console.log('[DB] Path:', DB_PATH);
-// Only create parent dir for local paths; /data must exist from volume mount, never created synthetically
-if (!DB_PATH.startsWith('/data')) {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-}
 const db = new Database(DB_PATH);
 
 db.pragma('journal_mode = WAL');
