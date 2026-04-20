@@ -181,24 +181,55 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .sidebar-fixed {
   position: fixed;
   inset: 0 auto 0 0;
-  width: 160px;
+  width: 68px;
   z-index: 40;
   display: flex;
   flex-direction: column;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
 }
 
 .main-content {
-  margin-left: 160px;
+  margin-left: 68px;
   flex: 1;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   min-width: 0;
   overflow-x: hidden;
+}
+
+.nav-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-1);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  z-index: 60;
+  box-shadow: var(--shadow-md);
+}
+.nav-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--border-strong);
+}
+.nav-item-wrap:hover .nav-tooltip {
+  opacity: 1;
 }
 
 .main-frame {
@@ -348,8 +379,8 @@ input, textarea, select, button {
 ══════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
-  .sidebar-fixed  { width: 152px; }
-  .main-content   { margin-left: 152px; }
+  .sidebar-fixed  { width: 68px; }
+  .main-content   { margin-left: 68px; }
   .page-shell     { padding: 20px 16px; }
 }
 
