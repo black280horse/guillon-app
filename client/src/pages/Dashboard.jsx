@@ -93,11 +93,11 @@ function PeriodTabs({ activeKey, onSelect }) {
           onClick={() => onSelect(p.key)}
           className="rounded-[7px] px-3 py-1.5 text-[11.5px] font-semibold transition-all"
           style={activeKey === p.key ? {
-            background: 'rgba(255,255,255,0.09)',
-            color: '#F4F4F6',
+            background: '#F59E0B',
+            color: '#1A0A00',
           } : {
             background: 'transparent',
-            color: 'rgba(255,255,255,0.38)',
+            color: 'rgba(255,255,255,0.55)',
           }}
         >
           {p.label}
@@ -243,8 +243,8 @@ function TasksOverview({ overdue, pending, inProgress, completed, navigate }) {
             <svg className="w-3.5 h-3.5" fill="none" stroke={chip.color} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={chip.icon} />
             </svg>
-            <span className="text-[11.5px] font-semibold tabular-nums" style={{ color: chip.color }}>{chip.count}</span>
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{chip.label}</span>
+            <span className="text-[18px] font-bold tabular-nums leading-none" style={{ color: chip.color, letterSpacing: '-0.02em' }}>{chip.count}</span>
+            <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.62)' }}>{chip.label}</span>
           </button>
         ))}
       </div>
