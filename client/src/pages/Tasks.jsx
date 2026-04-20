@@ -688,15 +688,10 @@ export default function Tasks() {
     overdue:     tasks.filter(t => t.status === 'overdue').length,
   }), [tasks])
 
-  // Overdue tasks (always shown in Vencidas column)
-  const overdueTasks = useMemo(() => tasks.filter(t => t.status === 'overdue'), [tasks])
-
-  // Filtered tasks for product columns (overdue tasks shown separately)
+  // Filtered tasks for product/general columns
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
-      if (t.status === 'overdue') return false // always in Vencidas column
       if (!filterStatus) return true
-      if (filterStatus === 'overdue') return false
       return t.status === filterStatus
     })
   }, [tasks, filterStatus])
@@ -809,7 +804,7 @@ export default function Tasks() {
 
       {/* Full-bleed kanban — bleeds out of page-shell padding */}
       <div style={{
-        margin: '-24px -16px',
+        margin: '-24px -20px',
         height: 'calc(100dvh - 24px)',
         display: 'flex',
         flexDirection: 'column',
@@ -918,16 +913,6 @@ export default function Tasks() {
                   activeId={activeId}
                 />
               ))}
-
-              {/* Vencidas column — always last */}
-              {(filterStatus === '' || filterStatus === 'overdue') && (
-                <OverdueColumn
-                  tasks={overdueTasks}
-                  colorMap={colorMap}
-                  onEdit={task => setModal({ task })}
-                  onUpdate={handleUpdate}
-                />
-              )}
 
               <DragOverlay dropAnimation={null}>
                 {activeTask && (

@@ -412,9 +412,9 @@ export default function Dashboard() {
 
   const taskCounts = {
     overdue:    tasks.filter(t => t.status === 'overdue').length,
-    pending:    tasks.filter(t => t.status === 'todo').length,
+    pending:    tasks.filter(t => t.status === 'pending').length,
     inProgress: tasks.filter(t => t.status === 'in_progress').length,
-    completed:  tasks.filter(t => t.status === 'done').length,
+    completed:  tasks.filter(t => t.status === 'completed').length,
   }
   const hasTasks = tasks.length > 0
 
