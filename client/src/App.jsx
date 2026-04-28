@@ -9,6 +9,7 @@ import AIChat from './components/AIChat'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Pending from './pages/Pending'
+import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import DataEntry from './pages/DataEntry'
 import Products from './pages/Products'
@@ -38,6 +39,7 @@ function AnimatedRoutes() {
           <Route path="/register" element={<Register />} />
           <Route path="/pending" element={<Pending />} />
 
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/cargar" element={<ProtectedRoute><DataEntry /></ProtectedRoute>} />
           <Route path="/productos" element={<ProtectedRoute><Products /></ProtectedRoute>} />
@@ -48,7 +50,7 @@ function AnimatedRoutes() {
           <Route path="/configuracion" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
           <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>

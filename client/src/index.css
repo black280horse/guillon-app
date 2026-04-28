@@ -406,6 +406,11 @@ input, textarea, select, button {
   .page-shell     { padding: 20px 16px; }
 }
 
+@media (max-width: 900px) {
+  .home-main-grid   { grid-template-columns: 1fr !important; }
+  .home-header-grid { grid-template-columns: 1fr !important; }
+}
+
 @media (max-width: 768px) {
   .sidebar-fixed  { display: none; }
   .main-content   { margin-left: 0; }

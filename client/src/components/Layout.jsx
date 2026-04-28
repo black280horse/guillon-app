@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 const NAV = [
+  { to: '/home',          label: 'Home',         icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10',      accent: '#F59E0B' },
   { to: '/dashboard',     label: 'Dashboard',    icon: 'M4 14h6v6H4zM14 10h6v10h-6zM4 4h6v6H4zM14 4h6v2h-6z',             accent: '#F59E0B' },
   { to: '/productos',     label: 'Productos',    icon: 'M12 2l9 5v10l-9 5-9-5V7l9-5zm0 0v18m9-13L12 12 3 7',              accent: '#22D3EE' },
   { to: '/insights',      label: 'Insights',     icon: 'M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', accent: '#A78BFA' },
