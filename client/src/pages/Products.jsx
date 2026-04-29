@@ -36,7 +36,7 @@ function ProductsKpiStrip({ products }) {
 
   const kpis = [
     { label: 'Productos', value: total, color: '#818CF8' },
-    { label: 'Revenue Total', value: fmt(totalRevenue), color: '#34D399' },
+    { label: 'Facturación Total', value: fmt(totalRevenue), color: '#34D399' },
     { label: 'ROAS Promedio', value: avgROAS.toFixed(2) + 'x', color: '#F59E0B' },
     { label: 'Rentables (≥2x)', value: profitable, color: '#60A5FA' },
   ]
@@ -109,7 +109,7 @@ function ProductCard({ product, rank, onOpen }) {
       <div style={{ fontWeight: 600, color: '#fff', marginBottom: 8, paddingRight: 28 }}>{product.name}</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         <div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginBottom: 2 }}>Revenue</div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginBottom: 2 }}>Facturación</div>
           <div style={{ fontWeight: 700, color: '#34D399' }}>{fmt(product.total_revenue || 0)}</div>
         </div>
         <div>
@@ -226,7 +226,7 @@ function ProductDrawer({ product, onClose, onSaved, onDeleted }) {
           <div style={{ marginBottom: 20, padding: 16, background: 'rgba(255,255,255,0.04)', borderRadius: 10 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {[
-                ['Revenue', `$${Math.round(product.total_revenue || 0).toLocaleString()}`],
+                ['Facturación', `$${Math.round(product.total_revenue || 0).toLocaleString()}`],
                 ['ROAS', `${(product.avg_roas || 0).toFixed(2)}x`],
                 ['Inversión', `$${Math.round(product.total_investment || 0).toLocaleString()}`],
                 ['Registros', product.sale_count || 0],
@@ -481,7 +481,7 @@ export default function Products() {
                   <th style={{ padding: '10px 8px', width: 28 }}></th>
                   <th style={{ ...thStyle('name'), cursor: 'default' }}>Producto</th>
                   <th style={thStyle('total_revenue')} onClick={() => toggleSort('total_revenue')}>
-                    Revenue <SortIcon active={sortKey === 'total_revenue'} dir={sortDir} />
+                    Facturación <SortIcon active={sortKey === 'total_revenue'} dir={sortDir} />
                   </th>
                   <th style={thStyle('total_investment')} onClick={() => toggleSort('total_investment')}>
                     Inversión <SortIcon active={sortKey === 'total_investment'} dir={sortDir} />

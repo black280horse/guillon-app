@@ -1,30 +1,126 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Layout from '../components/Layout'
 import { useToast } from '../context/ToastContext'
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const today = () => new Date().toISOString().slice(0, 10)
-
-function parseCSVOrTSV(text) {
-  const lines = text.trim().split('\n').filter(l => l.trim())
-  const rows = []
-  for (const line of lines) {
-    const sep = line.includes('\t') ? '\t' : ','
-    const cols = line.split(sep).map(c => c.replace(/^"|"$/g, '').trim())
-    if (cols.length >= 4) {
-      rows.push({
-        product_name: cols[0],
-        date: cols[1],
-        revenue: cols[2],
-        investment: cols[3],
-      })
-    }
-  }
-  return rows
+// ── Number parser (handles Argentine/Spanish format) ──────────────────────────
+function parseLocalNumber(str) {
+  if (!str) return NaN
+  const s = String(str).trim()
+  // Has comma → comma is decimal separator, dots are thousands separators
+  if (s.includes(',')) return parseFloat(s.replace(/\./g, '').replace(',', '.'))
+  // Dot before exactly 3 digits at end → thousands separator
+  if (/(\.\d{3})+$/.test(s)) return parseFloat(s.replace(/\./g, ''))
+  return parseFloat(s)
 }
 
-// ── Single entry form ────────────────────────────────────────────────────────
+const today = () => new Date().toISOString().slice(0, 10)
+
+function parseDate(str) {
+  if (!str) return today()
+  const s = str.trim()
+  // DD/MM/YYYY
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+  return today()
+}
+
+// ── Smart flexible text parser ────────────────────────────────────────────────
+const REVENUE_RE = /(?:ventas?|ingresos?|facturaci[oó]n|revenue|sales?)\s*:?\s*([\d.,]*)/i
+const INVEST_RE  = /(?:inversi[oó]n(?:\s+ads?)?|inversi[oó]n|ads?\.?\s*inversi[oó]n|publicidad|inversion)\s*:?\s*([\d.,]*)/i
+const DATE_RE    = /(?:fecha|date)\s*:?\s*([\d\/\-]+)/i
+const SKIP_RE    = /^(extras?|otros\s+ingresos?|publicidad\s+general|empleados?|gastos?\s+fijos?|total\s*:?)\s*/i
+
+function smartParse(text) {
+  const results = []
+  let globalDate = today()
+
+  // Extract global date from text
+  const dateLineMatch = text.match(DATE_RE)
+  if (dateLineMatch) globalDate = parseDate(dateLineMatch[1])
+  else {
+    const anyDate = text.match(/\b(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})\b/)
+    if (anyDate) globalDate = parseDate(anyDate[1])
+  }
+
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+  let currentName = null
+  let currentRevenue = null
+  let currentInvestment = null
+
+  const flush = () => {
+    if (currentName && (currentRevenue !== null || currentInvestment !== null)) {
+      results.push({
+        product_name: currentName,
+        date: globalDate,
+        revenue: currentRevenue ?? 0,
+        investment: currentInvestment ?? 0,
+      })
+    }
+    currentName = null
+    currentRevenue = null
+    currentInvestment = null
+  }
+
+  for (const line of lines) {
+    // Skip date lines and section headers to skip
+    if (DATE_RE.test(line) && !REVENUE_RE.test(line) && !INVEST_RE.test(line)) continue
+    if (SKIP_RE.test(line)) continue
+
+    // Inline format: "Producto B → Inversión: 14.000 | Ventas: 24.000"
+    if (line.includes('→') || (line.includes('|') && (REVENUE_RE.test(line) || INVEST_RE.test(line)))) {
+      flush()
+      const parts = line.split(/[→|]/).map(p => p.trim())
+      const name = parts[0].replace(/^producto\s*/i, '').trim()
+      let rev = null, inv = null
+      for (const part of parts) {
+        if (REVENUE_RE.test(part)) {
+          const m = part.match(REVENUE_RE)
+          if (m?.[1]) rev = parseLocalNumber(m[1])
+        }
+        if (INVEST_RE.test(part)) {
+          const m = part.match(INVEST_RE)
+          if (m?.[1]) inv = parseLocalNumber(m[1])
+        }
+      }
+      if (name && (rev !== null || inv !== null)) {
+        results.push({ product_name: name, date: globalDate, revenue: rev ?? 0, investment: inv ?? 0 })
+      }
+      continue
+    }
+
+    // Revenue field
+    const revMatch = line.match(REVENUE_RE)
+    if (revMatch) {
+      currentRevenue = revMatch[1] ? parseLocalNumber(revMatch[1]) : 0
+      continue
+    }
+
+    // Investment field
+    const invMatch = line.match(INVEST_RE)
+    if (invMatch) {
+      currentInvestment = invMatch[1] ? parseLocalNumber(invMatch[1]) : 0
+      continue
+    }
+
+    // If we already have revenue/investment collected for previous product, flush first
+    if (currentName && (currentRevenue !== null || currentInvestment !== null)) flush()
+
+    // This line is likely a product name
+    const name = line.replace(/^producto\s*/i, '').trim()
+    // Ignore lines that look like field labels without values
+    if (name && !/:$/.test(name) && name.length > 0) {
+      currentName = name
+    }
+  }
+
+  flush()
+  return results
+}
+
+// ── Single entry form ─────────────────────────────────────────────────────────
 function SingleForm({ products, onSaved }) {
   const { showToast } = useToast()
   const [form, setForm] = useState({ product_name: '', date: today(), revenue: '', investment: '' })
@@ -55,60 +151,47 @@ function SingleForm({ products, onSaved }) {
 
   const inputStyle = {
     width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none',
-    boxSizing: 'border-box',
+    borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box',
   }
   const labelStyle = { fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 6, display: 'block' }
+
+  const rev = parseFloat(form.revenue), inv = parseFloat(form.investment)
+  const showPreview = !isNaN(rev) && !isNaN(inv) && rev > 0 && inv > 0
 
   return (
     <form onSubmit={handleSubmit}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <div style={{ gridColumn: '1/-1' }}>
           <label style={labelStyle}>Producto</label>
-          <input
-            list="prod-list"
-            value={form.product_name}
-            onChange={e => set('product_name', e.target.value)}
-            placeholder="Nombre del producto"
-            required
-            style={inputStyle}
-          />
-          <datalist id="prod-list">
-            {products.map(p => <option key={p.id} value={p.name} />)}
-          </datalist>
+          <input list="prod-list" value={form.product_name} onChange={e => set('product_name', e.target.value)}
+            placeholder="Nombre del producto" required style={inputStyle} />
+          <datalist id="prod-list">{products.map(p => <option key={p.id} value={p.name} />)}</datalist>
         </div>
         <div>
           <label style={labelStyle}>Fecha</label>
-          <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
-            required style={inputStyle} />
+          <input type="date" value={form.date} onChange={e => set('date', e.target.value)} required style={inputStyle} />
         </div>
         <div>
-          <label style={labelStyle}>Revenue ($)</label>
+          <label style={labelStyle}>Facturación ($)</label>
           <input type="number" min="0" step="0.01" value={form.revenue}
             onChange={e => set('revenue', e.target.value)} placeholder="0.00" required style={inputStyle} />
         </div>
         <div>
-          <label style={labelStyle}>Inversion ($)</label>
+          <label style={labelStyle}>Inversión ($)</label>
           <input type="number" min="0" step="0.01" value={form.investment}
             onChange={e => set('investment', e.target.value)} placeholder="0.00" required style={inputStyle} />
         </div>
-        {form.revenue && form.investment && parseFloat(form.investment) > 0 && (
-          <div style={{ gridColumn: '1/-1', padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: 8, fontSize: 13 }}>
-            <span style={{ color: 'rgba(255,255,255,0.5)' }}>ROAS estimado: </span>
-            <span style={{ color: '#F59E0B', fontWeight: 700 }}>
-              {(parseFloat(form.revenue) / parseFloat(form.investment)).toFixed(2)}x
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: 16 }}>Profit: </span>
-            <span style={{ color: '#34D399', fontWeight: 700 }}>
-              ${(parseFloat(form.revenue) - parseFloat(form.investment)).toFixed(2)}
-            </span>
+        {showPreview && (
+          <div style={{ gridColumn: '1/-1', padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: 8, fontSize: 13, display: 'flex', gap: 20 }}>
+            <span><span style={{ color: 'rgba(255,255,255,0.5)' }}>Ganancia: </span><span style={{ color: '#34D399', fontWeight: 700 }}>${(rev - inv).toFixed(2)}</span></span>
+            <span><span style={{ color: 'rgba(255,255,255,0.5)' }}>ROI: </span><span style={{ color: '#F59E0B', fontWeight: 700 }}>{(((rev - inv) / inv) * 100).toFixed(1)}%</span></span>
+            <span><span style={{ color: 'rgba(255,255,255,0.5)' }}>ROAS: </span><span style={{ color: '#F59E0B', fontWeight: 700 }}>{(rev / inv).toFixed(2)}x</span></span>
           </div>
         )}
       </div>
       <button type="submit" disabled={saving} style={{
         width: '100%', background: '#F59E0B', color: '#0E0E14', border: 'none',
-        borderRadius: 10, padding: '12px 0', fontWeight: 700, fontSize: 14, cursor: 'pointer',
-        opacity: saving ? 0.6 : 1,
+        borderRadius: 10, padding: '12px 0', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: saving ? 0.6 : 1,
       }}>
         {saving ? 'Guardando...' : 'Guardar registro'}
       </button>
@@ -116,115 +199,114 @@ function SingleForm({ products, onSaved }) {
   )
 }
 
-// ── Bulk paste form ──────────────────────────────────────────────────────────
+// ── Bulk load form (smart parser, no preview step) ────────────────────────────
 function BulkForm({ onSaved }) {
   const { showToast } = useToast()
   const [text, setText] = useState('')
-  const [preview, setPreview] = useState([])
-  const [errors, setErrors] = useState([])
   const [saving, setSaving] = useState(false)
-  const [result, setResult] = useState(null)
+  const [lastResult, setLastResult] = useState(null)
 
-  const handleParse = () => {
-    const rows = parseCSVOrTSV(text)
-    const errs = []
-    const valid = []
-    for (const r of rows) {
-      if (!r.product_name) { errs.push({ row: r, error: 'product_name vacio' }); continue }
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(r.date)) { errs.push({ row: r, error: `fecha invalida: ${r.date}` }); continue }
-      const rev = parseFloat(r.revenue)
-      const inv = parseFloat(r.investment)
-      if (isNaN(rev) || isNaN(inv)) { errs.push({ row: r, error: 'revenue/investment no numericos' }); continue }
-      valid.push({ ...r, revenue: rev, investment: inv })
+  // Live-parse to show count
+  const parsed = text.trim() ? smartParse(text) : []
+
+  const handleLoad = async () => {
+    if (!parsed.length) {
+      showToast('No se detectaron registros válidos', 'error')
+      return
     }
-    setPreview(valid)
-    setErrors(errs)
-    setResult(null)
-  }
-
-  const handleSubmit = async () => {
-    if (!preview.length) return
     setSaving(true)
     try {
-      const { data } = await axios.post('/api/sales/bulk', { entries: preview })
-      setResult(data)
-      showToast(`${data.created} registros importados`, 'success')
+      const { data } = await axios.post('/api/sales/bulk', { entries: parsed })
+      setLastResult(data)
+      showToast(`${data.created} registros cargados`, 'success')
       setText('')
-      setPreview([])
-      setErrors([])
       onSaved()
     } catch (err) {
-      showToast(err.response?.data?.error || 'Error en importacion', 'error')
+      showToast(err.response?.data?.error || 'Error al cargar', 'error')
     } finally {
       setSaving(false)
     }
   }
 
-  const taStyle = {
-    width: '100%', minHeight: 180, background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 12,
-    color: '#fff', fontSize: 13, fontFamily: 'monospace', resize: 'vertical', outline: 'none',
-    boxSizing: 'border-box',
-  }
-
   return (
     <div>
-      <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
-        Formato: <code style={{ color: '#F59E0B' }}>producto, YYYY-MM-DD, revenue, inversion</code>
-        {' '}— una fila por linea, separado por coma o tabulacion (pega directo desde Excel)
-      </div>
-      <textarea
-        value={text}
-        onChange={e => { setText(e.target.value); setPreview([]); setErrors([]) }}
-        placeholder={'Zapatilla Roja, 2024-01-15, 5000, 1200\nRemera Blanca, 2024-01-16, 3200, 800'}
-        style={taStyle}
-      />
-      <div style={{ display: 'flex', gap: 8, margin: '10px 0' }}>
-        <button onClick={handleParse} disabled={!text.trim()} style={{
-          background: 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', borderRadius: 8,
-          padding: '8px 18px', cursor: 'pointer', fontSize: 13, opacity: !text.trim() ? 0.5 : 1,
-        }}>Previsualizar</button>
-        {preview.length > 0 && (
-          <button onClick={handleSubmit} disabled={saving} style={{
-            background: '#F59E0B', color: '#0E0E14', border: 'none', borderRadius: 8,
-            padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13,
-          }}>
-            {saving ? 'Importando...' : `Importar ${preview.length} registros`}
-          </button>
-        )}
+      <div style={{ marginBottom: 10, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
+        <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Formato flexible</strong> — pega desde cualquier fuente:<br />
+        <code style={{ color: '#F59E0B' }}>Fecha: 25/04/2026</code><br />
+        <code style={{ color: '#F59E0B' }}>Producto A</code><br />
+        <code style={{ color: '#F59E0B' }}>Inversión: 123.000 / Ventas: 260.000</code><br />
+        <code style={{ color: '#F59E0B' }}>Producto B → Inversión: 14.000 | Ventas: 24.000</code>
       </div>
 
-      {errors.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          {errors.map((e, i) => (
-            <div key={i} style={{ fontSize: 12, color: '#F87171', padding: '4px 0' }}>
-              ✗ {e.row.product_name || '?'} — {e.error}
-            </div>
-          ))}
+      <textarea
+        value={text}
+        onChange={e => { setText(e.target.value); setLastResult(null) }}
+        placeholder={'Fecha: 25/04/2026\n\nProducto A\nInversión: 123.000\nVentas: 260.000\n\nProducto B → Inversión: 14.000 | Ventas: 24.000'}
+        style={{
+          width: '100%', minHeight: 200, background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 12,
+          color: '#fff', fontSize: 13, fontFamily: 'monospace', resize: 'vertical', outline: 'none',
+          boxSizing: 'border-box',
+        }}
+      />
+
+      {/* Live detection indicator */}
+      {text.trim() && (
+        <div style={{ marginTop: 8, fontSize: 12, color: parsed.length ? '#34D399' : '#F87171' }}>
+          {parsed.length
+            ? `✓ ${parsed.length} producto${parsed.length > 1 ? 's' : ''} detectado${parsed.length > 1 ? 's' : ''}`
+            : '✗ No se detectaron productos — revisa el formato'}
         </div>
       )}
 
-      {preview.length > 0 && (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <button
+        onClick={handleLoad}
+        disabled={saving || !parsed.length}
+        style={{
+          marginTop: 12, width: '100%', background: '#F59E0B', color: '#0E0E14', border: 'none',
+          borderRadius: 10, padding: '12px 0', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+          opacity: saving || !parsed.length ? 0.5 : 1,
+        }}
+      >
+        {saving ? 'Cargando...' : parsed.length ? `Cargar ${parsed.length} registros` : 'Cargar datos'}
+      </button>
+
+      {lastResult && (
+        <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(52,211,153,0.1)', borderRadius: 8, fontSize: 13 }}>
+          <span style={{ color: '#34D399', fontWeight: 700 }}>✓ {lastResult.created} registros cargados</span>
+          {lastResult.errors?.length > 0 && (
+            <div style={{ marginTop: 6 }}>
+              {lastResult.errors.map((e, i) => (
+                <div key={i} style={{ color: '#F87171', fontSize: 12 }}>✗ {e.entry?.product_name || '?'}: {e.error}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Preview table */}
+      {parsed.length > 0 && !lastResult && (
+        <div style={{ marginTop: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                {['Producto', 'Fecha', 'Revenue', 'Inversion', 'ROAS'].map(h => (
-                  <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{h}</th>
+                {['Producto', 'Fecha', 'Facturación', 'Inversión', 'Ganancia', 'ROI'].map(h => (
+                  <th key={h} style={{ padding: '7px 12px', textAlign: 'left', fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {preview.map((r, i) => {
-                const roas = r.investment > 0 ? (r.revenue / r.investment).toFixed(2) : '-'
-                const roasColor = parseFloat(roas) >= 2 ? '#34D399' : parseFloat(roas) >= 1 ? '#F59E0B' : '#F87171'
+              {parsed.map((r, i) => {
+                const profit = r.revenue - r.investment
+                const roi = r.investment > 0 ? ((profit / r.investment) * 100).toFixed(1) : '-'
                 return (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <td style={{ padding: '7px 12px', color: '#fff' }}>{r.product_name}</td>
-                    <td style={{ padding: '7px 12px', color: 'rgba(255,255,255,0.6)' }}>{r.date}</td>
+                    <td style={{ padding: '7px 12px', color: 'rgba(255,255,255,0.5)' }}>{r.date}</td>
                     <td style={{ padding: '7px 12px', color: '#34D399' }}>${r.revenue.toLocaleString()}</td>
                     <td style={{ padding: '7px 12px', color: 'rgba(255,255,255,0.6)' }}>${r.investment.toLocaleString()}</td>
-                    <td style={{ padding: '7px 12px', fontWeight: 700, color: roasColor }}>{roas}x</td>
+                    <td style={{ padding: '7px 12px', color: profit >= 0 ? '#34D399' : '#F87171' }}>${profit.toLocaleString()}</td>
+                    <td style={{ padding: '7px 12px', color: parseFloat(roi) >= 0 ? '#F59E0B' : '#F87171', fontWeight: 700 }}>{roi !== '-' ? `${roi}%` : '-'}</td>
                   </tr>
                 )
               })}
@@ -232,18 +314,11 @@ function BulkForm({ onSaved }) {
           </table>
         </div>
       )}
-
-      {result && (
-        <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(52,211,153,0.1)', borderRadius: 8, fontSize: 13, color: '#34D399' }}>
-          ✓ {result.created} registros importados exitosamente
-          {result.errors?.length > 0 && <span style={{ color: '#F87171', marginLeft: 12 }}>{result.errors.length} errores</span>}
-        </div>
-      )}
     </div>
   )
 }
 
-// ── History tab ──────────────────────────────────────────────────────────────
+// ── History tab ───────────────────────────────────────────────────────────────
 function HistoryTab({ sales, loading, onDelete, onEdit }) {
   const [editId, setEditId] = useState(null)
   const [editForm, setEditForm] = useState({})
@@ -282,11 +357,11 @@ function HistoryTab({ sales, loading, onDelete, onEdit }) {
   }
 
   return (
-    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+    <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
           <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-            {['Producto', 'Fecha', 'Revenue', 'Inversion', 'ROAS', ''].map(h => (
+            {['Producto', 'Fecha', 'Facturación', 'Inversión', 'Ganancia', 'ROI', ''].map(h => (
               <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{h}</th>
             ))}
           </tr>
@@ -294,8 +369,9 @@ function HistoryTab({ sales, loading, onDelete, onEdit }) {
         <tbody>
           {sales.slice(0, 100).map(s => {
             const isEditing = editId === s.id
-            const roas = s.investment > 0 ? (s.revenue / s.investment).toFixed(2) : '-'
-            const roasColor = parseFloat(roas) >= 2 ? '#34D399' : parseFloat(roas) >= 1 ? '#F59E0B' : '#F87171'
+            const profit = s.revenue - s.investment
+            const roi = s.investment > 0 ? ((profit / s.investment) * 100).toFixed(1) : '-'
+            const roiColor = parseFloat(roi) >= 0 ? '#34D399' : '#F87171'
             return (
               <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '7px 12px', color: '#fff' }}>{s.product_name}</td>
@@ -314,29 +390,22 @@ function HistoryTab({ sales, loading, onDelete, onEdit }) {
                     ? <input type="number" value={editForm.investment} onChange={e => setEditForm(f => ({ ...f, investment: e.target.value }))} style={{ ...inputS, width: 90 }} />
                     : <span style={{ color: 'rgba(255,255,255,0.6)' }}>${s.investment.toLocaleString()}</span>}
                 </td>
-                <td style={{ padding: '7px 12px', fontWeight: 700, color: roasColor }}>{roas}x</td>
+                <td style={{ padding: '7px 12px', color: profit >= 0 ? '#34D399' : '#F87171', fontWeight: 600 }}>
+                  ${profit.toLocaleString()}
+                </td>
+                <td style={{ padding: '7px 12px', fontWeight: 700, color: roiColor }}>
+                  {roi !== '-' ? `${roi}%` : '-'}
+                </td>
                 <td style={{ padding: '7px 12px' }}>
                   {isEditing ? (
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button onClick={() => handleSave(s.id)} disabled={saving} style={{
-                        background: '#34D399', color: '#0E0E14', border: 'none', borderRadius: 6,
-                        padding: '3px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                      }}>OK</button>
-                      <button onClick={() => setEditId(null)} style={{
-                        background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', border: 'none',
-                        borderRadius: 6, padding: '3px 8px', cursor: 'pointer', fontSize: 12,
-                      }}>✕</button>
+                      <button onClick={() => handleSave(s.id)} disabled={saving} style={{ background: '#34D399', color: '#0E0E14', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>OK</button>
+                      <button onClick={() => setEditId(null)} style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', border: 'none', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', fontSize: 12 }}>✕</button>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button onClick={() => startEdit(s)} style={{
-                        background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)',
-                        cursor: 'pointer', fontSize: 13, padding: '2px 6px',
-                      }} title="Editar">✎</button>
-                      <button onClick={() => onDelete(s.id)} style={{
-                        background: 'none', border: 'none', color: 'rgba(248,113,113,0.5)',
-                        cursor: 'pointer', fontSize: 13, padding: '2px 6px',
-                      }} title="Eliminar">✕</button>
+                      <button onClick={() => startEdit(s)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: 13, padding: '2px 6px' }} title="Editar">✎</button>
+                      <button onClick={() => onDelete(s.id)} style={{ background: 'none', border: 'none', color: 'rgba(248,113,113,0.5)', cursor: 'pointer', fontSize: 13, padding: '2px 6px' }} title="Eliminar">✕</button>
                     </div>
                   )}
                 </td>
@@ -349,10 +418,10 @@ function HistoryTab({ sales, loading, onDelete, onEdit }) {
   )
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function DataEntry() {
   const { showToast } = useToast()
-  const [tab, setTab] = useState('single') // 'single' | 'bulk' | 'history'
+  const [tab, setTab] = useState('single')
   const [products, setProducts] = useState([])
   const [sales, setSales] = useState([])
   const [loadingSales, setLoadingSales] = useState(false)
@@ -389,7 +458,7 @@ export default function DataEntry() {
 
   const tabs = [
     { key: 'single', label: 'Registro individual' },
-    { key: 'bulk', label: 'Carga masiva' },
+    { key: 'bulk',   label: 'Carga masiva' },
     { key: 'history', label: 'Historial' },
   ]
 
@@ -399,28 +468,25 @@ export default function DataEntry() {
         <div style={{ marginBottom: 20 }}>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#fff' }}>Cargar datos</h1>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
-            Registra ventas e inversiones por producto
+            Registra facturación e inversión por producto
           </p>
         </div>
 
-        {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'rgba(255,255,255,0.05)', padding: 4, borderRadius: 10, width: 'fit-content' }}>
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
               background: tab === t.key ? 'rgba(255,255,255,0.12)' : 'none',
               border: 'none', color: tab === t.key ? '#fff' : 'rgba(255,255,255,0.45)',
-              padding: '7px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: tab === t.key ? 600 : 400,
-              transition: 'all 0.15s',
+              padding: '7px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+              fontWeight: tab === t.key ? 600 : 400, transition: 'all 0.15s',
             }}>{t.label}</button>
           ))}
         </div>
 
-        <div className="card" style={{ maxWidth: tab === 'history' ? '100%' : 560, padding: 24 }}>
-          {tab === 'single' && <SingleForm products={products} onSaved={() => {}} />}
-          {tab === 'bulk' && <BulkForm onSaved={() => {}} />}
-          {tab === 'history' && (
-            <HistoryTab sales={sales} loading={loadingSales} onDelete={handleDelete} onEdit={fetchSales} />
-          )}
+        <div className="card" style={{ maxWidth: tab === 'history' ? '100%' : 600, padding: 24 }}>
+          {tab === 'single'  && <SingleForm products={products} onSaved={() => {}} />}
+          {tab === 'bulk'    && <BulkForm onSaved={() => {}} />}
+          {tab === 'history' && <HistoryTab sales={sales} loading={loadingSales} onDelete={handleDelete} onEdit={fetchSales} />}
         </div>
       </div>
     </Layout>

@@ -436,7 +436,7 @@ function TaskCard({ task, colorMap, onEdit, onUpdate, isOverlay = false }) {
 
 // ─── Product Kanban Column ────────────────────────────────────────────────────
 
-function ProductColumn({ colId, label, color, tasks, colorMap, onAdd, onEdit, onUpdate, activeId }) {
+function ProductColumn({ colId, label, color, tasks, colorMap, onAdd, onEdit, onUpdate, activeId, onDelete, productId }) {
   const { setNodeRef, isOver } = useDroppable({ id: colId })
 
   return (
@@ -471,13 +471,20 @@ function ProductColumn({ colId, label, color, tasks, colorMap, onAdd, onEdit, on
             {tasks.length}
           </span>
         </div>
-        <button className="tk-hdr-btn" style={{
-          width: 28, height: 28, borderRadius: 6, background: 'transparent',
-          border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)',
-          fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          ···
-        </button>
+        {productId != null && onDelete && (
+          <button
+            onClick={() => { if (window.confirm(`¿Eliminar el producto "${label}" y desasignar sus tareas?`)) onDelete(productId) }}
+            title="Eliminar producto"
+            style={{
+              width: 28, height: 28, borderRadius: 6, background: 'transparent',
+              border: 'none', cursor: 'pointer', color: 'rgba(248,113,113,0.5)',
+              fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#F87171' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.5)' }}
+          >✕</button>
+        )}
       </div>
 
       {/* Card list */}
@@ -658,6 +665,9 @@ export default function Tasks() {
   const [filterStatus, setFilterStatus] = useState('') // '' | 'pending' | 'in_progress' | 'completed' | 'overdue'
   const [modal, setModal] = useState(null)
   const [activeId, setActiveId] = useState(null)
+  const [completedOpen, setCompletedOpen] = useState(false)
+  const [newProductName, setNewProductName] = useState('')
+  const [addingProduct, setAddingProduct] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -689,12 +699,16 @@ export default function Tasks() {
   }), [tasks])
 
   // Filtered tasks for product/general columns
+  // Default view excludes completed — completed tasks shown in separate section
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
-      if (!filterStatus) return true
+      if (filterStatus === 'completed') return t.status === 'completed'
+      if (!filterStatus) return t.status !== 'completed'
       return t.status === filterStatus
     })
   }, [tasks, filterStatus])
+
+  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed'), [tasks])
 
   // Product columns: each product + "General" for unassigned tasks
   const productColumns = useMemo(() => {
@@ -740,6 +754,32 @@ export default function Tasks() {
 
   function handleDeleted(id) {
     setTasks(ts => ts.filter(t => t.id !== id))
+  }
+
+  async function handleDeleteProduct(productId) {
+    try {
+      await axios.delete(`/api/products/${productId}`)
+      setProducts(ps => ps.filter(p => p.id !== productId))
+      setTasks(ts => ts.map(t => t.product_id === productId ? { ...t, product_id: null, product_name: null } : t))
+      addToast('Producto eliminado', 'info')
+    } catch {
+      addToast('Error al eliminar producto', 'error')
+    }
+  }
+
+  async function handleAddProduct() {
+    if (!newProductName.trim()) return
+    setAddingProduct(true)
+    try {
+      const { data } = await axios.post('/api/products', { name: newProductName.trim() })
+      setProducts(ps => [...ps, data])
+      setNewProductName('')
+      addToast('Producto creado', 'success')
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Error al crear producto', 'error')
+    } finally {
+      setAddingProduct(false)
+    }
   }
 
   // DnD — dragging between product columns updates product_id
@@ -911,8 +951,44 @@ export default function Tasks() {
                   onEdit={task => setModal({ task })}
                   onUpdate={handleUpdate}
                   activeId={activeId}
+                  productId={col.productId}
+                  onDelete={col.productId != null ? handleDeleteProduct : null}
                 />
               ))}
+
+              {/* Add new product column */}
+              {!addingProduct ? (
+                <div style={{ width: 240, minWidth: 240, flexShrink: 0 }}>
+                  <button
+                    onClick={() => setAddingProduct(true)}
+                    style={{
+                      width: '100%', height: 52, borderRadius: 12,
+                      background: 'transparent', border: '1px dashed rgba(255,255,255,0.12)',
+                      color: 'rgba(255,255,255,0.35)', fontSize: 13, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    }}
+                  >
+                    <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
+                    Nuevo producto
+                  </button>
+                </div>
+              ) : (
+                <div style={{ width: 240, minWidth: 240, flexShrink: 0, background: '#13131f', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>Nuevo producto</span>
+                  <input
+                    autoFocus
+                    value={newProductName}
+                    onChange={e => setNewProductName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleAddProduct(); if (e.key === 'Escape') { setAddingProduct(false); setNewProductName('') } }}
+                    placeholder="Nombre del producto"
+                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 13, outline: 'none' }}
+                  />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={handleAddProduct} style={{ flex: 1, background: '#F59E0B', color: '#0E0E14', border: 'none', borderRadius: 8, padding: '7px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Crear</button>
+                    <button onClick={() => { setAddingProduct(false); setNewProductName('') }} style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontSize: 13 }}>✕</button>
+                  </div>
+                </div>
+              )}
 
               <DragOverlay dropAnimation={null}>
                 {activeTask && (
@@ -928,6 +1004,45 @@ export default function Tasks() {
             </DndContext>
           )}
         </div>
+
+        {/* ── Completadas ──────────────────────────────────────────── */}
+        {completedTasks.length > 0 && filterStatus !== 'completed' && (
+          <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.06)', padding: '0 24px' }}>
+            <button
+              onClick={() => setCompletedOpen(o => !o)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0',
+                background: 'none', border: 'none', cursor: 'pointer', width: '100%',
+              }}
+            >
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+                {completedOpen ? '▾' : '▸'} Completadas
+              </span>
+              <span style={{ fontSize: 12, background: 'rgba(52,211,153,0.15)', color: '#34D399', borderRadius: 5, padding: '2px 8px', fontWeight: 700 }}>
+                {completedTasks.length}
+              </span>
+            </button>
+            {completedOpen && (
+              <div style={{ paddingBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {completedTasks.map(t => (
+                  <div key={t.id} style={{
+                    background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)',
+                    borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                  }}>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'line-through' }}>{t.title}</span>
+                    {t.product_name && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{t.product_name}</span>}
+                    <button onClick={() => handleUpdate(t.id, { status: 'pending' })}
+                      title="Mover a pendiente"
+                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontSize: 12, padding: '0 2px' }}>↩</button>
+                    <button onClick={() => handleDelete(t.id)}
+                      title="Eliminar"
+                      style={{ background: 'none', border: 'none', color: 'rgba(248,113,113,0.4)', cursor: 'pointer', fontSize: 12, padding: '0 2px' }}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Modal ──────────────────────────────────────────────────── */}

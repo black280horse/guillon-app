@@ -924,15 +924,26 @@ export default function Home() {
 
   const hasData = products.length > 0 || tasks.length > 0
 
-  // Build goal from real monthly data
+  // Build goal — prefer user-configured value from Settings, fallback to auto-calculated
   const now = new Date()
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   const daysElapsed = now.getDate()
   const currentRevenue = n(monthData?.kpis?.total_revenue)
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
-  // Estimate goal as 20% more than prev month's revenue, min 100K
   const prevRevenue = n(prevMonthData?.total_revenue)
-  const goalAmount = Math.max(100000, Math.round(prevRevenue * 1.2 / 100000) * 100000) || 1000000
+  const autoGoal = Math.max(100000, Math.round(prevRevenue * 1.2 / 100000) * 100000) || 1000000
+
+  // Read per-month goal from localStorage (set in Settings)
+  let goalAmount = autoGoal
+  try {
+    const stored = JSON.parse(localStorage.getItem('guillon_monthly_goals') || '{}')
+    if (stored[currentMonthKey]) goalAmount = stored[currentMonthKey]
+    else {
+      const settings = JSON.parse(localStorage.getItem('guillon_settings') || '{}')
+      if (settings.monthlyGoal) goalAmount = settings.monthlyGoal
+    }
+  } catch {}
 
   const goal = {
     monthLabel: now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }),

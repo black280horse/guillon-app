@@ -38,7 +38,7 @@ function TabComparador({ products }) {
   const maxVal = sorted[0]?.[metric] || 1
 
   const metrics = [
-    { key: 'total_revenue', label: 'Revenue', color: '#34D399' },
+    { key: 'total_revenue', label: 'Facturación', color: '#34D399' },
     { key: 'total_investment', label: 'Inversion', color: '#60A5FA' },
     { key: 'avg_roas', label: 'ROAS', color: '#F59E0B' },
     { key: 'sale_count', label: 'Registros', color: '#818CF8' },
@@ -113,7 +113,7 @@ function TabPatrones({ sales }) {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
       {/* By weekday */}
       <div className="card" style={{ padding: 20 }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Revenue por dia de la semana</h3>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Facturación por día de la semana</h3>
         {byDay.map(d => (
           <div key={d.day} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
             <span style={{ width: 30, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{d.day}</span>
@@ -336,7 +336,7 @@ function TabPresupuesto({ products }) {
           <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Resultado estimado</h3>
           {[
             ['Inversion', fmt(investment), '#60A5FA'],
-            ['Revenue proyectado', fmt(projectedRevenue), '#34D399'],
+            ['Facturación proyectada', fmt(projectedRevenue), '#34D399'],
             ['Profit proyectado', fmt(projectedProfit), projectedProfit >= 0 ? '#34D399' : '#F87171'],
             ['Con ROAS actual', fmt(currentAvgRevenue), '#818CF8'],
           ].map(([l, v, c]) => (
@@ -422,8 +422,8 @@ function TabIA({ products, sales }) {
         icon: growth >= 0 ? '📈' : '📉',
         title: `Crecimiento mes anterior: ${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`,
         body: growth >= 0
-          ? `Revenue del ultimo mes (${fmt(last)}) supera al anterior (${fmt(prev)}). Buen ritmo.`
-          : `Revenue bajo en el ultimo mes (${fmt(last)} vs ${fmt(prev)}). Analiza que productos cayeron.`,
+          ? `Facturación del último mes (${fmt(last)}) supera al anterior (${fmt(prev)}). Buen ritmo.`
+          : `Facturación baja el último mes (${fmt(last)} vs ${fmt(prev)}). Analiza que productos cayeron.`,
       })
     }
 
@@ -435,8 +435,8 @@ function TabIA({ products, sales }) {
         list.push({
           type: 'info',
           icon: '🎯',
-          title: 'Alta concentracion de revenue',
-          body: `Los 3 productos principales generan el ${conc.toFixed(0)}% del revenue total. Considerar diversificar.`,
+          title: 'Alta concentración de facturación',
+          body: `Los 3 productos principales generan el ${conc.toFixed(0)}% de la facturación total. Considerar diversificar.`,
         })
       }
     }
