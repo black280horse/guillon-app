@@ -1,820 +1,532 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
-import {
-  LineChart, Line, AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, ReferenceLine
-} from 'recharts'
+import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
-import DateRangePicker from '../components/DateRangePicker'
-import { useDateRange } from '../context/DateRangeContext'
-import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
-const API = '/api'
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt = v => v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v / 1e3).toFixed(0)}K` : `$${Math.round(v)}`
+const roasColor = r => r >= 3 ? '#34D399' : r >= 1.5 ? '#F59E0B' : '#F87171'
 
-const DOW_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const COLORS = ['#F59E0B', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b']
-
-function fmt(n, prefix = '$') {
-  if (n == null) return '—'
-  return `${prefix}${Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-}
-function fmtDate(iso) {
-  if (!iso) return ''
-  const [y, m, d] = iso.split('-')
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-  return `${parseInt(d)} ${months[parseInt(m)-1]}`
-}
-
-// ─── Tooltip personalizado ───────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null
+function MiniBar({ value, max, color = '#F59E0B' }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
   return (
-    <div className="card px-3 py-2 text-xs space-y-1 shadow-xl">
-      <p className="text-[#a1a1aa] mb-1">{fmtDate(label) || label}</p>
-      {payload.map((p, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-          <span className="text-[#a1a1aa]">{p.name}:</span>
-          <span className="text-white font-medium">${Number(p.value).toLocaleString('es-AR', { minimumFractionDigits: 0 })}</span>
+    <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden', flex: 1 }}>
+      <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 4, transition: 'width 0.5s' }} />
+    </div>
+  )
+}
+
+function SparkLine({ values = [], color = '#F59E0B', w = 80, h = 32 }) {
+  if (values.length < 2) return <svg width={w} height={h} />
+  const min = Math.min(...values), max = Math.max(...values)
+  const range = max - min || 1
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * (w - 4) + 2
+    const y = h - 4 - ((v - min) / range) * (h - 8)
+    return `${x},${y}`
+  }).join(' ')
+  return (
+    <svg width={w} height={h}><polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" /></svg>
+  )
+}
+
+// ── Tab: Comparador de productos ──────────────────────────────────────────────
+function TabComparador({ products }) {
+  const [metric, setMetric] = useState('total_revenue')
+  const sorted = useMemo(() => [...products].sort((a, b) => (b[metric] || 0) - (a[metric] || 0)), [products, metric])
+  const maxVal = sorted[0]?.[metric] || 1
+
+  const metrics = [
+    { key: 'total_revenue', label: 'Revenue', color: '#34D399' },
+    { key: 'total_investment', label: 'Inversion', color: '#60A5FA' },
+    { key: 'avg_roas', label: 'ROAS', color: '#F59E0B' },
+    { key: 'sale_count', label: 'Registros', color: '#818CF8' },
+  ]
+  const cur = metrics.find(m => m.key === metric)
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {metrics.map(m => (
+          <button key={m.key} onClick={() => setMetric(m.key)} style={{
+            padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+            background: metric === m.key ? m.color : 'rgba(255,255,255,0.06)',
+            color: metric === m.key ? '#0E0E14' : 'rgba(255,255,255,0.5)',
+          }}>{m.label}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {sorted.map((p, i) => {
+          const val = p[metric] || 0
+          const display = metric === 'avg_roas' ? `${val.toFixed(2)}x` : metric === 'sale_count' ? val : fmt(val)
+          return (
+            <div key={p.id} className="card" style={{ padding: '12px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', width: 18, textAlign: 'right' }}>#{i + 1}</span>
+                <span style={{ flex: 1, fontWeight: 500, color: '#fff', fontSize: 14 }}>{p.name}</span>
+                <span style={{ fontWeight: 700, color: cur.color, fontSize: 15 }}>{display}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 18 }} />
+                <MiniBar value={val} max={maxVal} color={cur.color} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── Tab: Patrones ─────────────────────────────────────────────────────────────
+function TabPatrones({ sales }) {
+  // Group by weekday
+  const byDay = useMemo(() => {
+    const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
+    const acc = Array.from({ length: 7 }, (_, i) => ({ day: days[i], revenue: 0, count: 0 }))
+    for (const s of sales) {
+      const d = new Date(s.date + 'T12:00:00').getDay()
+      acc[d].revenue += s.revenue
+      acc[d].count++
+    }
+    return acc
+  }, [sales])
+
+  // Group by month
+  const byMonth = useMemo(() => {
+    const acc = {}
+    for (const s of sales) {
+      const key = s.date.slice(0, 7)
+      if (!acc[key]) acc[key] = { month: key, revenue: 0, investment: 0, count: 0 }
+      acc[key].revenue += s.revenue
+      acc[key].investment += s.investment
+      acc[key].count++
+    }
+    return Object.values(acc).sort((a, b) => a.month.localeCompare(b.month)).slice(-12)
+  }, [sales])
+
+  const maxDayRev = Math.max(...byDay.map(d => d.revenue)) || 1
+  const maxMonthRev = Math.max(...byMonth.map(m => m.revenue)) || 1
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      {/* By weekday */}
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Revenue por dia de la semana</h3>
+        {byDay.map(d => (
+          <div key={d.day} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <span style={{ width: 30, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{d.day}</span>
+            <MiniBar value={d.revenue} max={maxDayRev} color="#818CF8" />
+            <span style={{ width: 60, fontSize: 12, color: '#818CF8', textAlign: 'right', fontWeight: 600 }}>{fmt(d.revenue)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* By month */}
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Evolucion mensual</h3>
+        {byMonth.map(m => {
+          const roas = m.investment > 0 ? m.revenue / m.investment : 0
+          return (
+            <div key={m.month} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{m.month}</span>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <span style={{ fontSize: 12, color: '#34D399', fontWeight: 600 }}>{fmt(m.revenue)}</span>
+                  <span style={{ fontSize: 12, color: roasColor(roas), fontWeight: 600 }}>{roas.toFixed(1)}x</span>
+                </div>
+              </div>
+              <MiniBar value={m.revenue} max={maxMonthRev} color="#34D399" />
+            </div>
+          )
+        })}
+        {byMonth.length === 0 && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Sin datos suficientes</div>}
+      </div>
+
+      {/* Best/worst */}
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Top 5 mejores dias</h3>
+        {[...sales].sort((a, b) => b.revenue - a.revenue).slice(0, 5).map((s, i) => (
+          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div>
+              <div style={{ fontSize: 13, color: '#fff', fontWeight: 500 }}>{s.product_name}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{s.date}</div>
+            </div>
+            <span style={{ color: '#34D399', fontWeight: 700 }}>{fmt(s.revenue)}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>5 peores ROAS</h3>
+        {[...sales].filter(s => s.investment > 0).sort((a, b) => (a.revenue / a.investment) - (b.revenue / b.investment)).slice(0, 5).map(s => {
+          const r = s.revenue / s.investment
+          return (
+            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div>
+                <div style={{ fontSize: 13, color: '#fff', fontWeight: 500 }}>{s.product_name}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{s.date}</div>
+              </div>
+              <span style={{ color: roasColor(r), fontWeight: 700 }}>{r.toFixed(2)}x</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── Tab: Proyecciones ─────────────────────────────────────────────────────────
+function TabProyecciones({ sales }) {
+  const months = useMemo(() => {
+    const acc = {}
+    for (const s of sales) {
+      const key = s.date.slice(0, 7)
+      if (!acc[key]) acc[key] = { revenue: 0, investment: 0 }
+      acc[key].revenue += s.revenue
+      acc[key].investment += s.investment
+    }
+    return Object.entries(acc).sort((a, b) => a[0].localeCompare(b[0])).slice(-6).map(([k, v]) => ({ month: k, ...v }))
+  }, [sales])
+
+  if (months.length < 2) {
+    return <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,0.3)' }}>Necesitas al menos 2 meses de datos para ver proyecciones.</div>
+  }
+
+  const last = months[months.length - 1]
+  const prev = months[months.length - 2]
+  const growthRate = prev.revenue > 0 ? (last.revenue - prev.revenue) / prev.revenue : 0
+
+  const next3 = [1, 2, 3].map(n => {
+    const [y, m] = last.month.split('-').map(Number)
+    const d = new Date(y, m - 1 + n, 1)
+    const label = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const proj = last.revenue * Math.pow(1 + growthRate, n)
+    return { month: label, projected: proj, optimistic: proj * 1.15, conservative: proj * 0.85 }
+  })
+
+  const allRevs = months.map(m => m.revenue)
+  const maxRev = Math.max(...allRevs, ...next3.map(n => n.optimistic)) || 1
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Growth rate badge */}
+      <div className="card" style={{ padding: 20, display: 'flex', gap: 24 }}>
+        <div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Tasa de crecimiento (m/m)</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: growthRate >= 0 ? '#34D399' : '#F87171' }}>
+            {growthRate >= 0 ? '+' : ''}{(growthRate * 100).toFixed(1)}%
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Mes base</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{fmt(last.revenue)}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Proyeccion +1 mes</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#F59E0B' }}>{fmt(next3[0].projected)}</div>
+        </div>
+      </div>
+
+      {/* Historical + projection chart (bar) */}
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Historico + proyeccion</h3>
+        <div style={{ display: 'flex', gap: 0, alignItems: 'flex-end', height: 120 }}>
+          {months.map(m => (
+            <div key={m.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: '60%', height: `${(m.revenue / maxRev) * 100}px`, background: '#34D399', borderRadius: '3px 3px 0 0', minHeight: 2 }} />
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 28 }}>{m.month.slice(5)}</div>
+            </div>
+          ))}
+          {next3.map(n => (
+            <div key={n.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: '60%', height: `${(n.projected / maxRev) * 100}px`, background: 'rgba(245,158,11,0.4)', border: '1px dashed #F59E0B', borderRadius: '3px 3px 0 0', minHeight: 2 }} />
+              <div style={{ fontSize: 9, color: '#F59E0B', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 28 }}>{n.month.slice(5)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Projection table */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              {['Mes', 'Conservador', 'Base', 'Optimista'].map(h => (
+                <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {next3.map(n => (
+              <tr key={n.month} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <td style={{ padding: '10px 16px', color: '#F59E0B', fontWeight: 600 }}>{n.month}</td>
+                <td style={{ padding: '10px 16px', color: '#F87171' }}>{fmt(n.conservative)}</td>
+                <td style={{ padding: '10px 16px', color: '#fff', fontWeight: 600 }}>{fmt(n.projected)}</td>
+                <td style={{ padding: '10px 16px', color: '#34D399' }}>{fmt(n.optimistic)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ── Tab: Simulador de presupuesto ─────────────────────────────────────────────
+function TabPresupuesto({ products }) {
+  const [investment, setInvestment] = useState(10000)
+  const [targetRoas, setTargetRoas] = useState(2.5)
+
+  const avgRoas = products.length
+    ? products.reduce((s, p) => s + (p.avg_roas || 0), 0) / products.length
+    : 2
+
+  const projectedRevenue = investment * targetRoas
+  const projectedProfit = projectedRevenue - investment
+  const currentAvgRevenue = investment * avgRoas
+
+  // Split among products proportionally to their historical revenue
+  const totalHistRev = products.reduce((s, p) => s + (p.total_revenue || 0), 0) || 1
+  const allocation = products.slice(0, 8).map(p => ({
+    name: p.name,
+    share: (p.total_revenue || 0) / totalHistRev,
+    investment: investment * ((p.total_revenue || 0) / totalHistRev),
+    projRev: investment * ((p.total_revenue || 0) / totalHistRev) * (p.avg_roas || avgRoas),
+  }))
+
+  const sliderStyle = { width: '100%', accentColor: '#F59E0B', cursor: 'pointer' }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 16 }}>
+      {/* Controls */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="card" style={{ padding: 20 }}>
+          <h3 style={{ margin: '0 0 20px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Parametros</h3>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Presupuesto total</label>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#F59E0B' }}>{fmt(investment)}</span>
+            </div>
+            <input type="range" min={1000} max={500000} step={1000} value={investment}
+              onChange={e => setInvestment(Number(e.target.value))} style={sliderStyle} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+              <span>$1K</span><span>$500K</span>
+            </div>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>ROAS objetivo</label>
+              <span style={{ fontSize: 14, fontWeight: 700, color: roasColor(targetRoas) }}>{targetRoas.toFixed(1)}x</span>
+            </div>
+            <input type="range" min={0.5} max={10} step={0.1} value={targetRoas}
+              onChange={e => setTargetRoas(Number(e.target.value))} style={sliderStyle} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+              <span>0.5x</span><span>10x</span>
+            </div>
+          </div>
+          <div style={{ marginTop: 16, padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+            Tu ROAS promedio actual: <span style={{ color: roasColor(avgRoas), fontWeight: 700 }}>{avgRoas.toFixed(2)}x</span>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="card" style={{ padding: 20 }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Resultado estimado</h3>
+          {[
+            ['Inversion', fmt(investment), '#60A5FA'],
+            ['Revenue proyectado', fmt(projectedRevenue), '#34D399'],
+            ['Profit proyectado', fmt(projectedProfit), projectedProfit >= 0 ? '#34D399' : '#F87171'],
+            ['Con ROAS actual', fmt(currentAvgRevenue), '#818CF8'],
+          ].map(([l, v, c]) => (
+            <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{l}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Product allocation */}
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#fff' }}>Distribucion sugerida por producto</h3>
+        {allocation.length === 0 && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Sin productos con datos historicos</div>}
+        {allocation.map(a => (
+          <div key={a.name} style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 13, color: '#fff', fontWeight: 500 }}>{a.name}</span>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ fontSize: 12, color: '#60A5FA' }}>{fmt(a.investment)}</span>
+                <span style={{ fontSize: 12, color: '#34D399' }}>→ {fmt(a.projRev)}</span>
+              </div>
+            </div>
+            <MiniBar value={a.share} max={1} color="#60A5FA" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Tab: IA Insights ──────────────────────────────────────────────────────────
+function TabIA({ products, sales }) {
+  const insights = useMemo(() => {
+    const list = []
+    if (!products.length) return list
+
+    const byRevenue = [...products].sort((a, b) => (b.total_revenue || 0) - (a.total_revenue || 0))
+    const byRoas = [...products].filter(p => p.sale_count > 0).sort((a, b) => (b.avg_roas || 0) - (a.avg_roas || 0))
+    const lowRoas = products.filter(p => (p.avg_roas || 0) > 0 && (p.avg_roas || 0) < 1.5)
+    const avgRoas = products.reduce((s, p) => s + (p.avg_roas || 0), 0) / products.length
+
+    if (byRevenue[0]) {
+      list.push({
+        type: 'success',
+        icon: '🏆',
+        title: 'Producto estrella',
+        body: `${byRevenue[0].name} genera el mayor revenue con ${fmt(byRevenue[0].total_revenue || 0)}. Considera aumentar su presupuesto.`,
+      })
+    }
+    if (byRoas[0] && byRoas[0].avg_roas > avgRoas * 1.5) {
+      list.push({
+        type: 'success',
+        icon: '🚀',
+        title: 'Mayor eficiencia',
+        body: `${byRoas[0].name} tiene el mejor ROAS (${(byRoas[0].avg_roas || 0).toFixed(2)}x), muy por encima del promedio (${avgRoas.toFixed(2)}x). Es tu producto mas eficiente.`,
+      })
+    }
+    if (lowRoas.length > 0) {
+      list.push({
+        type: 'warning',
+        icon: '⚠️',
+        title: `${lowRoas.length} producto${lowRoas.length > 1 ? 's' : ''} con ROAS bajo`,
+        body: `${lowRoas.map(p => p.name).join(', ')} tienen ROAS menor a 1.5x. Revisar estrategia de inversion o pausar.`,
+      })
+    }
+
+    // Month-over-month
+    const months = {}
+    for (const s of sales) {
+      const key = s.date.slice(0, 7)
+      if (!months[key]) months[key] = 0
+      months[key] += s.revenue
+    }
+    const mKeys = Object.keys(months).sort()
+    if (mKeys.length >= 2) {
+      const last = months[mKeys[mKeys.length - 1]]
+      const prev = months[mKeys[mKeys.length - 2]]
+      const growth = prev > 0 ? ((last - prev) / prev) * 100 : 0
+      list.push({
+        type: growth >= 0 ? 'success' : 'warning',
+        icon: growth >= 0 ? '📈' : '📉',
+        title: `Crecimiento mes anterior: ${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`,
+        body: growth >= 0
+          ? `Revenue del ultimo mes (${fmt(last)}) supera al anterior (${fmt(prev)}). Buen ritmo.`
+          : `Revenue bajo en el ultimo mes (${fmt(last)} vs ${fmt(prev)}). Analiza que productos cayeron.`,
+      })
+    }
+
+    if (products.length >= 3) {
+      const top3Rev = byRevenue.slice(0, 3).reduce((s, p) => s + (p.total_revenue || 0), 0)
+      const total = products.reduce((s, p) => s + (p.total_revenue || 0), 0)
+      const conc = total > 0 ? (top3Rev / total) * 100 : 0
+      if (conc > 80) {
+        list.push({
+          type: 'info',
+          icon: '🎯',
+          title: 'Alta concentracion de revenue',
+          body: `Los 3 productos principales generan el ${conc.toFixed(0)}% del revenue total. Considerar diversificar.`,
+        })
+      }
+    }
+
+    return list
+  }, [products, sales])
+
+  const typeColors = { success: '#34D399', warning: '#F59E0B', info: '#60A5FA' }
+  const typeBg = { success: 'rgba(52,211,153,0.07)', warning: 'rgba(245,158,11,0.07)', info: 'rgba(96,165,250,0.07)' }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {insights.length === 0 && (
+        <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,0.3)' }}>
+          Agrega mas datos para ver insights automaticos.
+        </div>
+      )}
+      {insights.map((ins, i) => (
+        <div key={i} className="card" style={{ padding: 20, background: typeBg[ins.type], borderLeft: `3px solid ${typeColors[ins.type]}` }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 22 }}>{ins.icon}</span>
+            <div>
+              <div style={{ fontWeight: 700, color: typeColors[ins.type], marginBottom: 6, fontSize: 14 }}>{ins.title}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>{ins.body}</div>
+            </div>
+          </div>
         </div>
       ))}
     </div>
   )
 }
 
-// ─── Tab navigation ──────────────────────────────────────────────────────────
-function TabBtn({ active, onClick, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 rounded-full text-[13px] font-medium transition-all ${
-        active
-          ? 'bg-[#A78BFA]/20 text-[#A78BFA] border border-[#A78BFA]/30'
-          : 'text-[#6b7280] hover:text-[#a1a1aa] border border-transparent'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
-
-// ─── Loading skeleton ────────────────────────────────────────────────────────
-function Skeleton({ h = 'h-8', w = 'w-full' }) {
-  return <div className={`skeleton ${h} ${w}`} />
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// TAB 1: COMPARADOR
-// ══════════════════════════════════════════════════════════════════════════════
-const PILL_COLORS = ['#F59E0B', '#A78BFA', '#22D3EE', '#10b981']
-
-function ComparatorTab({ dateFrom, dateTo, products }) {
-  const [selected, setSelected] = useState([])
-  const [metric, setMetric] = useState('revenue')
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [showAddMenu, setShowAddMenu] = useState(false)
-  const [aiRecs, setAiRecs] = useState(null)
-  const [aiLoading, setAiLoading] = useState(false)
-
-  const addProduct = (id) => {
-    if (selected.length < 4 && !selected.includes(id)) setSelected(prev => [...prev, id])
-    setShowAddMenu(false)
-  }
-  const removeProduct = (id) => setSelected(prev => prev.filter(x => x !== id))
-
-  const load = useCallback(async () => {
-    if (selected.length < 2) { setData([]); return }
-    setLoading(true)
-    try {
-      const r = await axios.get(`${API}/insights/comparator`, { params: { products: selected.join(','), date_from: dateFrom, date_to: dateTo } })
-      setData(r.data)
-    } finally { setLoading(false) }
-  }, [selected, dateFrom, dateTo])
-
-  useEffect(() => { load() }, [load])
-
-  const chartData = (() => {
-    if (!data.length) return []
-    const map = {}
-    data.forEach(prod => {
-      prod.series?.forEach(row => {
-        if (!map[row.date]) map[row.date] = { date: row.date }
-        map[row.date][prod.name] = row[metric]
-      })
-    })
-    return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
-  })()
-
-  const agg = data.reduce((acc, p) => ({
-    revenue: acc.revenue + (p.revenue || 0),
-    investment: acc.investment + (p.investment || 0),
-    profit: acc.profit + (p.profit || 0),
-  }), { revenue: 0, investment: 0, profit: 0 })
-
-  const autoInsights = []
-  if (data.length >= 2) {
-    const byRoas = [...data].sort((a, b) => (b.roas || 0) - (a.roas || 0))
-    autoInsights.push({ icon: '🏆', text: `${byRoas[0].name} tiene el ROAS más alto (${byRoas[0].roas}x)` })
-    const byRevenue = [...data].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
-    if (byRevenue[0].name !== byRoas[0].name)
-      autoInsights.push({ icon: '💰', text: `${byRevenue[0].name} genera más ingresos en el período` })
-    const lowRoas = data.filter(p => (p.roas || 0) < 1.5)
-    if (lowRoas.length)
-      autoInsights.push({ icon: '⚠️', text: `${lowRoas.map(p => p.name).join(', ')} ${lowRoas.length > 1 ? 'tienen' : 'tiene'} ROAS bajo 1.5x` })
-    const byProfit = [...data].sort((a, b) => (b.profit || 0) - (a.profit || 0))
-    autoInsights.push({ icon: '📊', text: `${byProfit[0].name} es el más rentable (${fmt(byProfit[0].profit)} ganancia)` })
-  }
-
-  const generateAI = async () => {
-    setAiLoading(true)
-    try {
-      const r = await axios.post(`${API}/ai/compare`, { products: selected, date_from: dateFrom, date_to: dateTo })
-      setAiRecs(r.data.recommendations || ['Sin recomendaciones disponibles'])
-    } catch { setAiRecs(['Error al conectar con la IA']) }
-    finally { setAiLoading(false) }
-  }
-
-  return (
-    <div className="space-y-5">
-      {/* Product pill selector */}
-      <div className="card p-5">
-        <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-3">Comparar productos (máx. 4)</p>
-        <div className="flex flex-wrap items-center gap-2">
-          {selected.map((id, i) => {
-            const p = products.find(x => x.id === id)
-            if (!p) return null
-            const color = PILL_COLORS[i % PILL_COLORS.length]
-            return (
-              <span key={id} style={{ background: `${color}20`, borderColor: `${color}40`, color }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border">
-                {p.name}
-                <button onClick={() => removeProduct(id)} className="hover:opacity-70 leading-none text-base">&times;</button>
-              </span>
-            )
-          })}
-          {selected.length < 4 && (
-            <div className="relative">
-              <button onClick={() => setShowAddMenu(v => !v)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-[#3a3a3e] text-[#52525b] hover:border-[#a1a1aa] hover:text-[#a1a1aa] transition-all">
-                + Agregar
-              </button>
-              {showAddMenu && (
-                <div className="absolute left-0 top-full mt-1 bg-[#1a1a1e] border border-[#2a2a2e] rounded-[10px] shadow-2xl z-20 min-w-[200px] py-1">
-                  {products.filter(p => !selected.includes(p.id)).map(p => (
-                    <button key={p.id} onClick={() => addProduct(p.id)}
-                      className="w-full text-left px-4 py-2.5 text-sm text-[#a1a1aa] hover:bg-[#2a2a2e] hover:text-white transition-colors">
-                      {p.name}
-                    </button>
-                  ))}
-                  {products.filter(p => !selected.includes(p.id)).length === 0 && (
-                    <p className="px-4 py-2.5 text-xs text-[#52525b]">Todos los productos seleccionados</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          {selected.length < 2 && (
-            <span className="text-[#52525b] text-xs ml-1">Seleccioná al menos 2 para comparar</span>
-          )}
-        </div>
-      </div>
-
-      {selected.length >= 2 && (
-        <>
-          {/* Aggregate KPI cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="card p-4">
-              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Seleccionados</p>
-              <p className="text-[26px] font-light text-white leading-none">{data.length}</p>
-              <p className="text-[#52525b] text-xs mt-1">productos</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Ingresos totales</p>
-              <p className="text-[22px] font-light text-[#F59E0B] leading-none tabular-nums">{fmt(agg.revenue)}</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Inversión total</p>
-              <p className="text-[22px] font-light text-[#ef4444] leading-none tabular-nums">{fmt(agg.investment)}</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider mb-1.5">Ganancia neta</p>
-              <p className={`text-[22px] font-light leading-none tabular-nums ${agg.profit >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{fmt(agg.profit)}</p>
-            </div>
-          </div>
-
-          {/* Chart + Auto insights */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
-            <div className="card p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <p className="text-white font-semibold text-sm flex-1">Evolución comparada</p>
-                <div className="flex gap-1.5">
-                  {[['revenue','Ingresos'],['investment','Inversión'],['profit','Ganancia']].map(([m, label]) => (
-                    <button key={m} onClick={() => setMetric(m)}
-                      className={`px-2.5 py-1 rounded-[6px] text-xs font-medium transition-all ${metric === m ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'text-[#52525b] hover:text-[#a1a1aa]'}`}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {loading ? <div className="skeleton h-52 rounded-xl" /> : chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" />
-                    <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: '#52525b', fontSize: 10 }} />
-                    <YAxis tick={{ fill: '#52525b', fontSize: 10 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-                    <Tooltip content={<ChartTooltip />} />
-                    {data.map((p, i) => (
-                      <Line key={p.id} type="monotone" dataKey={p.name}
-                        stroke={PILL_COLORS[i % PILL_COLORS.length]} strokeWidth={2} dot={false} />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-52 flex items-center justify-center text-[#52525b] text-sm">Sin datos para el período</div>
-              )}
-            </div>
-            <div className="card p-5 space-y-3">
-              <p className="text-white font-semibold text-sm">Insights destacados</p>
-              {autoInsights.length ? (
-                <div className="space-y-2">
-                  {autoInsights.map((ins, i) => (
-                    <div key={i} className="flex gap-2.5 p-3 bg-[#1f1f23] rounded-[10px]">
-                      <span className="text-base shrink-0">{ins.icon}</span>
-                      <p className="text-[#a1a1aa] text-xs leading-relaxed">{ins.text}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[#52525b] text-xs">Los insights aparecen cuando hay datos del período seleccionado.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Detailed table + AI recommendations */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
-            <div className="card overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#2a2a2e]">
-                <p className="text-white font-semibold text-sm">Comparativa detallada</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#2a2a2e] text-[#52525b]">
-                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Producto</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Ingresos</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Inversión</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Ganancia</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">ROAS</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#2a2a2e]">
-                    {loading ? [1,2,3].map(i => (
-                      <tr key={i}>{[1,2,3,4,5].map(j => <td key={j} className="px-4 py-3"><div className="skeleton h-4 rounded" /></td>)}</tr>
-                    )) : data.map((p, i) => {
-                      const isWinner = data.length > 1 && (p[metric] || 0) === Math.max(...data.map(x => x[metric] || 0))
-                      return (
-                        <tr key={p.id} className="hover:bg-[#1f1f23] transition-colors">
-                          <td className="px-5 py-3">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PILL_COLORS[i % PILL_COLORS.length] }} />
-                              <span className="text-white font-medium">{p.name}</span>
-                              {isWinner && <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.5 rounded-full">🏆</span>}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-right text-white">{fmt(p.revenue)}</td>
-                          <td className="px-4 py-3 text-right text-[#a1a1aa]">{fmt(p.investment)}</td>
-                          <td className={`px-4 py-3 text-right font-medium ${(p.profit || 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{fmt(p.profit)}</td>
-                          <td className="px-4 py-3 text-right">
-                            {p.roas != null ? (
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]' : p.roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{p.roas}x</span>
-                            ) : '—'}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.02) 100%)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 16 }} className="p-5 flex flex-col gap-3">
-              <p className="text-white font-semibold text-sm">✨ Recomendaciones IA</p>
-              <div className="flex-1">
-                {aiRecs ? (
-                  <div className="space-y-2.5">
-                    {aiRecs.map((rec, i) => (
-                      <div key={i} className="flex gap-2.5">
-                        <span className="text-[#A78BFA] text-xs font-bold shrink-0">{i + 1}.</span>
-                        <p className="text-[#a1a1aa] text-xs leading-relaxed">{rec}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[#52525b] text-xs">Generá recomendaciones personalizadas basadas en los datos comparados.</p>
-                )}
-              </div>
-              <button disabled={aiLoading || selected.length < 2} onClick={generateAI}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#A78BFA]/10 hover:bg-[#A78BFA]/20 border border-[#A78BFA]/30 text-[#A78BFA] text-xs font-semibold rounded-[8px] transition-all disabled:opacity-40">
-                {aiLoading
-                  ? <><span className="w-3 h-3 border border-[#A78BFA] border-t-transparent rounded-full animate-spin" />Analizando…</>
-                  : 'Generar nuevo análisis'}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// TAB 2: CALCULADORA DE PRESUPUESTO
-// ══════════════════════════════════════════════════════════════════════════════
-function BudgetTab({ dateFrom, dateTo }) {
-  const [target, setTarget] = useState('')
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await axios.get(`${API}/insights/budget`, { params: { target_revenue: target, date_from: dateFrom, date_to: dateTo } })
-      setData(r.data)
-    } finally { setLoading(false) }
-  }, [target, dateFrom, dateTo])
-
-  useEffect(() => { load() }, [dateFrom, dateTo])
-
-  const calc = async () => { await load() }
-
-  const InvestCard = ({ label, value, color, sub }) => (
-    <div className={`card p-4 border-l-2 ${color}`}>
-      <p className="text-[#6b7280] text-[11px] mb-1.5">{label}</p>
-      <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{fmt(value)}</p>
-      {sub && <p className="text-[#6b7280] text-xs mt-1">{sub}</p>}
-    </div>
-  )
-
-  return (
-    <div className="space-y-6">
-      {/* ROAS histórico */}
-      {data && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="card p-4 text-center">
-            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS promedio</p>
-            <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.avg_roas ?? '—'}x</p>
-          </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS mínimo</p>
-            <p className="text-[22px] font-light tabular-nums text-[#ef4444]" style={{ letterSpacing: '-0.03em' }}>{data.min_roas ?? '—'}x</p>
-          </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">ROAS máximo</p>
-            <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>{data.max_roas ?? '—'}x</p>
-          </div>
-        </div>
-      )}
-
-      {/* Input objetivo */}
-      <div className="card p-5">
-        <p className="text-[13px] font-semibold text-white mb-1" style={{ letterSpacing: '-0.01em' }}>¿Cuánto querés facturar?</p>
-        <p className="text-[#6b7280] text-xs mb-4">Calculamos la inversión necesaria basándonos en tu historial de ROAS</p>
-        <div className="flex gap-3">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b] font-medium">$</span>
-            <input
-              type="number"
-              placeholder="Ej: 100000"
-              value={target}
-              onChange={e => setTarget(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && calc()}
-              className="w-full bg-[#0B0B0E] border border-white/8 text-white pl-7 pr-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#F59E0B]/60 transition-colors"
-            />
-          </div>
-          <button
-            onClick={calc}
-            disabled={!target || loading}
-            className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#E8A020] text-black font-medium rounded-[6px] transition-colors disabled:opacity-40 text-sm"
-          >
-            Calcular
-          </button>
-        </div>
-      </div>
-
-      {/* Resultados */}
-      {data && target && data.estimated_investment != null && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <InvestCard
-              label="Inversión estimada (ROAS promedio)"
-              value={data.estimated_investment}
-              color="border-l-[#F59E0B]"
-              sub={`Con ROAS ${data.avg_roas}x`}
-            />
-            <InvestCard
-              label="Escenario optimista (ROAS máx)"
-              value={data.optimistic_investment}
-              color="border-l-[#10b981]"
-              sub={`Con ROAS ${data.max_roas}x`}
-            />
-            <InvestCard
-              label="Escenario conservador (ROAS mín)"
-              value={data.conservative_investment}
-              color="border-l-[#ef4444]"
-              sub={data.min_roas > 0 ? `Con ROAS ${data.min_roas}x` : 'Datos insuficientes'}
-            />
-          </div>
-
-          {/* Por producto */}
-          {data.by_product?.length > 0 && (
-            <div className="card p-5">
-              <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Inversión sugerida por producto</p>
-              <div className="space-y-3">
-                {data.by_product.map(p => {
-                  const inv = parseFloat(target) / p.roas
-                  const pct = (inv / (parseFloat(target) / data.avg_roas)) * 100
-                  return (
-                    <div key={p.id}>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm text-white">{p.name}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-[#52525b]">ROAS {p.roas}x</span>
-                          <span className="text-sm font-medium text-[#F59E0B]">{fmt(inv)}</span>
-                        </div>
-                      </div>
-                      <div className="h-1.5 bg-[#2a2a2e] rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#F59E0B] rounded-full transition-all duration-700"
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// TAB 3: PATRONES
-// ══════════════════════════════════════════════════════════════════════════════
-function PatternsTab({ dateFrom, dateTo }) {
-  const [data, setData] = useState(null)
+// ── Main ──────────────────────────────────────────────────────────────────────
+export default function Insights() {
+  const { showToast } = useToast()
+  const [tab, setTab] = useState('comparador')
+  const [products, setProducts] = useState([])
+  const [sales, setSales] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setLoading(true)
-    axios.get(`${API}/insights/patterns`, { params: { date_from: dateFrom, date_to: dateTo } })
-      .then(r => { setData(r.data); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [dateFrom, dateTo])
-
-  if (loading) return (
-    <div className="space-y-4">
-      {[1,2,3].map(i => <div key={i} className="card p-5"><Skeleton h="h-48" /></div>)}
-    </div>
-  )
-
-  if (!data) return null
-
-  const dowData = data.by_dow?.map(d => ({
-    ...d,
-    name: DOW_LABELS[d.dow] ?? `Día ${d.dow}`,
-  })) ?? []
-
-  const bestDow = dowData.reduce((best, d) => (!best || d.avg_roas > best.avg_roas) ? d : best, null)
-
-  return (
-    <div className="space-y-6">
-      {/* Por día de semana */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[13px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>Rendimiento por día de la semana</p>
-          {bestDow && (
-            <span className="text-xs bg-[#10b981]/20 text-[#10b981] px-2.5 py-1 rounded-full font-medium">
-              🏆 Mejor día: {bestDow.name} (ROAS {bestDow.avg_roas}x)
-            </span>
-          )}
-        </div>
-        <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={dowData} barGap={4}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" vertical={false} />
-            <XAxis dataKey="name" tick={{ fill: '#52525b', fontSize: 11 }} />
-            <YAxis yAxisId="left" tick={{ fill: '#52525b', fontSize: 11 }}
-              tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fill: '#52525b', fontSize: 11 }}
-              tickFormatter={v => `${v}x`} />
-            <Tooltip content={<ChartTooltip />} />
-            <Bar yAxisId="left" dataKey="avg_revenue" name="Ingresos prom." fill="#F59E0B" radius={[4,4,0,0]} />
-            <Bar yAxisId="left" dataKey="avg_investment" name="Inversión prom." fill="#3b82f6" radius={[4,4,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-
-        {/* ROAS por día */}
-        <div className="grid grid-cols-7 gap-1 mt-4">
-          {dowData.map(d => (
-            <div key={d.dow} className={`text-center p-2 rounded-[8px] ${
-              d.avg_roas >= 3 ? 'bg-[#10b981]/10'
-              : d.avg_roas >= 1.5 ? 'bg-[#F59E0B]/10'
-              : 'bg-[#ef4444]/10'
-            }`}>
-              <p className="text-[#52525b] text-[10px]">{d.name}</p>
-              <p className={`text-sm font-bold mt-0.5 ${
-                d.avg_roas >= 3 ? 'text-[#10b981]'
-                : d.avg_roas >= 1.5 ? 'text-[#F59E0B]'
-                : 'text-[#ef4444]'
-              }`}>{d.avg_roas ?? '—'}x</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Rangos de inversión */}
-      {data.investment_ranges?.length > 0 && (
-        <div className="card p-5">
-          <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>ROAS por rango de inversión</p>
-          <div className="space-y-3">
-            {data.investment_ranges.map((r, i) => {
-              const best = data.investment_ranges.reduce((b, x) => x.avg_roas > b.avg_roas ? x : b)
-              const isBest = r === best
-              return (
-                <div key={i} className={`flex items-center gap-4 p-3 rounded-[10px] ${
-                  isBest ? 'bg-[#10b981]/10 border border-[#10b981]/20' : 'bg-[#1f1f23]'
-                }`}>
-                  <div className="flex-1">
-                    <p className="text-white text-sm font-medium">{r.range}</p>
-                    <p className="text-[#52525b] text-xs">{r.count} registros</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isBest && <span className="text-xs text-[#10b981]">🏆 Óptimo</span>}
-                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                      r.avg_roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
-                      : r.avg_roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
-                      : 'bg-[#ef4444]/20 text-[#ef4444]'
-                    }`}>{r.avg_roas}x</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Mejores días */}
-      {data.best_days?.length > 0 && (
-        <div className="card p-5">
-          <p className="text-[13px] font-semibold text-white mb-4" style={{ letterSpacing: '-0.01em' }}>Top 5 días con mejor ROAS</p>
-          <div className="space-y-2">
-            {data.best_days.map((d, i) => (
-              <div key={d.date} className="flex items-center gap-4 py-2 border-b border-white/8 last:border-0">
-                <span className="w-6 h-6 rounded-full bg-[#1f1f23] flex items-center justify-center text-xs text-[#52525b] font-bold shrink-0">
-                  {i + 1}
-                </span>
-                <span className="text-white text-sm flex-1">{fmtDate(d.date)} {d.date?.slice(0,4)}</span>
-                <span className="text-[#a1a1aa] text-sm">{fmt(d.investment)} inv.</span>
-                <span className="text-[#10b981] text-sm">{fmt(d.revenue)}</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  d.roas >= 3 ? 'bg-[#10b981]/20 text-[#10b981]'
-                  : d.roas >= 1.5 ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
-                  : 'bg-[#ef4444]/20 text-[#ef4444]'
-                }`}>{d.roas}x</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// TAB 4: PROYECCIONES
-// ══════════════════════════════════════════════════════════════════════════════
-function ProjectionsTab({ dateFrom, dateTo, products }) {
-  const [productId, setProductId] = useState('')
-  const [days, setDays] = useState(7)
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await axios.get(`${API}/insights/projection`, { params: { date_from: dateFrom, date_to: dateTo, days, ...(productId && { product_id: productId }) } })
-      setData(r.data)
-    } finally { setLoading(false) }
-  }, [dateFrom, dateTo, days, productId])
-
-  useEffect(() => { load() }, [load])
-
-  const chartData = data
-    ? [...(data.series || []), ...(data.projected || [])]
-    : []
-
-  const lastReal = data?.series?.slice(-1)[0]
-  const firstProj = data?.projected?.[0]
-  const projGrowth = lastReal && firstProj
-    ? ((firstProj.revenue - lastReal.revenue) / Math.abs(lastReal.revenue || 1) * 100).toFixed(1)
-    : null
-
-  return (
-    <div className="space-y-6">
-      {/* Controles */}
-      <div className="card p-5">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="flex-1 min-w-[180px] space-y-1.5">
-            <label className="text-[#a1a1aa] text-xs font-medium">Producto</label>
-            <select
-              value={productId}
-              onChange={e => setProductId(e.target.value)}
-              className="w-full bg-[#0B0B0E] border border-white/8 text-white text-sm px-3 py-2.5 rounded-[8px] focus:outline-none focus:border-[#F59E0B]/60"
-            >
-              <option value="">Todos los productos</option>
-              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[#a1a1aa] text-xs font-medium">Días a proyectar</label>
-            <div className="flex gap-1.5">
-              {[7, 14, 30].map(d => (
-                <button
-                  key={d}
-                  onClick={() => setDays(d)}
-                  className={`px-3 py-2 text-sm rounded-[8px] font-medium transition-all ${
-                    days === d
-                      ? 'bg-[#F59E0B] text-black'
-                      : 'bg-[#1f1f23] text-[#a1a1aa] hover:text-white border border-[#2a2a2e]'
-                  }`}
-                >{d}d</button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats proyección */}
-      {data && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="card p-4 text-center">
-            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días históricos</p>
-            <p className="text-[22px] font-light tabular-nums text-white" style={{ letterSpacing: '-0.03em' }}>{data.series?.length ?? 0}</p>
-          </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Días proyectados</p>
-            <p className="text-[22px] font-light tabular-nums text-[#F59E0B]" style={{ letterSpacing: '-0.03em' }}>{data.projected?.length ?? 0}</p>
-          </div>
-          <div className="card p-4 text-center">
-            <p className="text-[#6b7280] text-[11px] uppercase tracking-[0.12em] mb-2">Ingreso proyectado (prom/día)</p>
-            <p className="text-[22px] font-light tabular-nums text-[#10b981]" style={{ letterSpacing: '-0.03em' }}>
-              {data.projected?.length
-                ? fmt(data.projected.reduce((a, p) => a + p.revenue, 0) / data.projected.length)
-                : '—'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Gráfico */}
-      {loading ? (
-        <div className="card p-5"><Skeleton h="h-64" /></div>
-      ) : chartData.length > 0 ? (
-        <div className="card p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <p className="text-[13px] font-semibold text-white flex-1" style={{ letterSpacing: '-0.01em' }}>Proyección de ingresos</p>
-            <div className="flex items-center gap-4 text-xs text-[#a1a1aa]">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 bg-[#F59E0B] inline-block" />
-                Real
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 border-t-2 border-dashed border-[#3b82f6] inline-block" />
-                Proyección
-              </span>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="projGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="realGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2e" />
-              <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: '#52525b', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#52525b', fontSize: 11 }}
-                tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-              <Tooltip content={<ChartTooltip />} />
-              <Area
-                type="monotone" dataKey="revenue" name="Ingresos"
-                stroke="#F59E0B" strokeWidth={2}
-                fill="url(#projGrad)"
-                strokeDasharray={(d) => d?.projected ? '5 3' : undefined}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-          <p className="text-[#52525b] text-xs mt-3 text-center">
-            * La proyección se basa en el promedio móvil de los últimos 7 días del período seleccionado
-          </p>
-        </div>
-      ) : (
-        <div className="card p-10 text-center">
-          <p className="text-[#52525b] text-sm">No hay datos suficientes para proyectar</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// MAIN PAGE
-// ══════════════════════════════════════════════════════════════════════════════
-const TABS = [
-  { key: 'comparator',  label: '⚖️ Comparador' },
-  { key: 'budget',      label: '💰 Presupuesto' },
-  { key: 'patterns',   label: '📊 Patrones' },
-  { key: 'projections', label: '📈 Proyecciones' },
-]
-
-export default function Insights() {
-  const { dateFrom, dateTo } = useDateRange()
-  const { user } = useAuth()
-  const [tab, setTab] = useState('comparator')
-  const [products, setProducts] = useState([])
-
-  useEffect(() => {
-    axios.get(`${API}/products`)
-      .then(r => setProducts(r.data.products ?? r.data ?? []))
-      .catch(() => {})
+    Promise.all([axios.get('/api/products'), axios.get('/api/sales')])
+      .then(([{ data: prods }, { data: sls }]) => {
+        setProducts(prods)
+        setSales(sls)
+      })
+      .catch(() => showToast('Error cargando datos', 'error'))
+      .finally(() => setLoading(false))
   }, [])
+
+  const tabs = [
+    { key: 'comparador', label: 'Comparador' },
+    { key: 'patrones', label: 'Patrones' },
+    { key: 'proyecciones', label: 'Proyecciones' },
+    { key: 'presupuesto', label: 'Simulador' },
+    { key: 'ia', label: 'IA Insights' },
+  ]
 
   return (
     <Layout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-6 pb-24 lg:pb-8">
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex-1">
-            <h1 className="text-[24px] font-light text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Inteligencia <span style={{ color: '#A78BFA', fontWeight: 400 }}>de negocio</span></h1>
-            <p className="text-[#6b7280] text-[12px] mt-1.5 tracking-[0.01em]">
-              Análisis avanzado para tomar mejores decisiones
-            </p>
-          </div>
-          <DateRangePicker />
+      <div className="page-shell">
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#fff' }}>Insights</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
+            Analisis avanzado de tus datos
+          </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {TABS.map(t => (
-            <TabBtn key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
-              {t.label}
-            </TabBtn>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'rgba(255,255,255,0.05)', padding: 4, borderRadius: 10, width: 'fit-content' }}>
+          {tabs.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)} style={{
+              background: tab === t.key ? 'rgba(255,255,255,0.12)' : 'none',
+              border: 'none', color: tab === t.key ? '#fff' : 'rgba(255,255,255,0.45)',
+              padding: '7px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+              fontWeight: tab === t.key ? 600 : 400, transition: 'all 0.15s',
+            }}>{t.label}</button>
           ))}
         </div>
 
-        {/* Content + right panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-5 items-start animate-fade-up">
-          <div>
-            {tab === 'comparator'  && <ComparatorTab  dateFrom={dateFrom} dateTo={dateTo} products={products} />}
-            {tab === 'budget'      && <BudgetTab      dateFrom={dateFrom} dateTo={dateTo} />}
-            {tab === 'patterns'    && <PatternsTab    dateFrom={dateFrom} dateTo={dateTo} />}
-            {tab === 'projections' && <ProjectionsTab dateFrom={dateFrom} dateTo={dateTo} products={products} />}
-          </div>
-          <div className="card p-5 space-y-4 sticky top-4">
-            <p className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-wider">
-              {products.length > 0 ? 'DATOS DISPONIBLES' : 'SIN DATOS'}
-            </p>
-            {products.length > 0 ? (
-              <div className="space-y-2.5">
-                {['Comparador activo', 'Patrones disponibles', 'Proyecciones listas'].map(item => (
-                  <div key={item} className="flex items-center gap-2 text-xs text-[#a1a1aa]">
-                    <span className="text-[#10b981] font-bold">✓</span> {item}
-                  </div>
-                ))}
-                <div className="pt-1 border-t border-[#2a2a2e]">
-                  <p className="text-[#52525b] text-xs">{products.length} producto{products.length !== 1 ? 's' : ''} cargado{products.length !== 1 ? 's' : ''}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-[#52525b] text-xs leading-relaxed">Cargá datos para desbloquear todos los insights y comparaciones.</p>
-                <a href="/cargar" className="block w-full text-center px-3 py-2 bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-semibold rounded-[8px] hover:bg-[#F59E0B]/20 transition-all">
-                  Cargar datos
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,0.3)' }}>Cargando...</div>
+        ) : (
+          <>
+            {tab === 'comparador' && <TabComparador products={products} />}
+            {tab === 'patrones' && <TabPatrones sales={sales} />}
+            {tab === 'proyecciones' && <TabProyecciones sales={sales} />}
+            {tab === 'presupuesto' && <TabPresupuesto products={products} />}
+            {tab === 'ia' && <TabIA products={products} sales={sales} />}
+          </>
+        )}
       </div>
     </Layout>
   )

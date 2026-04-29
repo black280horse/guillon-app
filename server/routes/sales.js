@@ -113,6 +113,54 @@ router.patch('/:id', (req, res) => {
   });
 });
 
+// POST /api/sales/bulk — [{product_name, date, revenue, investment}]
+router.post('/bulk', (req, res) => {
+  const userId = req.user.id;
+  const { entries } = req.body;
+
+  if (!Array.isArray(entries) || entries.length === 0)
+    return res.status(400).json({ error: 'entries debe ser un array no vacío' });
+
+  const results = [];
+  const errors = [];
+
+  const bulkInsert = db.transaction(() => {
+    for (const entry of entries) {
+      const { product_name, date, revenue, investment } = entry;
+      if (!product_name || !date) { errors.push({ entry, error: 'product_name y date requeridos' }); continue; }
+      if (!validateDate(date)) { errors.push({ entry, error: 'date inválido' }); continue; }
+
+      const rev = parseFloat(revenue) || 0;
+      const inv = parseFloat(investment) || 0;
+
+      let product = db.prepare(
+        'SELECT id, name FROM products WHERE user_id = ? AND LOWER(name) = LOWER(?)'
+      ).get(userId, product_name.trim());
+
+      if (!product) {
+        const r = db.prepare('INSERT INTO products (user_id, name) VALUES (?, ?)').run(userId, product_name.trim());
+        product = { id: r.lastInsertRowid, name: product_name.trim() };
+      }
+
+      const sale = db.prepare(
+        'INSERT INTO sales_data (user_id, product_id, date, revenue, investment) VALUES (?, ?, ?, ?, ?)'
+      ).run(userId, product.id, date, rev, inv);
+
+      results.push({
+        id: sale.lastInsertRowid,
+        product_id: product.id,
+        product_name: product.name,
+        date, revenue: rev, investment: inv,
+        profit: rev - inv,
+        roas: inv > 0 ? parseFloat((rev / inv).toFixed(2)) : null,
+      });
+    }
+  });
+
+  bulkInsert();
+  res.status(201).json({ created: results.length, errors, results });
+});
+
 // DELETE /api/sales/:id
 router.delete('/:id', (req, res) => {
   const userId = req.user.id;

@@ -75,4 +75,23 @@ router.get('/me', requireAuth, (req, res) => {
   res.json(safeUser);
 });
 
+// PATCH /api/auth/password
+router.patch('/password', requireAuth, async (req, res) => {
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password)
+    return res.status(400).json({ error: 'current_password y new_password requeridos' });
+  if (new_password.length < 6)
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres' });
+  if (new_password.length > 128)
+    return res.status(400).json({ error: 'Contraseña demasiado larga' });
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  const valid = await bcrypt.compare(current_password, user.password_hash);
+  if (!valid) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+
+  const hash = await bcrypt.hash(new_password, 12);
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.user.id);
+  res.json({ message: 'Contraseña actualizada' });
+});
+
 module.exports = router;
