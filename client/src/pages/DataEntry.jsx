@@ -19,9 +19,12 @@ const today = () => new Date().toISOString().slice(0, 10)
 function parseDate(str) {
   if (!str) return today()
   const s = str.trim()
-  // DD/MM/YYYY
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
-  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
+  // DD/MM/YYYY or D/M/YYYY or DD/M/YY or D/M/YY (2-digit year → 2000+)
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  if (m) {
+    const year = m[3].length === 2 ? `20${m[3]}` : m[3]
+    return `${year}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
+  }
   // YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
   return today()
@@ -41,7 +44,8 @@ function smartParse(text) {
   const dateLineMatch = text.match(DATE_RE)
   if (dateLineMatch) globalDate = parseDate(dateLineMatch[1])
   else {
-    const anyDate = text.match(/\b(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})\b/)
+    // Match DD/MM/YY, DD/MM/YYYY, D/M/YY, or YYYY-MM-DD
+    const anyDate = text.match(/\b(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2})\b/)
     if (anyDate) globalDate = parseDate(anyDate[1])
   }
 
