@@ -147,4 +147,25 @@ try {
   console.error('Error en migración reviewing:', e.message);
 }
 
+// ── Migration: add last_name to users ────────────────────────────────────────
+try {
+  db.prepare('ALTER TABLE users ADD COLUMN last_name TEXT').run();
+  console.log('✓ Migración: last_name agregado a users');
+} catch (e) {
+  if (!e.message.includes('duplicate column')) console.error('Migration last_name:', e.message);
+}
+
+// ── Migration: create expenses table ─────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS expenses (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date        TEXT NOT NULL,
+    category    TEXT NOT NULL DEFAULT 'general',
+    amount      REAL NOT NULL DEFAULT 0,
+    description TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
 module.exports = db;

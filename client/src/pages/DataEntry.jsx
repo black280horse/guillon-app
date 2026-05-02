@@ -422,6 +422,121 @@ function HistoryTab({ sales, loading, onDelete, onEdit }) {
   )
 }
 
+// ── Gastos tab ────────────────────────────────────────────────────────────────
+const EXPENSE_CATEGORIES = ['general','publicidad','empleados','logistica','oficina','servicios','impuestos','otros']
+
+function GastosTab() {
+  const { showToast } = useToast()
+  const [form, setForm] = useState({ date: new Date().toISOString().slice(0,10), category: 'general', amount: '', description: '' })
+  const [saving, setSaving] = useState(false)
+  const [expenses, setExpenses] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchExpenses = async () => {
+    setLoading(true)
+    try { const { data } = await axios.get('/api/expenses'); setExpenses(data) }
+    catch { showToast('Error cargando gastos', 'error') }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { fetchExpenses() }, [])
+
+  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    if (!form.amount || isNaN(parseFloat(form.amount))) return showToast('Monto invalido', 'error')
+    setSaving(true)
+    try {
+      await axios.post('/api/expenses', { ...form, amount: parseFloat(form.amount) })
+      showToast('Gasto registrado', 'success')
+      setForm(f => ({ ...f, amount: '', description: '' }))
+      fetchExpenses()
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Error al guardar', 'error')
+    } finally { setSaving(false) }
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/expenses/${id}`)
+      setExpenses(ex => ex.filter(e => e.id !== id))
+      showToast('Gasto eliminado', 'success')
+    } catch { showToast('Error al eliminar', 'error') }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Form */}
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, alignItems: 'end' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '.08em' }}>Fecha</label>
+          <input type="date" name="date" value={form.date} onChange={handleChange} required
+            style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, color: '#fff', fontSize: 13 }} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '.08em' }}>Categoria</label>
+          <select name="category" value={form.category} onChange={handleChange}
+            style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, color: '#fff', fontSize: 13 }}>
+            {EXPENSE_CATEGORIES.map(c => <option key={c} value={c} style={{ background: '#1a1a2e' }}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '.08em' }}>Monto ($)</label>
+          <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder="0" min="0" step="0.01" required
+            style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, color: '#fff', fontSize: 13 }} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '.08em' }}>Descripcion</label>
+          <input type="text" name="description" value={form.description} onChange={handleChange} placeholder="Opcional"
+            style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, color: '#fff', fontSize: 13 }} />
+        </div>
+        <div>
+          <button type="submit" disabled={saving}
+            style={{ width: '100%', padding: '8px 16px', background: saving ? 'rgba(245,158,11,.4)' : '#F59E0B', border: 'none', borderRadius: 8, color: '#000', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}>
+            {saving ? 'Guardando...' : 'Agregar gasto'}
+          </button>
+        </div>
+      </form>
+
+      {/* Table */}
+      {loading ? (
+        <p style={{ color: 'rgba(255,255,255,.4)', fontSize: 13 }}>Cargando...</p>
+      ) : expenses.length === 0 ? (
+        <p style={{ color: 'rgba(255,255,255,.4)', fontSize: 13 }}>No hay gastos registrados.</p>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,.08)' }}>
+                {['Fecha','Categoria','Monto','Descripcion',''].map(h => (
+                  <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Monto' ? 'right' : 'left', color: 'rgba(255,255,255,.4)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {expenses.map(ex => (
+                <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,.05)' }}>
+                  <td style={{ padding: '10px 12px', color: 'rgba(255,255,255,.7)' }}>{ex.date}</td>
+                  <td style={{ padding: '10px 12px', color: 'rgba(255,255,255,.7)', textTransform: 'capitalize' }}>{ex.category}</td>
+                  <td style={{ padding: '10px 12px', textAlign: 'right', color: '#F87171', fontWeight: 600 }}>${Number(ex.amount).toLocaleString('es-AR')}</td>
+                  <td style={{ padding: '10px 12px', color: 'rgba(255,255,255,.45)' }}>{ex.description || '-'}</td>
+                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                    <button onClick={() => handleDelete(ex.id)}
+                      style={{ background: 'none', border: 'none', color: 'rgba(248,113,113,.6)', cursor: 'pointer', fontSize: 12, padding: '2px 6px' }}>
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function DataEntry() {
   const { showToast } = useToast()
@@ -464,6 +579,7 @@ export default function DataEntry() {
     { key: 'single', label: 'Registro individual' },
     { key: 'bulk',   label: 'Carga masiva' },
     { key: 'history', label: 'Historial' },
+    { key: 'gastos',  label: 'Gastos' },
   ]
 
   return (
@@ -487,10 +603,11 @@ export default function DataEntry() {
           ))}
         </div>
 
-        <div className="card" style={{ maxWidth: tab === 'history' ? '100%' : 600, padding: 24 }}>
+        <div className="card" style={{ maxWidth: (tab === 'history' || tab === 'gastos') ? '100%' : 600, padding: 24 }}>
           {tab === 'single'  && <SingleForm products={products} onSaved={() => {}} />}
           {tab === 'bulk'    && <BulkForm onSaved={() => {}} />}
           {tab === 'history' && <HistoryTab sales={sales} loading={loadingSales} onDelete={handleDelete} onEdit={fetchSales} />}
+          {tab === 'gastos'  && <GastosTab />}
         </div>
       </div>
     </Layout>

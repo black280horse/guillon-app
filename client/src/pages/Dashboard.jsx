@@ -30,6 +30,7 @@ const SERIES_COLORS = {
 const PIE_COLORS = ['#F59E0B', '#34D399', '#818CF8', '#22D3EE', '#F87171']
 
 const PERIODS = [
+  { key: '30d',        label: '30D' },
   { key: '7d',         label: '7D' },
   { key: 'this_month', label: 'Mes' },
   { key: '3m',         label: '3M' },
@@ -217,12 +218,13 @@ function RoasTooltip({ active, payload, label }) {
 }
 
 // ── Tasks overview chips ──────────────────────────────────
-function TasksOverview({ overdue, pending, inProgress, completed, navigate }) {
+function TasksOverview({ overdue, pending, inProgress, reviewing, completed, navigate }) {
   const chips = [
-    { label: 'Vencidas',   count: overdue,     color: '#F87171', bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.20)', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-    { label: 'Pendientes', count: pending,     color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)',  icon: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2' },
-    { label: 'En curso',   count: inProgress,  color: '#818CF8', bg: 'rgba(129,140,248,0.10)', border: 'rgba(129,140,248,0.20)', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-    { label: 'Completadas',count: completed,   color: '#34D399', bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.20)',  icon: 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+    { label: 'Vencidas',    count: overdue,    color: '#F87171', bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.20)', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+    { label: 'Pendientes',  count: pending,    color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)',  icon: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2' },
+    { label: 'En curso',    count: inProgress, color: '#818CF8', bg: 'rgba(129,140,248,0.10)', border: 'rgba(129,140,248,0.20)', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+    { label: 'En revisión', count: reviewing,  color: '#A78BFA', bg: 'rgba(167,139,250,0.10)', border: 'rgba(167,139,250,0.20)', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+    { label: 'Completadas', count: completed,  color: '#34D399', bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.20)',  icon: 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
   ]
   return (
     <div className="card p-4">
@@ -371,7 +373,7 @@ export default function Dashboard() {
 
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [sortCol, setSortCol] = useState('revenue')
+  const [sortCol, setSortCol] = useState('profit')
   const [sortDir, setSortDir] = useState('desc')
   const [visibleSeries, setVisibleSeries] = useState({ revenue: true, investment: true, profit: true, roas: true })
   const [tasks, setTasks] = useState([])
@@ -414,6 +416,7 @@ export default function Dashboard() {
     overdue:    tasks.filter(t => t.status === 'overdue').length,
     pending:    tasks.filter(t => t.status === 'pending').length,
     inProgress: tasks.filter(t => t.status === 'in_progress').length,
+    reviewing:  tasks.filter(t => t.status === 'reviewing').length,
     completed:  tasks.filter(t => t.status === 'completed').length,
   }
   const hasTasks = tasks.length > 0
@@ -461,10 +464,10 @@ export default function Dashboard() {
 
         {/* KPI cards */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <KpiCard label="Total vendido"  value={kpis?.total_revenue}   formatter={formatCurrency}                           color={SERIES_COLORS.revenue}    iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6"  change={changePct(kpis?.total_revenue, kpis?.prev_revenue)}       chartData={series} chartKey="revenue"    loading={loading} />
+          <KpiCard label="Ganancia neta"   value={kpis?.net_profit}       formatter={formatCurrency}                           color={SERIES_COLORS.profit}     iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4"                       change={changePct(kpis?.net_profit, kpis?.prev_profit)}           chartData={series} chartKey="profit"     loading={loading} />
+          <KpiCard label="Facturación"     value={kpis?.total_revenue}   formatter={formatCurrency}                           color={SERIES_COLORS.revenue}    iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6"  change={changePct(kpis?.total_revenue, kpis?.prev_revenue)}       chartData={series} chartKey="revenue"    loading={loading} />
           <KpiCard label="Total invertido" value={kpis?.total_investment} formatter={formatCurrency}                           color={SERIES_COLORS.investment} iconPath="M4 17 9 12l3 3 8-8M4 7h5v5"                                       change={changePct(kpis?.total_investment, kpis?.prev_investment)} chartData={series} chartKey="investment" loading={loading} />
           <KpiCard label="ROAS"            value={kpis?.roas}             formatter={v => `${n(v).toFixed(2)}x`}              color={SERIES_COLORS.roas}       iconPath="M4 19h16M6 15l4-4 3 3 5-6"                                       change={changePct(kpis?.roas, kpis?.prev_roas)}                   chartData={series} chartKey="roas"       loading={loading} />
-          <KpiCard label="Ganancia neta"   value={kpis?.net_profit}       formatter={formatCurrency}                           color={SERIES_COLORS.profit}     iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4"                       change={changePct(kpis?.net_profit, kpis?.prev_profit)}           chartData={series} chartKey="profit"     loading={loading} />
         </div>
 
         {isEmpty ? (

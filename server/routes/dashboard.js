@@ -14,12 +14,19 @@ router.get('/summary', (req, res) => {
   if (date_from) { where += ' AND s.date >= ?'; params.push(date_from); }
   if (date_to)   { where += ' AND s.date <= ?'; params.push(date_to); }
 
-  // KPIs globales
+  // Gastos del período
+  let expWhere = 'WHERE e.user_id = ?';
+  const expParams = [userId];
+  if (date_from) { expWhere += ' AND e.date >= ?'; expParams.push(date_from); }
+  if (date_to)   { expWhere += ' AND e.date <= ?'; expParams.push(date_to); }
+
+  const expKpis = db.prepare('SELECT COALESCE(SUM(e.amount), 0) AS total_expenses FROM expenses e ' + expWhere).get(...expParams);
+
+  // KPIs globales — net_profit = facturación - inversión - gastos
   const kpis = db.prepare(`
     SELECT
       COALESCE(SUM(s.revenue), 0)                                         AS total_revenue,
       COALESCE(SUM(s.investment), 0)                                      AS total_investment,
-      COALESCE(SUM(s.revenue) - SUM(s.investment), 0)                     AS net_profit,
       CASE WHEN SUM(s.investment) > 0
            THEN ROUND(SUM(s.revenue) / SUM(s.investment), 2)
            ELSE NULL END                                                   AS roas,
@@ -27,6 +34,8 @@ router.get('/summary', (req, res) => {
     FROM sales_data s
     ${where}
   `).get(...params);
+
+  const netProfit = parseFloat(kpis.total_revenue) - parseFloat(kpis.total_investment) - parseFloat(expKpis.total_expenses);
 
   // Serie diaria (para el gráfico de línea)
   const dailySeries = db.prepare(`
@@ -92,7 +101,8 @@ router.get('/summary', (req, res) => {
     kpis: {
       total_revenue:    parseFloat(kpis.total_revenue.toFixed(2)),
       total_investment: parseFloat(kpis.total_investment.toFixed(2)),
-      net_profit:       parseFloat(kpis.net_profit.toFixed(2)),
+      total_expenses:   parseFloat(expKpis.total_expenses.toFixed(2)),
+      net_profit:       parseFloat(netProfit.toFixed(2)),
       roas:             kpis.roas,
       total_records:    kpis.total_records,
     },

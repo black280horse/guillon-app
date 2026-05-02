@@ -928,7 +928,7 @@ export default function Home() {
   const now = new Date()
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   const daysElapsed = now.getDate()
-  const currentRevenue = n(monthData?.kpis?.total_revenue)
+  const currentProfit = n(monthData?.kpis?.net_profit)
   const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
   const prevRevenue = n(prevMonthData?.total_revenue)
@@ -948,7 +948,7 @@ export default function Home() {
   const goal = {
     monthLabel: now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }),
     amount: goalAmount,
-    currentProgress: currentRevenue,
+    currentProgress: currentProfit,
     daysElapsed,
     daysTotal: daysInMonth,
   }
