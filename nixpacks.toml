@@ -1,4 +1,7 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
-# cache-bust: 3
+[phases.build]
+cmds = ["npm run build"]
+
+# cache-bust: 4

@@ -33,13 +33,18 @@ app.use('/api/tasks',     require('./routes/tasks'));
 app.use('/api/push',      require('./routes/push'));
 app.use('/api/insights',  require('./routes/insights'));
 app.use('/api/settings',  require('./routes/settings'));
+app.use('/api/expenses',  require('./routes/expenses'));
 
 app.get('/api/health', (_req, res) => res.status(200).send('OK'));
 
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '..', 'client', 'dist');
-  app.use(express.static(clientDist));
-  app.use((_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  // Hashed assets can be cached long-term; index.html must never be cached
+  app.use(express.static(clientDist, { maxAge: '1y', immutable: true }));
+  app.use((_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
 }
 
 app.listen(PORT, '0.0.0.0', () => {
