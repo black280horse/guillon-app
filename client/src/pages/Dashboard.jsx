@@ -30,12 +30,13 @@ const SERIES_COLORS = {
 const PIE_COLORS = ['#F59E0B', '#34D399', '#818CF8', '#22D3EE', '#F87171']
 
 const PERIODS = [
-  { key: '30d',        label: '30D' },
-  { key: '7d',         label: '7D' },
-  { key: 'this_month', label: 'Mes' },
-  { key: '3m',         label: '3M' },
-  { key: 'this_year',  label: 'Año' },
-  { key: 'all',        label: 'Todo' },
+  { key: '2d',         label: '2 días' },
+  { key: '7d',         label: '7 días' },
+  { key: '15d',        label: '15 días' },
+  { key: '30d',        label: '30 días' },
+  { key: '3m',         label: '3 meses' },
+  { key: 'this_year',  label: 'Este año' },
+  { key: 'this_month', label: 'Por mes' },
 ]
 
 function shortDate(iso) {
@@ -218,38 +219,64 @@ function RoasTooltip({ active, payload, label }) {
 }
 
 // ── Tasks overview chips ──────────────────────────────────
-function TasksOverview({ overdue, pending, inProgress, reviewing, completed, navigate }) {
+function TasksOverview({ overdue, pending, inProgress, completed, tasks, navigate }) {
   const chips = [
-    { label: 'Vencidas',    count: overdue,    color: '#F87171', bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.20)', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-    { label: 'Pendientes',  count: pending,    color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)',  icon: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2' },
-    { label: 'En curso',    count: inProgress, color: '#818CF8', bg: 'rgba(129,140,248,0.10)', border: 'rgba(129,140,248,0.20)', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-    { label: 'En revisión', count: reviewing,  color: '#A78BFA', bg: 'rgba(167,139,250,0.10)', border: 'rgba(167,139,250,0.20)', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-    { label: 'Completadas', count: completed,  color: '#34D399', bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.20)',  icon: 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+    { label: 'Vencidas',    count: overdue,    color: '#F87171', icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+    { label: 'Pendientes',  count: pending,    color: '#F59E0B', icon: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2' },
+    { label: 'En curso',    count: inProgress, color: '#22D3EE', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+    { label: 'Completadas', count: completed,  color: '#34D399', icon: 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
   ]
+  const nextTask = tasks?.find(t => t.status === 'overdue') || tasks?.find(t => t.status === 'pending')
   return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[12px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>Tareas</p>
-        <Link to="/tareas" className="text-[11px] font-medium" style={{ color: '#F59E0B' }}>Ver tablero →</Link>
+    <div className="card p-4 flex items-center gap-4 flex-wrap">
+      {/* Left label */}
+      <div className="flex items-center gap-2.5 pr-4 shrink-0" style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="w-8 h-8 rounded-[9px] flex items-center justify-center" style={{ background: 'rgba(129,140,248,0.12)', color: '#818CF8' }}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.35)' }}>Tareas</p>
+          <p className="text-[12.5px] font-semibold text-white mt-0.5">Resumen de hoy</p>
+        </div>
       </div>
-      <div className="flex flex-wrap gap-2">
+      {/* Chips */}
+      <div className="flex flex-wrap gap-2 flex-1">
         {chips.map(chip => (
-          <button
-            key={chip.label}
-            onClick={() => navigate('/tareas')}
-            className="inline-flex items-center gap-2 rounded-[8px] px-3 py-2 transition-all"
-            style={{ background: chip.bg, border: `1px solid ${chip.border}` }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.80'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-          >
+          <button key={chip.label} onClick={() => navigate('/tareas')}
+            className="inline-flex items-center gap-2 rounded-[9px] px-3 py-2 transition-all"
+            style={{ background: `color-mix(in oklab,${chip.color} 8%,transparent)`, border: `1px solid color-mix(in oklab,${chip.color} 22%,transparent)` }}
+            onMouseEnter={e => e.currentTarget.style.background = `color-mix(in oklab,${chip.color} 14%,transparent)`}
+            onMouseLeave={e => e.currentTarget.style.background = `color-mix(in oklab,${chip.color} 8%,transparent)`}>
             <svg className="w-3.5 h-3.5" fill="none" stroke={chip.color} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={chip.icon} />
             </svg>
-            <span className="text-[18px] font-bold tabular-nums leading-none" style={{ color: chip.color, letterSpacing: '-0.02em' }}>{chip.count}</span>
+            <span className="text-[17px] font-bold tabular-nums leading-none" style={{ color: chip.color, letterSpacing: '-0.02em' }}>{chip.count}</span>
             <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.62)' }}>{chip.label}</span>
           </button>
         ))}
       </div>
+      {/* Next task */}
+      {nextTask && (
+        <button onClick={() => navigate('/tareas')}
+          className="inline-flex items-center gap-2.5 rounded-[9px] px-3 py-2 shrink-0"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <span className="w-2 h-2 rounded-full shrink-0" style={{
+            background: nextTask.status === 'overdue' ? '#F87171' : '#F59E0B',
+            boxShadow: `0 0 6px ${nextTask.status === 'overdue' ? '#F87171' : '#F59E0B'}`,
+          }} />
+          <div className="text-left min-w-0">
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.12em]" style={{ color: nextTask.status === 'overdue' ? '#F87171' : '#F59E0B' }}>
+              {nextTask.status === 'overdue' ? 'Vencida' : 'Próxima'}
+            </p>
+            <p className="text-[12px] font-medium text-white truncate max-w-[200px] mt-0.5">{nextTask.title}</p>
+          </div>
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
@@ -445,25 +472,33 @@ export default function Dashboard() {
       <div className="w-full space-y-5 overflow-x-hidden">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-[28px] font-semibold text-white leading-none" style={{ letterSpacing: '-0.04em' }}>
-              Dashboard
-            </h1>
-            <p className="text-[12.5px] mt-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>
-              Vision consolidada del negocio
-            </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-[28px] font-semibold text-white leading-none" style={{ letterSpacing: '-0.04em' }}>Dashboard</h1>
+              <p className="text-[12.5px] mt-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>Vision consolidada del negocio</p>
+            </div>
+            <button className="inline-flex items-center gap-2 rounded-[10px] px-3.5 py-2"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.75)', fontSize: 12.5 }}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="#F59E0B" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+              </svg>
+              {dateFrom && dateTo ? `${shortDate(dateFrom)} – ${shortDate(dateTo)}` : 'Seleccionar período'}
+              <svg className="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
           <PeriodTabs activeKey={activeKey} onSelect={handlePeriod} />
         </div>
 
         {/* Tasks overview */}
         {hasTasks && (
-          <TasksOverview {...taskCounts} navigate={navigate} />
+          <TasksOverview {...taskCounts} tasks={tasks} navigate={navigate} />
         )}
 
         {/* KPI cards */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
           <KpiCard label="Ganancia neta"   value={kpis?.net_profit}       formatter={formatCurrency}                           color={SERIES_COLORS.profit}     iconPath="M4 19h16M5 15c2-4 5-6 7-6s4 1 7 6M12 9V4"                       change={changePct(kpis?.net_profit, kpis?.prev_profit)}           chartData={series} chartKey="profit"     loading={loading} />
           <KpiCard label="Facturación"     value={kpis?.total_revenue}   formatter={formatCurrency}                           color={SERIES_COLORS.revenue}    iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 1 1 0 7H6"  change={changePct(kpis?.total_revenue, kpis?.prev_revenue)}       chartData={series} chartKey="revenue"    loading={loading} />
           <KpiCard label="Total invertido" value={kpis?.total_investment} formatter={formatCurrency}                           color={SERIES_COLORS.investment} iconPath="M4 17 9 12l3 3 8-8M4 7h5v5"                                       change={changePct(kpis?.total_investment, kpis?.prev_investment)} chartData={series} chartKey="investment" loading={loading} />

@@ -12,9 +12,17 @@ function getPreset(key) {
       const d = new Date(today); d.setDate(d.getDate() - 1)
       return { from: fmt(d), to: fmt(d), label: 'Ayer' }
     }
+    case '2d': {
+      const d = new Date(today); d.setDate(d.getDate() - 1)
+      return { from: fmt(d), to: fmt(today), label: 'Últimos 2 días' }
+    }
     case '7d': {
       const d = new Date(today); d.setDate(d.getDate() - 6)
       return { from: fmt(d), to: fmt(today), label: 'Últimos 7 días' }
+    }
+    case '15d': {
+      const d = new Date(today); d.setDate(d.getDate() - 14)
+      return { from: fmt(d), to: fmt(today), label: 'Últimos 15 días' }
     }
     case '14d': {
       const d = new Date(today); d.setDate(d.getDate() - 13)
