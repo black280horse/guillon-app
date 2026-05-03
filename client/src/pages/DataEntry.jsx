@@ -77,7 +77,7 @@ function smartParse(text) {
     if (line.includes('→') || (line.includes('|') && (REVENUE_RE.test(line) || INVEST_RE.test(line)))) {
       flush()
       const parts = line.split(/[→|]/).map(p => p.trim())
-      const name = parts[0].replace(/^producto\s*/i, '').trim()
+      const name = parts[0].replace(/^producto\s*/i, '').replace(/^[:\-\s]+/, '').trim()
       let rev = null, inv = null
       for (const part of parts) {
         if (REVENUE_RE.test(part)) {
@@ -113,7 +113,7 @@ function smartParse(text) {
     if (currentName && (currentRevenue !== null || currentInvestment !== null)) flush()
 
     // This line is likely a product name
-    const name = line.replace(/^producto\s*/i, '').trim()
+    const name = line.replace(/^producto\s*/i, '').replace(/^[:\-\s]+/, '').trim()
     // Ignore lines that look like field labels without values
     if (name && !/:$/.test(name) && name.length > 0) {
       currentName = name

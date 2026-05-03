@@ -168,4 +168,35 @@ db.exec(`
   )
 `);
 
+// ── Migration: normalize dirty product names (e.g. ": Pack IA" → "Pack IA") ──
+try {
+  const dirty = db.prepare(
+    "SELECT id, user_id, name FROM products WHERE name GLOB '[ :_-]*' OR name LIKE ': %' OR name LIKE '- %'"
+  ).all();
+
+  const normalize = s => s.replace(/^[:\-\s]+/, '').trim().replace(/\s+/g, ' ');
+
+  for (const p of dirty) {
+    const clean = normalize(p.name);
+    if (!clean || clean === p.name) continue;
+
+    // Check if a clean-named product already exists for this user
+    const existing = db.prepare(
+      "SELECT id FROM products WHERE user_id = ? AND LOWER(REPLACE(name,' ','')) = LOWER(REPLACE(?,' ','')) AND id != ?"
+    ).get(p.user_id, clean, p.id);
+
+    if (existing) {
+      // Merge: reassign sales and tasks to the existing product, then delete duplicate
+      db.prepare('UPDATE sales_data SET product_id = ? WHERE product_id = ?').run(existing.id, p.id);
+      db.prepare('UPDATE tasks SET product_id = ? WHERE product_id = ?').run(existing.id, p.id);
+      db.prepare('DELETE FROM products WHERE id = ?').run(p.id);
+    } else {
+      db.prepare('UPDATE products SET name = ? WHERE id = ?').run(clean, p.id);
+    }
+  }
+  if (dirty.length) console.log(`✓ Migración: ${dirty.length} nombre(s) de producto normalizados`);
+} catch (e) {
+  console.error('Error en migración de nombres:', e.message);
+}
+
 module.exports = db;

@@ -1,4 +1,9 @@
 const router = require('express').Router();
+
+// Strip leading punctuation/spaces, collapse internal whitespace
+function normalizeName(s) {
+  return String(s).replace(/^[:\-\s]+/, '').trim().replace(/\s+/g, ' ');
+}
 const db = require('../db/schema');
 const { requireAuth } = require('../middleware/auth');
 
@@ -25,13 +30,14 @@ router.post('/', (req, res) => {
   if (isNaN(rev) || isNaN(inv) || rev < 0 || inv < 0)
     return res.status(400).json({ error: 'revenue e investment deben ser números positivos' });
 
+  const cleanName = normalizeName(product_name);
   let product = db.prepare(
-    'SELECT id, name FROM products WHERE user_id = ? AND LOWER(name) = LOWER(?)'
-  ).get(userId, product_name.trim());
+    'SELECT id, name FROM products WHERE user_id = ? AND LOWER(REPLACE(name," ","")) = LOWER(REPLACE(?," ",""))'
+  ).get(userId, cleanName);
 
   if (!product) {
-    const r = db.prepare('INSERT INTO products (user_id, name) VALUES (?, ?)').run(userId, product_name.trim());
-    product = { id: r.lastInsertRowid, name: product_name.trim() };
+    const r = db.prepare('INSERT INTO products (user_id, name) VALUES (?, ?)').run(userId, cleanName);
+    product = { id: r.lastInsertRowid, name: cleanName };
   }
 
   const sale = db.prepare(`
@@ -133,13 +139,14 @@ router.post('/bulk', (req, res) => {
       const rev = parseFloat(revenue) || 0;
       const inv = parseFloat(investment) || 0;
 
+      const cleanName = normalizeName(product_name);
       let product = db.prepare(
-        'SELECT id, name FROM products WHERE user_id = ? AND LOWER(name) = LOWER(?)'
-      ).get(userId, product_name.trim());
+        'SELECT id, name FROM products WHERE user_id = ? AND LOWER(REPLACE(name," ","")) = LOWER(REPLACE(?," ",""))'
+      ).get(userId, cleanName);
 
       if (!product) {
-        const r = db.prepare('INSERT INTO products (user_id, name) VALUES (?, ?)').run(userId, product_name.trim());
-        product = { id: r.lastInsertRowid, name: product_name.trim() };
+        const r = db.prepare('INSERT INTO products (user_id, name) VALUES (?, ?)').run(userId, cleanName);
+        product = { id: r.lastInsertRowid, name: cleanName };
       }
 
       const sale = db.prepare(
