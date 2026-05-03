@@ -51,6 +51,12 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function yesterdayISO() {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
 function monthStart() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -116,7 +122,7 @@ function HomeGreeting({ userName }) {
 }
 
 // ── TodaySnapshot ─────────────────────────────────────────────────────────────
-function TodaySnapshot({ todayData, prevData }) {
+function TodaySnapshot({ todayData, prevData, lastDate }) {
   const rev = n(todayData?.total_revenue)
   const prevRev = n(prevData?.total_revenue)
   const revDelta = prevRev > 0 ? ((rev - prevRev) / prevRev) * 100 : null
@@ -127,10 +133,14 @@ function TodaySnapshot({ todayData, prevData }) {
 
   const records = n(todayData?.total_records)
 
+  const lastDateLabel = lastDate
+    ? (() => { const [, m, d] = lastDate.split('-'); return `${parseInt(d)}/${parseInt(m)}` })()
+    : '—'
+
   const items = [
-    { label: 'Ingresos hoy', value: fmtMoney(rev), delta: revDelta, color: '#F59E0B', icon: dollarIcon },
-    { label: 'ROAS hoy',     value: roas > 0 ? roas.toFixed(2) + 'x' : '—', delta: roasDelta, color: '#A78BFA', icon: barUpIcon },
-    { label: 'Nuevos registros', value: String(records), delta: null, color: '#22D3EE', icon: uploadIcon },
+    { label: 'Ingresos ayer',      value: fmtMoney(rev), delta: revDelta, color: '#F59E0B', icon: dollarIcon },
+    { label: 'ROAS ayer',          value: roas > 0 ? roas.toFixed(2) + 'x' : '—', delta: roasDelta, color: '#A78BFA', icon: barUpIcon },
+    { label: 'Ultima fecha carga', value: lastDateLabel, delta: null, color: '#22D3EE', icon: uploadIcon },
   ]
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
@@ -897,6 +907,7 @@ export default function Home() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [todayData, setTodayData] = useState(null)
+  const [lastDate, setLastDate] = useState(null)
   const [monthData, setMonthData] = useState(null)
   const [prevMonthData, setPrevMonthData] = useState(null)
   const [tasks, setTasks] = useState([])
@@ -907,14 +918,17 @@ export default function Home() {
     const mStart = monthStart()
     const prev = prevMonthRange()
 
+    const yesterday = yesterdayISO()
     Promise.all([
-      axios.get(`/api/dashboard/summary?date_from=${today}&date_to=${today}`),
+      axios.get(`/api/dashboard/summary?date_from=${yesterday}&date_to=${yesterday}`),
       axios.get(`/api/dashboard/summary?date_from=${mStart}&date_to=${today}`),
       axios.get(`/api/dashboard/summary?date_from=${prev.start}&date_to=${prev.end}`),
       axios.get('/api/tasks'),
       axios.get('/api/products'),
-    ]).then(([todayRes, monthRes, prevRes, tasksRes, productsRes]) => {
+      axios.get('/api/sales/lastdate'),
+    ]).then(([todayRes, monthRes, prevRes, tasksRes, productsRes, lastDateRes]) => {
       setTodayData(todayRes.data.kpis)
+      setLastDate(lastDateRes.data.date)
       setMonthData(monthRes.data)
       setPrevMonthData(prevRes.data.kpis)
       setTasks(tasksRes.data)
@@ -1011,7 +1025,7 @@ export default function Home() {
           {/* Header row: greeting + snapshot */}
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) minmax(380px, 1.3fr)', gap: 18, alignItems: 'center' }} className="home-header-grid">
             <HomeGreeting userName={user?.name} />
-            <TodaySnapshot todayData={todayData} prevData={prevMonthData} />
+            <TodaySnapshot todayData={todayData} prevData={prevMonthData} lastDate={lastDate} />
           </div>
 
           {/* Critical alerts */}

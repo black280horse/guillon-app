@@ -56,6 +56,14 @@ router.post('/', (req, res) => {
 });
 
 // GET /api/sales
+// GET /api/sales/lastdate — most recent date with a sale for this user
+router.get('/lastdate', (req, res) => {
+  const row = db.prepare(
+    'SELECT date FROM sales_data WHERE user_id = ? ORDER BY date DESC LIMIT 1'
+  ).get(req.user.id);
+  res.json({ date: row?.date || null });
+});
+
 router.get('/', (req, res) => {
   const userId = req.user.id;
   const { date_from, date_to, product_id } = req.query;
