@@ -38,16 +38,10 @@ const SKIP_RE    = /^(extras?|otros\s+ingresos?|publicidad\s+general|empleados?|
 
 function smartParse(text) {
   const results = []
-  let globalDate = today()
 
-  // Extract global date from text
-  const dateLineMatch = text.match(DATE_RE)
-  if (dateLineMatch) globalDate = parseDate(dateLineMatch[1])
-  else {
-    // Match DD/MM/YY, DD/MM/YYYY, D/M/YY, or YYYY-MM-DD
-    const anyDate = text.match(/\b(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2})\b/)
-    if (anyDate) globalDate = parseDate(anyDate[1])
-  }
+  // Seed currentDate from the first date found — updated live as we scan lines
+  const firstDate = text.match(/\b(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2})\b/)
+  let currentDate = firstDate ? parseDate(firstDate[1]) : today()
 
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
   let currentName = null
@@ -58,7 +52,7 @@ function smartParse(text) {
     if (currentName && (currentRevenue !== null || currentInvestment !== null)) {
       results.push({
         product_name: currentName,
-        date: globalDate,
+        date: currentDate,
         revenue: currentRevenue ?? 0,
         investment: currentInvestment ?? 0,
       })
@@ -69,8 +63,20 @@ function smartParse(text) {
   }
 
   for (const line of lines) {
-    // Skip date lines and section headers to skip
-    if (DATE_RE.test(line) && !REVENUE_RE.test(line) && !INVEST_RE.test(line)) continue
+    // Date line — flush current entry and switch active date
+    const dateMatch = line.match(DATE_RE)
+    if (dateMatch && !REVENUE_RE.test(line) && !INVEST_RE.test(line)) {
+      flush()
+      currentDate = parseDate(dateMatch[1])
+      continue
+    }
+    // Bare date on its own line: "25/4/26" or "2026-04-25"
+    const bareDateMatch = line.match(/^(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2})$/)
+    if (bareDateMatch) {
+      flush()
+      currentDate = parseDate(bareDateMatch[1])
+      continue
+    }
     if (SKIP_RE.test(line)) continue
 
     // Inline format: "Producto B → Inversión: 14.000 | Ventas: 24.000"
@@ -90,7 +96,7 @@ function smartParse(text) {
         }
       }
       if (name && (rev !== null || inv !== null)) {
-        results.push({ product_name: name, date: globalDate, revenue: rev ?? 0, investment: inv ?? 0 })
+        results.push({ product_name: name, date: currentDate, revenue: rev ?? 0, investment: inv ?? 0 })
       }
       continue
     }
