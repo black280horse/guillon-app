@@ -32,7 +32,7 @@ router.post('/', (req, res) => {
 
   const cleanName = normalizeName(product_name);
   let product = db.prepare(
-    'SELECT id, name FROM products WHERE user_id = ? AND LOWER(REPLACE(name," ","")) = LOWER(REPLACE(?," ",""))'
+    "SELECT id, name FROM products WHERE user_id = ? AND LOWER(REPLACE(name,' ','')) = LOWER(REPLACE(?,' ',''))"
   ).get(userId, cleanName);
 
   if (!product) {
@@ -149,7 +149,7 @@ router.post('/bulk', (req, res) => {
 
       const cleanName = normalizeName(product_name);
       let product = db.prepare(
-        'SELECT id, name FROM products WHERE user_id = ? AND LOWER(REPLACE(name," ","")) = LOWER(REPLACE(?," ",""))'
+        "SELECT id, name FROM products WHERE user_id = ? AND LOWER(REPLACE(name,' ','')) = LOWER(REPLACE(?,' ',''))"
       ).get(userId, cleanName);
 
       if (!product) {
