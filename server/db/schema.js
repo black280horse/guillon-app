@@ -4,12 +4,35 @@ const fs = require('fs');
 
 function resolveDbPath() {
   if (process.env.DB_PATH) return process.env.DB_PATH;
-  try {
-    fs.accessSync('/data', fs.constants.W_OK);
-    return '/data/database.sqlite';
-  } catch {
-    return path.join(__dirname, '..', 'guillon.db');
+
+  const dbPath = '/data/database.sqlite';
+  const maxRetries = 30;
+  const retryDelayMs = 100;
+
+  // Retry logic: esperar a que /data esté disponible
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      fs.accessSync('/data', fs.constants.W_OK);
+      console.log(`[DB] Volume /data is accessible (attempt ${i + 1}/${maxRetries})`);
+      return dbPath;
+    } catch (err) {
+      if (i < maxRetries - 1) {
+        // Esperar antes de reintentar
+        const start = Date.now();
+        while (Date.now() - start < retryDelayMs) {
+          // Busy wait (sincrónico)
+        }
+      } else {
+        // Último intento falló
+        console.error('[DB] CRITICAL: Volume /data is NOT accessible after retries!');
+        console.error('[DB] This means the volume is not properly mounted.');
+        console.error('[DB] Error:', err.message);
+        throw new Error('Database volume /data is not accessible. Cannot proceed.');
+      }
+    }
   }
+
+  return dbPath;
 }
 const DB_PATH = resolveDbPath();
 console.log('[DB] Path:', DB_PATH);
